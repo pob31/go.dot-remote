@@ -1,58 +1,95 @@
 # Go.dot remote
 
-An Android app that holds a [Go.dot](https://github.com/pob31/go.dot) show in the operator's
-hands: the running cues, the cue list with its levels, an on-screen surface and the video
-mapping, with GO, Doh! and PANIC always on screen. It is a second surface, not a second screen
-(Go.dot PRD §3.17).
+An Android app that puts a [Go.dot](https://github.com/pob31/go.dot) show in the operator's hands:
+GO, Doh! and PANIC with the current and next cue on every screen, and five tabs.
 
-A foreground service keeps one WebSocket open to each Go.dot machine it is linked to and keeps a
-mirror of that machine's whole state, fed by one snapshot and then by one OSC bundle per engine
-tick. Swiping the app away and back is a redraw, never a reconnect, so switching between it and
-the WFS-DIY remote on one tablet takes a fraction of a second.
+- **Cues** — the cue list, its groups folded or open, and an inspector for the cue you tap: its
+  level, sends, EQ, DCA, waits, speed, on/off switches, flag and notes, and the waveform of a sound.
+- **Running** — everything playing now, a sound with its waveform, a wait counting down; stop,
+  kill, advance, skip a member of a round, drag the playhead, ride a sound's trim.
+- **Surface** — the show's control surfaces on the tablet: the faders, pads and SELECT of a D700
+  left in the régie or of a Mackie that did not come, the selected sound's EQ and sends on
+  rotaries, and "This tablet", a fader for every DCA of the show.
+- **Mapping** — the video outputs' warps and zones, adjusted while standing at the wall.
+- **Machines** — the Go.dot machines this tablet knows, which one is on screen, and the main and
+  backup of a pair.
 
-**What it says to Go.dot** is written down in Go.dot's repository:
-[`docs/godot-remote-protocol-0.1.md`](https://github.com/pob31/go.dot/blob/main/docs/godot-remote-protocol-0.1.md)
-— connecting, the snapshot, the stream, structure frames, HELLO and FIND, writes as text,
-refusals, staleness and two machines. Where this app and that page disagree, one of them is
-wrong and gets fixed.
+It is a second surface, not a second screen (Go.dot PRD §3.17). It may change levels, sends, EQ,
+DCA trims, waits, speed, the on/off switches, flags and notes — never the shape of the cue list:
+no cue is created, deleted, moved, renumbered or renamed from the tablet.
 
-**What it may change**: levels, sends, EQ, DCA trims, pre and post waits, speed, the on/off
-switches, flags and notes. Never the shape of the cue list — no cue is created, deleted, moved,
-renumbered or renamed from the tablet.
+The app keeps its link to each machine open in the background, with a copy of that machine's whole
+state, so swiping it away and back is instant, and switching between it and another app on the
+same tablet costs nothing.
 
-## Status
+## What it needs
 
-Early. The stages are in Go.dot's namespace draft §68 and devplan Phase 7 (A.0–A.11). Built so far:
-the skeleton (A.0), the OSC codec (A.1), the link (A.2) — the service, one WebSocket per machine,
-the mirror fed by the snapshot and the stream, the writes — the Machines tab with find-me (A.3) and
-the transport header (A.4): the current and next cues, GO, Doh! and PANIC on every tab. The Cues,
-Running, Surface and Mapping tabs say they come in a later build.
+**A Go.dot that streams its state to a remote** (Go.dot's namespace draft §68, "The remote").
+When the machine it is pointed at is older than that, the Machines tab says so in words.
 
-The link service runs as a `connectedDevice` foreground service, not `dataSync`: Android 15 caps a
-`dataSync` service at six hours in twenty-four, shorter than a long day of rehearsal. Its
-prerequisite is `CHANGE_WIFI_STATE`, a normal permission granted at install; checked on a Lenovo
-TB370FU running Android 15.
+What the app and Go.dot say to each other is written down in Go.dot's repository:
+[`docs/godot-remote-protocol-0.1.md`](https://github.com/pob31/go.dot/blob/main/docs/godot-remote-protocol-0.1.md).
+
+## Pointing it at a machine
+
+On the **Machines** tab, *Add a machine*: a name, the address of the computer running Go.dot, and
+its port, **5010** unless Go.dot was started with another. It is the address and port of Go.dot's
+web console in a browser (`http://<address>:5010/ui`). The tablet and the computer must be on the
+same network.
+
+The tab also shows the tablet's own address and the name Go.dot knows it by; Go.dot lists it under
+Show settings > Network.
+
+### Main and backup
+
+Add both machines of a pair. Both stay linked; the one **on screen** is the one the tabs show and
+GO goes to. Each machine says what it is — "Main - sending", "Backup - following" — and the
+*Take over*, *Hand over* and *Make this the main* buttons act on the machine they sit under.
+
+### Finding the tablet
+
+From Go.dot's Show settings > Network, *Find* makes this tablet flash its screen, sound an alarm
+and vibrate until somebody touches it. For that to work while the app is in the background:
+
+- notifications must be on for the app;
+- Android must allow the app over the lock screen, or a locked tablet only sounds and vibrates.
+
+The **Find this tablet** part of the Machines tab says which of the two is missing, with a button
+to the Android setting, and a test that rings for three seconds.
 
 ## Building
 
-Requirements: Android Studio (or the Android SDK with platform 36), and nothing else — the Gradle
-wrapper fetches Gradle 9.6, and the daemon runs on a Temurin 17 it fetches itself when none is
-installed (`gradle/gradle-daemon-jvm.properties`).
+Android Studio, or the Android SDK with platform 36. The Gradle wrapper fetches Gradle itself,
+and a Java 17 for its daemon when none is installed.
 
 ```
-./gradlew test assembleDebug          # JVM tests, then app/build/outputs/apk/debug/
-adb install -r app/build/outputs/apk/debug/godot-remote-*-debug.apk
+./gradlew test assembleDebug
 ```
 
-`./gradlew testDebugUnitTest -Pscreenshots` also draws the header and the tabs on the JVM
-(Robolectric) into `app/build/screenshots/`, to be looked at without a tablet; left out of the
-plain `test`, which would otherwise fetch Robolectric's Android jar on every clean run.
+runs the tests and writes the app to `app/build/outputs/apk/debug/`. `local.properties` (not in
+git) names the SDK — `sdk.dir=/path/to/Android/Sdk`; Android Studio writes it on first open.
 
-`local.properties` (not in git) names the SDK: `sdk.dir=/path/to/Android/Sdk`. Android Studio
-writes it on first open.
+## Trying it on a tablet over USB
 
-The toolchain is WFS-DIY's remote's (AGP 9.4, Kotlin 2.3, the Compose BOM 2026.01.01), so the
-two apps build side by side.
+With the tablet in developer mode and plugged into the computer that runs Go.dot:
+
+```
+adb install -r app/build/outputs/apk/debug/godot-remote-0.1.0-debug.apk
+adb reverse tcp:5010 tcp:5010
+```
+
+`adb reverse` makes the computer's port 5010 the tablet's own, so on the Machines tab the address
+is **127.0.0.1** and the port **5010** — no network needed.
+
+## Looking at the screens without a tablet
+
+```
+./gradlew testDebugUnitTest -Pscreenshots
+```
+
+draws the header and every tab — tablet and phone, upright and on its side, English and French,
+locked and stale — into `app/build/screenshots/`, from fixtures taken from a real Go.dot. The
+plain `./gradlew test` leaves them out.
 
 ## Contributing
 
@@ -61,7 +98,7 @@ two apps build side by side.
 - Both languages in step: a key added to `app/src/main/assets/lang/en.json` is added to `fr.json`
   in the same change; `LanguageParityTest` fails otherwise.
 - Numbers written to Go.dot are written in no locale's way — a decimal point, never a comma —
-  whatever the tablet's language. The engine refuses a decimal comma.
+  whatever the tablet's language.
 
 ## Licence
 
