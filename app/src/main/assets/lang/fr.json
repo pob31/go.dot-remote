@@ -249,5 +249,113 @@
     "forgetTitle": "Oublier {show} ?",
     "forgetText": "Les formes d'onde gardées pour ce spectacle sont effacées de la tablette. Rien ne change dans Go.dot : elles seront de nouveau reçues quand il le faudra.",
     "cancel": "Annuler"
+  },
+  "running": {
+    "title": "En cours",
+    "count": "{count} en cours",
+    "notSent": "Pas envoyé : aucune machine n'est reliée",
+    "hint": "Toucher une ligne pour ses actions · la balayer loin d'un côté pour la couper",
+    "emptyLine": "Ils ne bougent pas.",
+    "empty": "Rien n'est en cours.",
+    "swipeKill": "Couper",
+    "swipeLetGo": "Lâcher pour couper",
+    "inGroup": "dans {group}",
+    "phase": {
+      "entering": "pre-wait",
+      "preparing": "se prépare",
+      "prepared": "prêt",
+      "header": "en-tête",
+      "members": "membres",
+      "footer": "pied"
+    },
+    "round": "tour {at}/{of}",
+    "level": "niveau {level} dB",
+    "held": "pad tenu",
+    "soloed": "solo",
+    "seekTo": "vers {time}",
+    "finer": "plus fin {rate}",
+    "notAnalysed": "pas encore analysé",
+    "dragToSeek": "Glisser pour déplacer la tête de lecture - au-dessus ou en dessous pour plus de finesse",
+    "pillsHint": "Toucher : sauter ce tour · maintenir : sauter jusqu'à la fin du groupe",
+    "pill": {
+      "played": "joué",
+      "out": "pas ce tour",
+      "pruned": "sauté"
+    },
+    "trim": "Trim - ce soir seulement",
+    "over": "Terminé : il quitte la liste dans quelques secondes.",
+    "stopNow": "Arrêter maintenant - son pied joue",
+    "stopAfterMember": "Arrêter après ce membre",
+    "stopAfterRound": "Arrêter après ce tour",
+    "advance": "Passer à la tranche suivante",
+    "solo": "Solo sur sa tranche",
+    "unsolo": "Relâcher le solo",
+    "kill": "Couper maintenant - sans pied",
+    "killWithMembers": "Couper, avec tout ce qui est en dessous ({count}) - sans pied",
+    "close": "Fermer"
+  },
+  "widgets": {
+    "notANumber": "pas un nombre",
+    "locked": "Verrouillé",
+    "live": "en direct",
+    "in": "actif",
+    "out": "inactif"
+  },
+  "cues": {
+    "goList": "liste GO",
+    "makeGoList": "En faire la liste GO",
+    "notGoList": "GO lance l'attente de la liste GO, pas celle de cette liste.",
+    "parkOnlyGoList": "Seule l'attente de la liste GO se place d'ici : faites d'abord de cette liste la liste GO.",
+    "column": {
+      "cue": "Cue",
+      "preWait": "Pre-wait",
+      "duration": "Durée",
+      "postWait": "Post-wait"
+    },
+    "section": {
+      "persistent": "permanent",
+      "header": "en-tête",
+      "member": "membres",
+      "footer": "pied"
+    },
+    "count": "({count})",
+    "shut": "replié : {count} cues",
+    "disabled": "désactivée",
+    "enabled": "activée",
+    "overrideOn": "activée pour cette représentation",
+    "overrideOff": "désactivée pour cette représentation",
+    "flagged": "drapeau posé",
+    "notFlagged": "pas de drapeau",
+    "empty": "Cette liste n'a pas de cue.",
+    "noLists": "Ce spectacle n'a pas de liste de cues.",
+    "fireNow": "Lancer maintenant - l'attente ne bouge pas",
+    "parkHere": "Placer l'attente ici",
+    "flag": "Poser un drapeau",
+    "unflag": "Ôter le drapeau",
+    "saveNotes": "Enregistrer les notes",
+    "noSends": "Aucun envoi sur cette cue.",
+    "eqIn": "EQ en service",
+    "eqOut": "EQ hors service - toutes les bandes sautées",
+    "dcaNone": "aucun DCA",
+    "dcaTrim": "trim de {dca} - ce soir seulement",
+    "field": {
+      "level": "Niveau",
+      "runTrim": "Trim de l'exécution en cours - ce soir seulement",
+      "sends": "Envois",
+      "eq": "EQ",
+      "dca": "DCA",
+      "preWait": "Pre-wait",
+      "postWait": "Post-wait",
+      "rate": "Vitesse",
+      "rateMode": "Mode de vitesse",
+      "enabled": "Activée",
+      "flagged": "Drapeau",
+      "notes": "Notes"
+    },
+    "inspector": {
+      "none": "Touchez une cue pour voir ce que la tablette peut y changer.",
+      "lockedNote": "Les réglages du spectacle sont grisés. EQ, envois, drapeaux et trims bougent encore.",
+      "liveCount": "{count} changements en direct - non enregistrés tant que le spectacle n'est pas déverrouillé et qu'ils ne sont pas gardés"
+    }
   }
 }

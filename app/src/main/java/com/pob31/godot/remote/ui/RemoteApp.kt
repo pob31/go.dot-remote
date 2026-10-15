@@ -52,6 +52,8 @@ import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.GodotIcon
 import com.pob31.godot.remote.ui.mapping.MappingTab
 import com.pob31.godot.remote.ui.theme.GodotColors
+import com.pob31.godot.remote.ui.cues.CuesTab
+import com.pob31.godot.remote.ui.running.RunningTab
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 
 /** The five tabs, each a word and a drawn picture (never the picture alone). */
@@ -86,6 +88,8 @@ fun RemoteApp(service: EngineLinkService?) {
             onScreen = onScreen,
             header = { TransportHeader(onScreen) },
             machinesTab = { MachinesTab(machines, rememberSystemFindMe()) },
+            runningTab = { RunningTab(onScreen) },
+            cuesTab = { CuesTab(onScreen) },
         )
     }
 }
@@ -96,6 +100,8 @@ fun Shell(
     header: @Composable () -> Unit,
     machinesTab: @Composable () -> Unit,
     initialTab: RemoteTab? = null,
+    runningTab: (@Composable () -> Unit)? = null,
+    cuesTab: (@Composable () -> Unit)? = null,
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab ?: if (onScreen == null) RemoteTab.MACHINES else RemoteTab.CUES) }
     Column(
@@ -113,6 +119,8 @@ fun Shell(
             when (tab) {
                 RemoteTab.MACHINES -> machinesTab()
                 RemoteTab.MAPPING -> MappingTab(onScreen)
+                RemoteTab.RUNNING -> runningTab?.invoke() ?: LaterTab(tab, onScreen)
+                RemoteTab.CUES -> cuesTab?.invoke() ?: LaterTab(tab, onScreen)
                 else -> LaterTab(tab, onScreen)
             }
         }
