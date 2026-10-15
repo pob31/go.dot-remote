@@ -214,6 +214,65 @@
   "widgets": {
     "notANumber": "not a number",
     "locked": "Locked",
-    "live": "live"
+    "live": "live",
+    "in": "in",
+    "out": "out"
+  },
+  "cues": {
+    "goList": "GO list",
+    "makeGoList": "Make this the GO list",
+    "notGoList": "GO fires the GO list's standby, not this list's.",
+    "parkOnlyGoList": "Only the GO list's standby can be parked from here: make this the GO list first.",
+    "column": {
+      "cue": "Cue",
+      "preWait": "Pre-wait",
+      "duration": "Duration",
+      "postWait": "Post-wait"
+    },
+    "section": {
+      "persistent": "persistent",
+      "header": "header",
+      "member": "members",
+      "footer": "footer"
+    },
+    "count": "({count})",
+    "shut": "folded: {count} cues",
+    "disabled": "disabled",
+    "enabled": "enabled",
+    "overrideOn": "on for this run",
+    "overrideOff": "off for this run",
+    "flagged": "flagged",
+    "notFlagged": "not flagged",
+    "empty": "This list has no cues.",
+    "noLists": "This show has no cue list.",
+    "fireNow": "Fire now - the standby stays where it is",
+    "parkHere": "Park the standby here",
+    "flag": "Flag",
+    "unflag": "Unflag",
+    "saveNotes": "Save the notes",
+    "noSends": "No sends on this cue.",
+    "eqIn": "EQ in",
+    "eqOut": "EQ out - every band skipped",
+    "dcaNone": "no DCA",
+    "dcaTrim": "{dca} trim - tonight only",
+    "field": {
+      "level": "Level",
+      "runTrim": "Trim of the run playing now - tonight only",
+      "sends": "Sends",
+      "eq": "EQ",
+      "dca": "DCA",
+      "preWait": "Pre-wait",
+      "postWait": "Post-wait",
+      "rate": "Speed",
+      "rateMode": "Speed mode",
+      "enabled": "Enabled",
+      "flagged": "Flag",
+      "notes": "Notes"
+    },
+    "inspector": {
+      "none": "Tap a cue to see what the tablet can change on it.",
+      "lockedNote": "The show's rows are greyed. EQ, sends, flags and trims still move.",
+      "liveCount": "{count} changes ride live - not saved until the show is unlocked and they are kept"
+    }
   }
 }
