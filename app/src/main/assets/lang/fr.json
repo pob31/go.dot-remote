@@ -357,5 +357,62 @@
       "lockedNote": "Les réglages du spectacle sont grisés. EQ, envois, drapeaux et trims bougent encore.",
       "liveCount": "{count} changements en direct - non enregistrés tant que le spectacle n'est pas déverrouillé et qu'ils ne sont pas gardés"
     }
+  },
+  "surface": {
+    "thisTablet": "Cette tablette",
+    "page": {
+      "faders": "Faders",
+      "eq": "EQ",
+      "sends": "Envois"
+    },
+    "profile": {
+      "virtual": "Panneau virtuel",
+      "mcu": "Mackie Control",
+      "d700": "Asparion D700",
+      "midiPads": "Pads"
+    },
+    "state": {
+      "tablet": "un fader par DCA",
+      "connected": "connectée",
+      "off": "désactivée",
+      "notConnected": "non connectée"
+    },
+    "standsIn": "{surface} n'est pas connectée : ses tranches fonctionnent depuis cette tablette.",
+    "lockedNote": "Les faders, l'EQ et les envois bougent encore. L'EQ et les envois sont en direct, non enregistrés tant qu'ils ne sont pas gardés.",
+    "noDca": "Ce spectacle n'a pas de DCA : pas encore de fader ici. Chaque DCA du spectacle a son fader sur cette tablette.",
+    "noStrips": "Cette surface n'a pas de tranche.",
+    "nothingOnStrip": "Rien sur cette tranche",
+    "noDcaOnStrip": "Aucun DCA sur cette tranche",
+    "padHard": "fort",
+    "padSoft": "doux",
+    "padUnity": "0 dB",
+    "selected": "sélectionnée",
+    "noAim": "Rien n'est sélectionné. Appuyez sur SELECT sur une tranche, ou choisissez un son qui joue.",
+    "editing": "Réglage de",
+    "aimElsewhere": "En choisir une autre",
+    "aimKeep": "Garder celle-ci",
+    "aimAt": "Sons qui jouent :",
+    "noneToAim": "Aucun son ne joue.",
+    "noEq": "Cette cue n'a pas d'EQ.",
+    "eqLive": "Sous le verrou, l'EQ est en direct : entendue tout de suite, enregistrée seulement si elle est gardée.",
+    "sendsLive": "Sous le verrou, les envois sont en direct : entendus tout de suite, enregistrés seulement s'ils sont gardés.",
+    "eqHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez sur un gain pour activer ou couper sa bande, sur une forme pour passer de cloche à plateau.",
+    "sendsHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez dessus pour activer ou couper son envoi : son niveau est gardé.",
+    "word": {
+      "free": "libre",
+      "dca": "DCA",
+      "unassigned": "sans DCA",
+      "armed": "armée",
+      "pending": "en attente",
+      "playing": "joue",
+      "held": "tenue",
+      "stopping": "s'arrête",
+      "closing": "se ferme",
+      "lane": "courbe",
+      "rec": "rec",
+      "off": "coupé",
+      "recording": "enregistre"
+    },
+    "dcaTonight": "trim - ce soir seulement"
   }
 }

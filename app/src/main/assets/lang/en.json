@@ -357,5 +357,62 @@
       "lockedNote": "The show's rows are greyed. EQ, sends, flags and trims still move.",
       "liveCount": "{count} changes ride live - not saved until the show is unlocked and they are kept"
     }
+  },
+  "surface": {
+    "thisTablet": "This tablet",
+    "page": {
+      "faders": "Faders",
+      "eq": "EQ",
+      "sends": "Sends"
+    },
+    "profile": {
+      "virtual": "Virtual panel",
+      "mcu": "Mackie Control",
+      "d700": "Asparion D700",
+      "midiPads": "Pads"
+    },
+    "state": {
+      "tablet": "a fader for each DCA",
+      "connected": "connected",
+      "off": "off",
+      "notConnected": "not connected"
+    },
+    "standsIn": "{surface} is not connected: its strips work from this tablet.",
+    "lockedNote": "Faders, EQ and sends still move. EQ and sends ride live, not saved until they are kept.",
+    "noDca": "This show has no DCA, so there is no fader here yet. Every DCA the show has gets a fader on this tablet.",
+    "noStrips": "This surface has no strips.",
+    "nothingOnStrip": "Nothing on this strip",
+    "noDcaOnStrip": "No DCA on this strip",
+    "padHard": "hard",
+    "padSoft": "soft",
+    "padUnity": "0 dB",
+    "selected": "selected",
+    "noAim": "Nothing is selected. Press SELECT on a strip, or pick a sound playing now.",
+    "editing": "Editing",
+    "aimElsewhere": "Pick another",
+    "aimKeep": "Keep this one",
+    "aimAt": "Sounds playing now:",
+    "noneToAim": "No sound is playing.",
+    "noEq": "This cue has no EQ.",
+    "eqLive": "Under the lock the EQ rides live: heard at once, saved only when kept.",
+    "sendsLive": "Under the lock the sends ride live: heard at once, saved only when kept.",
+    "eqHint": "A knob turns from where it stands; the further your finger from it, the finer. Press a gain to switch its band in or out, a shape for peak or shelf.",
+    "sendsHint": "A knob turns from where it stands; the further your finger from it, the finer. Press one to switch its send in or out: its level is kept.",
+    "word": {
+      "free": "free",
+      "dca": "DCA",
+      "unassigned": "no DCA",
+      "armed": "armed",
+      "pending": "pending",
+      "playing": "playing",
+      "held": "held",
+      "stopping": "stopping",
+      "closing": "closing",
+      "lane": "lane",
+      "rec": "rec",
+      "off": "off",
+      "recording": "recording"
+    },
+    "dcaTonight": "trim - tonight only"
   }
 }

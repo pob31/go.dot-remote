@@ -54,6 +54,7 @@ import com.pob31.godot.remote.ui.mapping.MappingTab
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.cues.CuesTab
 import com.pob31.godot.remote.ui.running.RunningTab
+import com.pob31.godot.remote.ui.surface.SurfaceTab
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 
 /** The five tabs, each a word and a drawn picture (never the picture alone). */
@@ -90,6 +91,7 @@ fun RemoteApp(service: EngineLinkService?) {
             machinesTab = { MachinesTab(machines, rememberSystemFindMe()) },
             runningTab = { RunningTab(onScreen) },
             cuesTab = { CuesTab(onScreen) },
+            surfaceTab = { SurfaceTab(onScreen) },
         )
     }
 }
@@ -102,6 +104,7 @@ fun Shell(
     initialTab: RemoteTab? = null,
     runningTab: (@Composable () -> Unit)? = null,
     cuesTab: (@Composable () -> Unit)? = null,
+    surfaceTab: (@Composable () -> Unit)? = null,
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab ?: if (onScreen == null) RemoteTab.MACHINES else RemoteTab.CUES) }
     Column(
@@ -121,7 +124,7 @@ fun Shell(
                 RemoteTab.MAPPING -> MappingTab(onScreen)
                 RemoteTab.RUNNING -> runningTab?.invoke() ?: LaterTab(tab, onScreen)
                 RemoteTab.CUES -> cuesTab?.invoke() ?: LaterTab(tab, onScreen)
-                else -> LaterTab(tab, onScreen)
+                RemoteTab.SURFACE -> surfaceTab?.invoke() ?: LaterTab(tab, onScreen)
             }
         }
     }

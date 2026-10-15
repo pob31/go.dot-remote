@@ -45,6 +45,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pob31.godot.remote.link.WireText
 import com.pob31.godot.remote.model.EqLaw
 import com.pob31.godot.remote.model.EqLaws
@@ -102,6 +103,8 @@ fun DbFader(
     label: String = "",
     thickness: Dp = 64.dp,
     boxWidth: Dp = 92.dp,
+    /** Drawn beside a vertical fader's track, as a desk's meter: the Surface tab's strips. */
+    beside: (@Composable () -> Unit)? = null,
 ) {
     val sent = remember(address) { SentValue() }
     var dragging by remember(address) { mutableStateOf<Double?>(null) }
@@ -222,7 +225,14 @@ fun DbFader(
         Column(modifier.alpha(if (enabled) 1f else 0.6f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (label.isNotEmpty()) Text(label, color = GodotColors.inkDim, maxLines = 1)
             box()
-            track(Modifier.width(thickness).weight(1f).fillMaxHeight())
+            if (beside == null) {
+                track(Modifier.width(thickness).weight(1f).fillMaxHeight())
+            } else {
+                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    track(Modifier.width(thickness).fillMaxHeight())
+                    beside()
+                }
+            }
         }
     } else {
         Row(modifier.alpha(if (enabled) 1f else 0.6f), verticalAlignment = Alignment.CenterVertically) {
@@ -233,25 +243,38 @@ fun DbFader(
     }
 }
 
-/** A run's level leaving its track: a thin bar along the same curve, its number beside it. */
+/**
+ * A run's level leaving its track: a thin bar along the same curve, its number beside it -
+ * or, [vertical], a bar rising beside a fader with its number under it, as a desk's meter.
+ */
 @Composable
-fun MeterBar(decibels: Double?, curve: FaderCurve, modifier: Modifier = Modifier) {
+fun MeterBar(decibels: Double?, curve: FaderCurve, modifier: Modifier = Modifier, vertical: Boolean = false) {
     val db = decibels ?: curve.silenceDb
+    val words = if (db <= curve.silenceDb) "-inf" else EqLaws.fixed(db, 0)
+    val colour = when {
+        db > 0.0 -> GodotColors.failed
+        db > -6.0 -> GodotColors.stopping
+        else -> GodotColors.live
+    }
+    val place = curve.fractionForDb(db).toFloat()
+    if (vertical) {
+        Column(modifier.width(40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Canvas(Modifier.width(10.dp).weight(1f)) {
+                drawRect(GodotColors.panelIn)
+                val top = size.height * (1f - place)
+                drawRect(colour, Offset(0f, top), Size(size.width, size.height - top))
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(words, color = GodotColors.inkFaint, style = GodotType.number.copy(fontSize = 13.sp), maxLines = 1)
+        }
+        return
+    }
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         Canvas(Modifier.weight(1f).height(8.dp)) {
             drawRect(GodotColors.panelIn)
-            val place = curve.fractionForDb(db).toFloat()
-            val colour = when {
-                db > 0.0 -> GodotColors.failed
-                db > -6.0 -> GodotColors.stopping
-                else -> GodotColors.live
-            }
             drawRect(colour, size = Size(size.width * place, size.height))
         }
         Spacer(Modifier.width(8.dp))
-        Text(
-            if (db <= curve.silenceDb) "-inf" else EqLaws.fixed(db, 0),
-            color = GodotColors.inkFaint, style = GodotType.number, modifier = Modifier.width(44.dp), maxLines = 1
-        )
+        Text(words, color = GodotColors.inkFaint, style = GodotType.number, modifier = Modifier.width(44.dp), maxLines = 1)
     }
 }
