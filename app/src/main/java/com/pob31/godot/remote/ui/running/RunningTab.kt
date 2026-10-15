@@ -76,6 +76,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pob31.godot.remote.link.Link
 import com.pob31.godot.remote.link.LinkState
 import com.pob31.godot.remote.link.LinkedMachine
 import com.pob31.godot.remote.localization.loc
@@ -96,6 +97,7 @@ import com.pob31.godot.remote.ui.rememberReading
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 import com.pob31.godot.remote.ui.theme.GodotType
+import com.pob31.godot.remote.ui.waveform.Waveform
 import com.pob31.godot.remote.ui.widgets.DbFader
 import com.pob31.godot.remote.ui.widgets.Mark
 import com.pob31.godot.remote.ui.widgets.MarkIcon
@@ -123,7 +125,7 @@ fun RunningTab(onScreen: LinkedMachine?) {
     val rows = rememberReading(link, emptyList<RunRow>()) { readRuns(it) }
     val state by (link?.state ?: offState).collectAsState()
     val writes = remember(link) { link?.let { LinkWrites(it) } ?: TabWrites.NONE }
-    RunningView(rows, state, writes, rememberSurfaceTables().fader, hasMachine = onScreen != null)
+    RunningView(rows, state, writes, rememberSurfaceTables().fader, hasMachine = onScreen != null, link = link)
 }
 
 /** The tab drawn from rows - no link of its own, so a test draws and presses it from a fixture. */
@@ -136,6 +138,7 @@ fun RunningView(
     curve: FaderCurve,
     hasMachine: Boolean = true,
     sheetFor: String? = null,
+    link: Link? = null,
 ) {
     var sheet by remember { mutableStateOf(sheetFor) }
     var notSent by remember { mutableIntStateOf(0) }
@@ -176,7 +179,7 @@ fun RunningView(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     items(rows, key = { it.id }) { row ->
-                        RunRowItem(row, curve, writes, wide, send = send, onOpen = { sheet = row.id })
+                        RunRowItem(row, curve, writes, wide, send = send, onOpen = { sheet = row.id }, link = link)
                     }
                 }
             }
@@ -217,7 +220,7 @@ private fun EmptyRuns(hasMachine: Boolean) {
  * Kill being the same without the gesture.
  */
 @Composable
-fun RunRowItem(row: RunRow, curve: FaderCurve, writes: TabWrites, wide: Boolean, send: (Sent?) -> Unit, onOpen: () -> Unit) {
+fun RunRowItem(row: RunRow, curve: FaderCurve, writes: TabWrites, wide: Boolean, send: (Sent?) -> Unit, onOpen: () -> Unit, link: Link? = null) {
     val scope = rememberCoroutineScope()
     val offset = remember(row.id) { Animatable(0f) }
     var width by remember { mutableIntStateOf(1) }
@@ -266,20 +269,20 @@ fun RunRowItem(row: RunRow, curve: FaderCurve, writes: TabWrites, wide: Boolean,
                 }
                 .pointerInput(row.id) { detectTapGestures(onTap = { onOpen() }) }
         ) {
-            RunRowContent(row, curve, writes, wide, send)
+            RunRowContent(row, curve, writes, wide, send, link)
         }
     }
 }
 
 @Composable
-private fun RunRowContent(row: RunRow, curve: FaderCurve, writes: TabWrites, wide: Boolean, send: (Sent?) -> Unit) {
+private fun RunRowContent(row: RunRow, curve: FaderCurve, writes: TabWrites, wide: Boolean, send: (Sent?) -> Unit, link: Link?) {
     val indent = (row.depth * 28).dp
     Column(Modifier.fillMaxWidth().padding(start = 12.dp + indent, end = 12.dp, top = 8.dp, bottom = 10.dp)) {
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 TitleLine(row, wide)
                 WordsLine(row, wide)
-                RunStrip(row, writes, send)
+                RunStrip(row, send, link)
                 if (row.pills.isNotEmpty()) Pills(row, send)
             }
             if (wide) {
@@ -378,7 +381,7 @@ private fun WordsLine(row: RunRow, wide: Boolean) {
  * show where a release would land, and the real head keeps drawing where the sound is.
  */
 @Composable
-private fun RunStrip(row: RunRow, writes: TabWrites, send: (Sent?) -> Unit) {
+private fun RunStrip(row: RunRow, send: (Sent?) -> Unit, link: Link?) {
     val through = row.through()
     val waiting = row.counting && row.waitTotal > 0.0
     val sound = row.kind == "media" || row.kind == "mic"
@@ -392,7 +395,13 @@ private fun RunStrip(row: RunRow, writes: TabWrites, send: (Sent?) -> Unit) {
     val density = LocalDensity.current
     val unitPx = with(density) { 40.dp.toPx() }
     val edgePx = with(density) { 28.dp.toPx() }
-    val stripHeight = if (row.scrubbable) 40.dp else 14.dp
+    // A sound whose file the machine knows is drawn as its waveform (PRD §3.30), its head where it plays.
+    val shape = sound && link != null && row.hash.isNotEmpty() && through != null && !waiting
+    val stripHeight = when {
+        shape -> 44.dp
+        row.scrubbable -> 40.dp
+        else -> 14.dp
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         ghost?.let { at ->
@@ -404,10 +413,11 @@ private fun RunStrip(row: RunRow, writes: TabWrites, send: (Sent?) -> Unit) {
                 }
             }
         }
+        Box(Modifier.fillMaxWidth().height(stripHeight)) {
+        if (shape) Waveform(row.hash, link, Modifier.matchParentSize(), playhead = through.toFloat())
         Canvas(
             Modifier
-                .fillMaxWidth()
-                .height(stripHeight)
+                .matchParentSize()
                 .onGloballyPositioned { stripX = it.positionInWindow().x }
                 .pointerInput(row.id, row.scrubbable) {
                     if (!row.scrubbable) return@pointerInput
@@ -461,24 +471,27 @@ private fun RunStrip(row: RunRow, writes: TabWrites, send: (Sent?) -> Unit) {
                     }
                 }
         ) {
-            drawRect(GodotColors.panelIn)
+            if (!shape) drawRect(GodotColors.panelIn)
             if (waiting) {
                 val left = (row.remaining / row.waitTotal).coerceIn(0.0, 1.0).toFloat()
                 drawRect(GodotColors.waiting.copy(alpha = 0.7f), size = Size(size.width * left, size.height))
                 return@Canvas
             }
             val at = (through ?: 0.0).toFloat()
-            val tint = row.timbre?.let { Color.hsl(((it.hue % 360.0 + 360.0) % 360.0).toFloat(), it.saturation.coerceIn(0.0, 1.0).toFloat(), it.lightness.coerceIn(0.0, 1.0).toFloat()) }
-                ?: GodotColors.inkOff
-            drawRect(tint.copy(alpha = 0.85f), size = Size(size.width * at, size.height))
-            drawRect(Color.White, Offset(size.width * at - 1.5.dp.toPx(), 0f), Size(3.dp.toPx(), size.height))
+            if (!shape) {
+                val tint = row.timbre?.let { Color.hsl(((it.hue % 360.0 + 360.0) % 360.0).toFloat(), it.saturation.coerceIn(0.0, 1.0).toFloat(), it.lightness.coerceIn(0.0, 1.0).toFloat()) }
+                    ?: GodotColors.inkOff
+                drawRect(tint.copy(alpha = 0.85f), size = Size(size.width * at, size.height))
+                drawRect(Color.White, Offset(size.width * at - 1.5.dp.toPx(), 0f), Size(3.dp.toPx(), size.height))
+            }
             ghost?.let { g ->
                 val (from, to) = row.span() ?: return@let
                 val x = (((g - from) / (to - from)).coerceIn(0.0, 1.0) * size.width).toFloat()
                 drawRect(GodotColors.picked, Offset(x - 2.dp.toPx(), 0f), Size(4.dp.toPx(), size.height))
             }
         }
-        if (sound && row.timbreUnsaid && row.launched) Text(loc("running.notAnalysed"), color = GodotColors.inkOff, fontSize = 12.sp)
+        }
+        if (sound && !shape && row.timbreUnsaid && row.launched) Text(loc("running.notAnalysed"), color = GodotColors.inkOff, fontSize = 12.sp)
         if (row.scrubbable && ghost == null) Text(loc("running.dragToSeek"), color = GodotColors.inkOff, fontSize = 12.sp)
     }
 }

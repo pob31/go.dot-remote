@@ -100,6 +100,8 @@ data class RunRow(
     val waitTotal: Double = 0.0,
     /** How many runs sit under this one: what a kill of it takes with it. */
     val descendants: Int = 0,
+    /** A sound's file as Go.dot knows it (`cue/hash`), its waveform's key; empty for anything else. */
+    val hash: String = "",
 ) {
     val icon: GodotIcon get() = iconFor(kind, mode, verb)
     val finished: Boolean get() = state == "done" || state == "failed"
@@ -293,6 +295,7 @@ private fun readRun(mirror: Mirror, id: String, parentOf: Map<String, String>): 
         roundLength = number("roundLength") ?: 0.0,
         length = if (cue.isEmpty()) 0.0 else mirror.value(cueBase + "duration")?.asDouble() ?: 0.0,
         waitTotal = if (cue.isEmpty()) 0.0 else mirror.value(cueBase + waitRow)?.asDouble() ?: 0.0,
+        hash = if (kind == "media" && cue.isNotEmpty()) mirror.text(cueBase + "hash") ?: "" else "",
     )
 }
 

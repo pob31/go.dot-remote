@@ -228,4 +228,20 @@ class EditableTest {
         assertEquals("off", enabled.override)
         assertFalse("override" in Editables.writableRows(tables).map { it.second })
     }
+
+    @Test
+    fun aSoundsInspection_itsHash_andItsHeadOnlyWhileItPlays() {
+        val hash = "b".repeat(64)
+        mirror.put("/godot/cue/$THUNDER_AND_RAIN/hash", hash)
+        mirror.put("/godot/cue/$THUNDER_AND_RAIN/duration", 40.0)
+        val run = ShowFixture.RUN_THUNDER_AND_RAIN
+        mirror.put("/godot/run/$run/position", 30.0)
+        mirror.put("/godot/run/$run/state", "waiting")
+        val waiting = readInspection(mirror, THUNDER_AND_RAIN, tables)!!
+        assertEquals(hash, waiting.hash)
+        assertNull("no head while it does not play", waiting.playhead)
+        mirror.put("/godot/run/$run/state", "playing")
+        assertEquals(0.75, readInspection(mirror, THUNDER_AND_RAIN, tables)!!.playhead!!, 1e-9)
+        assertEquals("a memo has no waveform", "", readInspection(mirror, INTERVAL, tables)!!.hash)
+    }
 }

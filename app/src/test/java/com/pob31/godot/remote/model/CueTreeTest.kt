@@ -189,4 +189,18 @@ class CueTreeTest {
         assertEquals(null, read(ACT_ONE).inspection)
         assertEquals("picking a cue moves no standby", RAIN_DOWN, read(ACT_ONE, THUNDER).marks.standby)
     }
+
+    @Test
+    fun aReadOnlyNoughtIsBlank_aWritableOneShown() {
+        val base = "/godot/cue/$THUNDER_AND_RAIN/"
+        assertFalse(mirror[base + "duration"]!!.writable)
+        assertEquals("read-only, nought: blank", "", timeText(mirror, base + "duration"))
+        assertTrue(mirror[base + "preWait"]!!.writable)
+        assertEquals("writable, nought: a decision", "0.0", timeText(mirror, base + "preWait"))
+        // A row the stream made before HTTP said what it is may be read-only: blank until it is known.
+        mirror.put("/godot/cue/$THUNDER_AND_RAIN/somethingNew", 0.0)
+        assertEquals("", timeText(mirror, base + "somethingNew"))
+        mirror.put(base + "duration", -0.04)
+        assertEquals("a read-only nought that rounds to minus nought is still blank", "", timeText(mirror, base + "duration"))
+    }
 }

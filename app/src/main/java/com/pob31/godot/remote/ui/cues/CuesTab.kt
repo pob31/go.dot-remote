@@ -65,6 +65,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pob31.godot.remote.link.Link
 import com.pob31.godot.remote.link.LinkState
 import com.pob31.godot.remote.link.LinkedMachine
 import com.pob31.godot.remote.link.WireText
@@ -121,6 +122,7 @@ fun CuesTab(onScreen: LinkedMachine?) {
         onView = { viewed = it },
         onPick = { picked = it },
         onFold = { folds.toggle(it); foldVersion = folds.version },
+        link = link,
     )
 }
 
@@ -138,6 +140,7 @@ fun CuesView(
     onPick: (String?) -> Unit = {},
     onFold: (String) -> Unit = {},
     inspectorOpen: Boolean = false,
+    link: Link? = null,
 ) {
     var sheetFor by remember { mutableStateOf<String?>(null) }
     var inspector by remember { mutableStateOf(inspectorOpen) }
@@ -173,7 +176,7 @@ fun CuesView(
                             .fillMaxHeight()
                             .background(GodotColors.panelInspect)
                     ) {
-                        InspectorView(reading.inspection, writes, tables)
+                        InspectorView(reading.inspection, writes, tables, link = link)
                     }
                 }
             }
@@ -185,7 +188,7 @@ fun CuesView(
             onDismissRequest = { inspector = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             containerColor = GodotColors.panelInspect,
-        ) { InspectorView(reading.inspection, writes, tables) }
+        ) { InspectorView(reading.inspection, writes, tables, link = link) }
     }
 
     val held = sheetFor?.let { id -> reading.rows.firstOrNull { it.id == id && !it.band } }

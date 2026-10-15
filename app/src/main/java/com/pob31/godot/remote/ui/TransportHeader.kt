@@ -148,26 +148,39 @@ fun TransportHeaderView(
             .fillMaxWidth()
             .background(GodotColors.panel)
     ) {
-        val wide = maxWidth >= 700.dp
+        /*  ONE ROW WHEN THE CUES KEEP ROOM BESIDE THE BUTTONS: the full row on a tablet held
+            sideways; a narrower one - the buttons smaller, never under 96 dp - on an upright
+            tablet or a phone held sideways; and on an upright phone the cues above and the
+            buttons under them. However narrow, the next cue's name is never dropped: it goes
+            to a line of its own (CuesBlock). */
+        val row = when {
+            maxWidth >= 1100.dp -> RowSizes(196.dp, 136.dp, 168.dp, 128.dp, 76.dp)
+            maxWidth >= 700.dp -> RowSizes(150.dp, 112.dp, 136.dp, 120.dp, 64.dp)
+            else -> null
+        }
+        // The room the next cue has beside its label and the two arrows: under 360 dp its name gets a line of its own.
+        val cuesWidth = if (row != null) maxWidth - 24.dp - row.go - row.doh - row.panic - 32.dp - GodotMetrics.row else maxWidth - 24.dp
+        val stacked = cuesWidth - (row?.label ?: 60.dp) - 110.dp < 360.dp
         Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             WordsLine(machine, state, reading, refusal, notSent > 0)
             val live = state == LinkState.LIVE
-            // GO is never shorter than 96 dp: 128 on the wide row, 104 on a phone's.
-            if (wide) {
-                Row(Modifier.height(128.dp), verticalAlignment = Alignment.CenterVertically) {
-                    GoButton(reading, Modifier.width(196.dp).fillMaxHeight()) { sendOrSay("go") }
+            // GO is never shorter than 96 dp: 128 on the wide row, 120 on the narrower, 104 on a phone's.
+            if (row != null) {
+                // A name on a line of its own, and the notes under it, need the row taller.
+                Row(Modifier.height(if (stacked) 172.dp else row.height), verticalAlignment = Alignment.CenterVertically) {
+                    GoButton(reading, Modifier.width(row.go).fillMaxHeight()) { sendOrSay("go") }
                     Spacer(Modifier.width(16.dp))
-                    CuesBlock(reading, live, Modifier.weight(1f), 76.dp, sendOrSay)
+                    CuesBlock(reading, live, Modifier.weight(1f), row.label, stacked, sendOrSay)
                     Spacer(Modifier.width(16.dp))
-                    DohButton(reading, Modifier.width(136.dp).fillMaxHeight()) { sendOrSay("go.doh") }
+                    DohButton(reading, Modifier.width(row.doh).fillMaxHeight()) { sendOrSay("go.doh") }
                     Spacer(Modifier.width(GodotMetrics.row))
-                    PanicButton(killNext, Modifier.width(168.dp).fillMaxHeight()) {
+                    PanicButton(killNext, Modifier.width(row.panic).fillMaxHeight()) {
                         sendOrSay(Panic.command(panic.press(nowMs())))
                         panicPresses++
                     }
                 }
             } else {
-                CuesBlock(reading, live, Modifier.fillMaxWidth(), 60.dp, sendOrSay)
+                CuesBlock(reading, live, Modifier.fillMaxWidth(), 60.dp, stacked, sendOrSay)
                 Row(Modifier.height(104.dp), verticalAlignment = Alignment.CenterVertically) {
                     GoButton(reading, Modifier.weight(1.5f).fillMaxHeight()) { sendOrSay("go") }
                     Spacer(Modifier.width(12.dp))
@@ -212,9 +225,18 @@ private fun WordsLine(machine: String?, state: LinkState, reading: HeaderReading
     }
 }
 
-/** Current above, next below - the next one larger and in the standby colour, the arrows beside it. */
+/** The widths of the one-row header: GO, Doh!, PANIC, its height, and the cues' row labels. */
+private data class RowSizes(val go: Dp, val doh: Dp, val panic: Dp, val height: Dp, val label: Dp)
+
+/**
+ * Current above, next below - the next one larger and in the standby colour, the arrows
+ * beside it. Where the next cue's number, name and kind do not fit on one line beside the
+ * arrows, the kind and the number take the first line and the name a line of its own, on
+ * two lines at most and ended with an ellipsis: the number and the kind stay readable and
+ * the name is never dropped.
+ */
 @Composable
-private fun CuesBlock(reading: HeaderReading, live: Boolean, modifier: Modifier, labelWidth: Dp, send: (String) -> Unit) {
+private fun CuesBlock(reading: HeaderReading, live: Boolean, modifier: Modifier, labelWidth: Dp, stacked: Boolean, send: (String) -> Unit) {
     Column(modifier.alpha(if (live) 1f else 0.45f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             RowLabel(loc("remote.header.current"), labelWidth)
@@ -242,6 +264,20 @@ private fun CuesBlock(reading: HeaderReading, live: Boolean, modifier: Modifier,
             val next = reading.next
             if (next == null) {
                 Text(loc("remote.header.nothingInStandby"), color = GodotColors.inkFaint, fontSize = 20.sp, maxLines = 1)
+            } else if (stacked) {
+                // The kind and the number on the arrows' line; the name under them, given the whole width.
+                val accent = GodotColors.kindAccent(next.kind, next.mode)
+                GodotIconMark(next.icon, accent, size = 26.dp)
+                Spacer(Modifier.width(8.dp))
+                if (next.number.isNotEmpty()) {
+                    Text(next.number, color = GodotColors.standby, style = GodotType.number.copy(fontSize = 24.sp), maxLines = 1, softWrap = false)
+                    Spacer(Modifier.width(10.dp))
+                }
+                Text(next.kindKey?.let { loc(it) } ?: next.kind, color = accent, maxLines = 1, softWrap = false)
+                reading.resumeWords()?.let {
+                    Spacer(Modifier.width(10.dp))
+                    Text(say(it), color = GodotColors.waiting, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             } else {
                 val accent = GodotColors.kindAccent(next.kind, next.mode)
                 GodotIconMark(next.icon, accent, size = 26.dp)
@@ -254,6 +290,14 @@ private fun CuesBlock(reading: HeaderReading, live: Boolean, modifier: Modifier,
                     Text(say(it), color = GodotColors.waiting, maxLines = 1)
                 }
             }
+        }
+        val next = reading.next
+        if (stacked && next != null && next.name.isNotEmpty()) {
+            Text(
+                next.name, color = GodotColors.standby, fontSize = 22.sp, fontWeight = FontWeight.Medium,
+                maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 26.sp,
+                modifier = Modifier.padding(start = labelWidth)
+            )
         }
         reading.next?.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             Text(
@@ -273,10 +317,11 @@ private fun RowLabel(text: String, width: Dp) {
 private fun CueName(cue: CueLine, colour: Color, size: TextUnit, modifier: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         if (cue.number.isNotEmpty()) {
-            Text(cue.number, color = colour, style = GodotType.number.copy(fontSize = size), maxLines = 1)
+            Text(cue.number, color = colour, style = GodotType.number.copy(fontSize = size), maxLines = 1, softWrap = false)
             Spacer(Modifier.width(10.dp))
         }
-        Text(cue.name, color = colour, fontSize = size, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        // The number whole; the name takes what room is left and ends with an ellipsis.
+        Text(cue.name, color = colour, fontSize = size, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
     }
 }
 

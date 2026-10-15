@@ -58,6 +58,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pob31.godot.remote.link.Link
 import com.pob31.godot.remote.link.WireText
 import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.DcaChoice
@@ -71,6 +72,7 @@ import com.pob31.godot.remote.model.SurfaceTables
 import com.pob31.godot.remote.model.TabWrites
 import com.pob31.godot.remote.ui.GodotIconMark
 import com.pob31.godot.remote.ui.theme.GodotColors
+import com.pob31.godot.remote.ui.waveform.Waveform
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 import com.pob31.godot.remote.ui.theme.GodotType
 import com.pob31.godot.remote.ui.widgets.DbFader
@@ -91,7 +93,14 @@ import com.pob31.godot.remote.ui.widgets.NumberBox
  * count of what rides live is said at the top.
  */
 @Composable
-fun InspectorView(inspection: Inspection?, writes: TabWrites, tables: SurfaceTables, modifier: Modifier = Modifier, scroll: Boolean = true) {
+fun InspectorView(
+    inspection: Inspection?,
+    writes: TabWrites,
+    tables: SurfaceTables,
+    modifier: Modifier = Modifier,
+    scroll: Boolean = true,
+    link: Link? = null,
+) {
     if (inspection == null) {
         Box(modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
             Text(loc("cues.inspector.none"), color = GodotColors.inkFaint)
@@ -117,6 +126,10 @@ fun InspectorView(inspection: Inspection?, writes: TabWrites, tables: SurfaceTab
             Text(cue.name, color = GodotColors.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
             Spacer(Modifier.width(10.dp))
             Text(cue.kindKey?.let { loc(it) } ?: cue.kind, color = accent, maxLines = 1)
+        }
+        // A sound's file as it sounds (PRD §3.30), fetched from the machine it plays on; its head only while it plays.
+        if (link != null && inspection.hash.isNotEmpty()) {
+            Waveform(inspection.hash, link, Modifier.fillMaxWidth().height(72.dp), playhead = inspection.playhead?.toFloat())
         }
         if (inspection.locked) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {

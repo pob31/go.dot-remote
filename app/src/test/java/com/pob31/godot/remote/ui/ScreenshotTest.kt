@@ -212,12 +212,21 @@ class ScreenshotTest {
         controller.pause().stop().destroy()
     }
 
+    /** Upright, the narrower row: the next cue's number and kind on the arrows' line, its name on a line of its own. */
     @Test
-    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
-    fun aTabToCome() {
-        val model = machines()
-        shoot("cues-tab-tablet") {
-            Shell(model.onScreen.value, header = { header() }, machinesTab = { MachinesTab(model, findMe) }, initialTab = RemoteTab.CUES)
-        }
+    @Config(qualifiers = "w866dp-h1385dp-port-xhdpi")
+    fun headerOnTheTabletUpright() = shoot("header-upright-tablet") {
+        header(playing.copy(next = playing.next!!.copy(number = "2", name = "Thunder and rain over the harbour, then the bell", kind = "memo")))
     }
+
+    /** A phone with a long name: never dropped, never under the number - two lines, then an ellipsis. */
+    @Test
+    @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
+    fun headerOnAPhoneWithALongName() = shoot("header-phone-long-fr", "fr") {
+        header(playing.copy(next = playing.next!!.copy(number = "12.5", name = "Orage sur le port, puis la cloche de l'église au loin")))
+    }
+
+    @Test
+    @Config(qualifiers = "w891dp-h411dp-land-xhdpi")
+    fun headerOnAPhoneOnItsSide() = shoot("header-phone-land") { header() }
 }

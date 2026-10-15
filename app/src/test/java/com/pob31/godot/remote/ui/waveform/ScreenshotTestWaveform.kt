@@ -54,6 +54,13 @@ import com.pob31.godot.remote.media.TimbreSource
 import com.pob31.godot.remote.media.TimbreStrip
 import com.pob31.godot.remote.media.TimbreTest
 import com.pob31.godot.remote.osc.OscValue
+import com.pob31.godot.remote.ui.cues.InspectorView
+import com.pob31.godot.remote.ui.running.RunningView
+import com.pob31.godot.remote.model.readInspection
+import com.pob31.godot.remote.model.readRuns
+import com.pob31.godot.remote.model.put
+import com.pob31.godot.remote.model.ShowFixture
+import com.pob31.godot.remote.model.RecordingWrites
 import com.pob31.godot.remote.ui.FindMeAccess
 import com.pob31.godot.remote.ui.MachinesModel
 import com.pob31.godot.remote.ui.MachinesTab
@@ -255,4 +262,48 @@ class ScreenshotTestWaveform {
     }
 
     private fun showing(text: String) = compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+
+    // ------------------------------------------------------------------ where the strips stand
+
+    /** The fixture show with a sound playing 12.3 s into its 40 s file, the sweep its file. */
+    private fun soundPlaying(link: Link) = ShowFixture.mirror().apply {
+        put("/godot/audio/status", "running")
+        put("/godot/run/${ShowFixture.RUN_THUNDER_AND_RAIN}/state", "playing")
+        put("/godot/run/${ShowFixture.RUN_THUNDER_AND_RAIN}/position", 12.34)
+        put("/godot/run/${ShowFixture.RUN_THUNDER_AND_RAIN}/seekable", true)
+        put("/godot/run/${ShowFixture.RUN_THUNDER_AND_RAIN}/meter", -14.0)
+        put("/godot/cue/${ShowFixture.THUNDER_AND_RAIN}/duration", 40.0)
+        put("/godot/cue/${ShowFixture.THUNDER_AND_RAIN}/hash", sweep.hash)
+        put("/godot/document/name", link.mirror.text("/godot/document/name") ?: "")
+    }
+
+    /** Under a sound's row on the Running tab, its head where it plays (position over the cue's duration). */
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun underARunningSound() {
+        val cache = TimbreCache(root, route)
+        val link = linkTo("Hamlet")
+        val mirror = soundPlaying(link)
+        shoot("running-waveform-tablet", cache = cache, before = {
+            compose.waitUntil(10_000) { compose.onAllNodesWithContentDescription("Waveform").fetchSemanticsNodes().isNotEmpty() }
+        }) {
+            RunningView(readRuns(mirror), LinkState.LIVE, RecordingWrites(), ShowFixture.tables().fader, link = link)
+        }
+    }
+
+    /** In a sound's inspector, at the top, its head while it plays. */
+    @Test
+    @Config(qualifiers = "w411dp-h2400dp-port-xhdpi")
+    fun inASoundsInspector() {
+        val cache = TimbreCache(root, route)
+        val link = linkTo("Hamlet")
+        val mirror = soundPlaying(link)
+        shoot("cues-inspector-waveform-phone", cache = cache, before = {
+            compose.waitUntil(10_000) { compose.onAllNodesWithContentDescription("Waveform").fetchSemanticsNodes().isNotEmpty() }
+        }) {
+            val tables = ShowFixture.tables()
+            InspectorView(readInspection(mirror, ShowFixture.THUNDER_AND_RAIN, tables), RecordingWrites(), tables, Modifier.background(GodotColors.panelInspect), scroll = false, link = link)
+        }
+    }
 }
+

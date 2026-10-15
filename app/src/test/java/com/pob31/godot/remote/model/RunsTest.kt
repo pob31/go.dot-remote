@@ -180,4 +180,15 @@ class RunsTest {
         assertTrue(readRuns(mirror).isEmpty())
         assertTrue(NIGHT_BED.isNotEmpty())
     }
+
+    @Test
+    fun aSoundsRowCarriesItsFilesHash_forItsWaveform() {
+        val hash = "a".repeat(64)
+        mirror.put("/godot/cue/${ShowFixture.THUNDER_AND_RAIN}/hash", hash)
+        assertEquals(hash, row(RUN_THUNDER_AND_RAIN).hash)
+        assertEquals("a group has no file", "", row(RUN_STORM).hash)
+        mirror.put("/godot/run/$RUN_THUNDER_AND_RAIN/position", 10.0)
+        mirror.put("/godot/cue/${ShowFixture.THUNDER_AND_RAIN}/duration", 40.0)
+        assertEquals("the head is its position over the cue's duration", 0.25, row(RUN_THUNDER_AND_RAIN).through()!!, 1e-9)
+    }
 }

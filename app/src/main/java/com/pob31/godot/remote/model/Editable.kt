@@ -192,6 +192,10 @@ data class Inspection(
     /** How many changes a locked show rides live (`/godot/document/live`). */
     val liveCount: Int,
     val lines: List<InspectorLine>,
+    /** The sound's file as Go.dot knows it (`cue/hash`): what its waveform is fetched by; empty for none. */
+    val hash: String = "",
+    /** Where the run of it playing now has got to, 0..1 of the file; null while none plays. */
+    val playhead: Double? = null,
 )
 
 private fun words(text: String?): List<String> = text?.split(' ')?.filter { it.isNotEmpty() } ?: emptyList()
@@ -252,7 +256,11 @@ fun readInspection(mirror: Mirror, cueId: String, tables: SurfaceTables): Inspec
             }
         }
     }
-    return Inspection(cue, locked, mirror.value("/godot/document/live")?.asLong()?.toInt() ?: 0, lines)
+    return Inspection(
+        cue, locked, mirror.value("/godot/document/live")?.asLong()?.toInt() ?: 0, lines,
+        hash = if (cue.kind == "media") mirror.text(base + "hash") ?: "" else "",
+        playhead = if (cue.kind == "media") playheadOf(mirror, cueId) else null,
+    )
 }
 
 /**
@@ -269,6 +277,20 @@ fun playingRunOf(mirror: Mirror, cue: String): Pair<String, String>? {
         return id to state
     }
     return null
+}
+
+/**
+ * Where a sound's run that plays now stands in its file, 0..1 - its position over the
+ * cue's `duration`, as the Running tab's strip; null while none plays or the length is
+ * not known.
+ */
+fun playheadOf(mirror: Mirror, cue: String): Double? {
+    val (run, state) = playingRunOf(mirror, cue) ?: return null
+    if (state != "playing" && state != "stopping") return null
+    val length = mirror.value("/godot/cue/$cue/duration")?.asDouble() ?: return null
+    if (!(length > 0.0)) return null
+    val position = mirror.value("/godot/run/$run/position")?.asDouble() ?: return null
+    return (position / length).coerceIn(0.0, 1.0)
 }
 
 /** The cue's sends, each with its mix channel's name (`cue/sends` lists them by identifier). */
