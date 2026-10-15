@@ -13,44 +13,86 @@
 
 package com.pob31.godot.remote
 
+import android.Manifest
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.pob31.godot.remote.link.EngineLinkService
 import com.pob31.godot.remote.localization.LocalLanguage
 import com.pob31.godot.remote.localization.LocalizationManager
-import com.pob31.godot.remote.localization.loc
-import com.pob31.godot.remote.ui.theme.GodotColors
+import com.pob31.godot.remote.ui.LinkScreen
 import com.pob31.godot.remote.ui.theme.GodotTheme
+import kotlinx.coroutines.flow.MutableStateFlow
 
+/**
+ * The one activity. It starts the link service (which outlives it) and binds to it while
+ * it is in front; swiped away and back, it finds the links where they were.
+ */
 class MainActivity : ComponentActivity() {
+
+    private val service = MutableStateFlow<EngineLinkService?>(null)
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+            service.value = (binder as? EngineLinkService.LinkBinder)?.service
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            service.value = null
+        }
+    }
+
+    private val askNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        // Granted or not, the link runs: without the permission its notification is not shown.
+        startLinkService()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val language by LocalizationManager.currentLanguage.collectAsState()
+            val bound by service.collectAsState()
             CompositionLocalProvider(LocalLanguage provides language) {
                 GodotTheme {
-                    Column(
-                        Modifier
-                            .fillMaxSize()
-                            .background(GodotColors.ground)
-                            .padding(24.dp)
-                    ) {
-                        Text(loc("remote.screen.title"), style = MaterialTheme.typography.headlineMedium, color = GodotColors.ink)
-                        Text(loc("remote.screen.notLinked"), color = GodotColors.inkFaint)
-                    }
+                    LinkScreen(bound)
                 }
             }
         }
+
+        // POST_NOTIFICATIONS is asked for at the first launch (Android 13+); the service starts after.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            startLinkService()
+        }
+    }
+
+    private fun startLinkService() {
+        ContextCompat.startForegroundService(this, Intent(this, EngineLinkService::class.java))
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bindService(Intent(this, EngineLinkService::class.java), connection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onStop() {
+        unbindService(connection)
+        service.value = null
+        super.onStop()
     }
 }

@@ -7,7 +7,46 @@
   "remote": {
     "screen": {
       "title": "Go.dot remote",
-      "notLinked": "Not linked to a machine yet."
+      "notLinked": "Not linked to a machine yet.",
+      "starting": "Starting the link...",
+      "machine": "Machine",
+      "host": "Address",
+      "port": "Port",
+      "name": "Name",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "thisTablet": "This tablet: {name}, at {ip}",
+      "noAddress": "no network address",
+      "knownAs": "Go.dot knows this tablet as {origin}",
+      "notKnownYet": "Go.dot has not named this tablet yet",
+      "link": "Link",
+      "tick": "Tick",
+      "nodes": "Nodes",
+      "standby": "Standby",
+      "nothingInStandby": "Nothing in standby",
+      "lastProblem": "Last problem: {problem}",
+      "foregroundRefused": "Android refused to keep the link in the background: {problem}"
+    },
+
+    "link": {
+      "off": "not linked",
+      "connecting": "connecting",
+      "live": "live",
+      "stale": "stale",
+      "clockStopped": "Go.dot's clock has stopped",
+      "gone": "connection lost - reconnecting"
+    },
+
+    "refusal": {
+      "withCommand": "{command} refused: {reason}",
+      "plain": "Refused: {reason}"
+    },
+
+    "notification": {
+      "channelName": "Link to Go.dot",
+      "channelDescription": "Keeps this tablet linked to Go.dot while the app is in the background.",
+      "linkedTo": "Linked to {machine}",
+      "notLinked": "Not linked"
     }
   }
 }

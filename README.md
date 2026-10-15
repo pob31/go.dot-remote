@@ -23,7 +23,15 @@ renumbered or renamed from the tablet.
 ## Status
 
 Early. The stages are in Go.dot's namespace draft §68 and devplan Phase 7 (A.0–A.11). Built so far:
-the skeleton (A.0).
+the skeleton (A.0), the OSC codec (A.1) and the link (A.2) — the service, one WebSocket per machine,
+the mirror fed by the snapshot and the stream, the writes — behind a plain scaffolding screen
+(an address, Connect, how the link stands, the tick, the node count, the cue in standby). The tabs
+come next.
+
+The link service runs as a `connectedDevice` foreground service, not `dataSync`: Android 15 caps a
+`dataSync` service at six hours in twenty-four, shorter than a long day of rehearsal. Its
+prerequisite is `CHANGE_WIFI_STATE`, a normal permission granted at install; checked on a Lenovo
+TB370FU running Android 15.
 
 ## Building
 

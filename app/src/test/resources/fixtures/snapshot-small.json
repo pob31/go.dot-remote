@@ -1,0 +1,272 @@
+{
+  "FULL_PATH": "/godot",
+  "ACCESS": 0,
+  "GODOT": {"KIND": "container"},
+  "CONTENTS": {
+    "cue": {
+      "FULL_PATH": "/godot/cue",
+      "ACCESS": 0,
+      "GODOT": {"KIND": "container"},
+      "CONTENTS": {
+        "F7HR8TVD": {
+          "FULL_PATH": "/godot/cue/F7HR8TVD",
+          "ACCESS": 0,
+          "GODOT": {"KIND": "container"},
+          "CONTENTS": {
+            "autoName": {
+              "FULL_PATH": "/godot/cue/F7HR8TVD/autoName",
+              "DESCRIPTION": "What the cue is called while its name is empty.",
+              "TYPE": "s",
+              "ACCESS": 1,
+              "VALUE": [""],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "enabled": {
+              "FULL_PATH": "/godot/cue/F7HR8TVD/enabled",
+              "DESCRIPTION": "Whether the cue runs at all. A disabled cue is skipped, not deleted.",
+              "TYPE": "T",
+              "ACCESS": 3,
+              "VALUE": [true],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "kind": {
+              "FULL_PATH": "/godot/cue/F7HR8TVD/kind",
+              "DESCRIPTION": "What kind of cue this is, derived from the element rather than stored.",
+              "TYPE": "s",
+              "ACCESS": 1,
+              "VALUE": ["media"],
+              "RANGE": [{"VALS": ["memo", "group", "media", "fade"]}],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "level": {
+              "FULL_PATH": "/godot/cue/F7HR8TVD/level",
+              "DESCRIPTION": "The cue's level, in decibels — \"0\" is unity.",
+              "TYPE": "d",
+              "ACCESS": 3,
+              "VALUE": [0],
+              "RANGE": [{"MIN": -144, "MAX": 12}],
+              "UNIT": ["dB"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": true, "PANIC": [-144]}
+            },
+            "name": {
+              "FULL_PATH": "/godot/cue/F7HR8TVD/name",
+              "DESCRIPTION": "The cue's name, as the operator reads it.",
+              "TYPE": "s",
+              "ACCESS": 3,
+              "VALUE": ["Announce"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "notes": {
+              "FULL_PATH": "/godot/cue/F7HR8TVD/notes",
+              "DESCRIPTION": "Free text for the designer.",
+              "TYPE": "s",
+              "ACCESS": 3,
+              "VALUE": [""],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "number": {
+              "FULL_PATH": "/godot/cue/F7HR8TVD/number",
+              "DESCRIPTION": "The decimal cue number. A string, because 12.5.1 is one.",
+              "TYPE": "s",
+              "ACCESS": 3,
+              "VALUE": ["2.2"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "postWait": {
+              "FULL_PATH": "/godot/cue/F7HR8TVD/postWait",
+              "DESCRIPTION": "How long after completion before this cue reports done to its parent.",
+              "TYPE": "d",
+              "ACCESS": 3,
+              "VALUE": [1.5],
+              "RANGE": [{"MIN": 0}],
+              "UNIT": ["s"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            }
+          }
+        },
+        "K2M4P6R8": {
+          "FULL_PATH": "/godot/cue/K2M4P6R8",
+          "ACCESS": 0,
+          "GODOT": {"KIND": "container"},
+          "CONTENTS": {
+            "autoName": {
+              "FULL_PATH": "/godot/cue/K2M4P6R8/autoName",
+              "DESCRIPTION": "What the cue is called while its name is empty.",
+              "TYPE": "s",
+              "ACCESS": 1,
+              "VALUE": ["Fade Announce"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "enabled": {
+              "FULL_PATH": "/godot/cue/K2M4P6R8/enabled",
+              "DESCRIPTION": "Whether the cue runs at all. A disabled cue is skipped, not deleted.",
+              "TYPE": "T",
+              "ACCESS": 3,
+              "VALUE": [false],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "kind": {
+              "FULL_PATH": "/godot/cue/K2M4P6R8/kind",
+              "DESCRIPTION": "What kind of cue this is, derived from the element rather than stored.",
+              "TYPE": "s",
+              "ACCESS": 1,
+              "VALUE": ["fade"],
+              "RANGE": [{"VALS": ["memo", "group", "media", "fade"]}],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "level": {
+              "FULL_PATH": "/godot/cue/K2M4P6R8/level",
+              "DESCRIPTION": "The cue's level, in decibels — \"0\" is unity.",
+              "TYPE": "d",
+              "ACCESS": 3,
+              "VALUE": [-6.5],
+              "RANGE": [{"MIN": -144, "MAX": 12}],
+              "UNIT": ["dB"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": true, "PANIC": [-144]}
+            },
+            "name": {
+              "FULL_PATH": "/godot/cue/K2M4P6R8/name",
+              "DESCRIPTION": "The cue's name, as the operator reads it.",
+              "TYPE": "s",
+              "ACCESS": 3,
+              "VALUE": [""],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "notes": {
+              "FULL_PATH": "/godot/cue/K2M4P6R8/notes",
+              "DESCRIPTION": "Free text for the designer.",
+              "TYPE": "s",
+              "ACCESS": 3,
+              "VALUE": [""],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "number": {
+              "FULL_PATH": "/godot/cue/K2M4P6R8/number",
+              "DESCRIPTION": "The decimal cue number. A string, because 12.5.1 is one.",
+              "TYPE": "s",
+              "ACCESS": 3,
+              "VALUE": ["3"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "postWait": {
+              "FULL_PATH": "/godot/cue/K2M4P6R8/postWait",
+              "DESCRIPTION": "How long after completion before this cue reports done to its parent.",
+              "TYPE": "d",
+              "ACCESS": 3,
+              "VALUE": [0],
+              "RANGE": [{"MIN": 0}],
+              "UNIT": ["s"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            }
+          }
+        }
+      }
+    },
+    "engine": {
+      "FULL_PATH": "/godot/engine",
+      "ACCESS": 0,
+      "GODOT": {"KIND": "container"},
+      "CONTENTS": {
+        "lastError": {
+          "FULL_PATH": "/godot/engine/lastError",
+          "DESCRIPTION": "The last refused command: tick, sequence, origin, reason, command.",
+          "TYPE": "s",
+          "ACCESS": 1,
+          "VALUE": ["90 3 udp:10.0.0.9:9000 locked node.set"],
+          "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+        },
+        "tick": {
+          "FULL_PATH": "/godot/engine/tick",
+          "DESCRIPTION": "The engine's tick, fifty a second.",
+          "TYPE": "h",
+          "ACCESS": 1,
+          "VALUE": [100],
+          "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+        }
+      }
+    },
+    "list": {
+      "FULL_PATH": "/godot/list",
+      "ACCESS": 0,
+      "GODOT": {"KIND": "container"},
+      "CONTENTS": {
+        "D9FH2JKA": {
+          "FULL_PATH": "/godot/list/D9FH2JKA",
+          "ACCESS": 0,
+          "GODOT": {"KIND": "container"},
+          "CONTENTS": {
+            "name": {
+              "FULL_PATH": "/godot/list/D9FH2JKA/name",
+              "DESCRIPTION": "The list's name.",
+              "TYPE": "s",
+              "ACCESS": 3,
+              "VALUE": ["Main"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "standby": {
+              "FULL_PATH": "/godot/list/D9FH2JKA/standby",
+              "DESCRIPTION": "The cue GO fires next.",
+              "TYPE": "s",
+              "ACCESS": 1,
+              "VALUE": ["F7HR8TVD"],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            }
+          }
+        },
+        "focus": {
+          "FULL_PATH": "/godot/list/focus",
+          "DESCRIPTION": "The list the operator is looking at.",
+          "TYPE": "s",
+          "ACCESS": 3,
+          "VALUE": ["D9FH2JKA"],
+          "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+        }
+      }
+    },
+    "network": {
+      "FULL_PATH": "/godot/network",
+      "ACCESS": 0,
+      "GODOT": {"KIND": "container"},
+      "CONTENTS": {
+        "remotes": {
+          "FULL_PATH": "/godot/network/remotes",
+          "DESCRIPTION": "The connections that said HELLO, one a line: origin, id, name.",
+          "TYPE": "s",
+          "ACCESS": 1,
+          "VALUE": [""],
+          "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+        }
+      }
+    },
+    "videoOutput": {
+      "FULL_PATH": "/godot/videoOutput",
+      "ACCESS": 0,
+      "GODOT": {"KIND": "container"},
+      "CONTENTS": {
+        "V1D30000": {
+          "FULL_PATH": "/godot/videoOutput/V1D30000",
+          "ACCESS": 0,
+          "GODOT": {"KIND": "container"},
+          "CONTENTS": {
+            "mesh": {
+              "FULL_PATH": "/godot/videoOutput/V1D30000/mesh",
+              "DESCRIPTION": "The warp mesh: x y pairs in 0..1 of the display, row-major from top-left.",
+              "TYPE": "dddddddd",
+              "ACCESS": 3,
+              "VALUE": [0, 0, 1, 0, 0, 1, 1, 1],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            },
+            "meshColumns": {
+              "FULL_PATH": "/godot/videoOutput/V1D30000/meshColumns",
+              "TYPE": "i",
+              "ACCESS": 3,
+              "VALUE": [2],
+              "RANGE": [{"MIN": 2, "MAX": 64}],
+              "GODOT": {"KIND": "state", "RATE_CAP": 50, "ANTICIPATABLE": false, "PANIC": "park"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

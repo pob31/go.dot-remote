@@ -7,7 +7,46 @@
   "remote": {
     "screen": {
       "title": "Go.dot remote",
-      "notLinked": "Pas encore reliée à une machine."
+      "notLinked": "Pas encore reliée à une machine.",
+      "starting": "Démarrage de la liaison...",
+      "machine": "Machine",
+      "host": "Adresse",
+      "port": "Port",
+      "name": "Nom",
+      "connect": "Se connecter",
+      "disconnect": "Se déconnecter",
+      "thisTablet": "Cette tablette : {name}, à {ip}",
+      "noAddress": "pas d'adresse réseau",
+      "knownAs": "Go.dot connaît cette tablette sous {origin}",
+      "notKnownYet": "Go.dot n'a pas encore nommé cette tablette",
+      "link": "Liaison",
+      "tick": "Tick",
+      "nodes": "Nœuds",
+      "standby": "En attente",
+      "nothingInStandby": "Aucune cue en attente",
+      "lastProblem": "Dernier problème : {problem}",
+      "foregroundRefused": "Android refuse de garder la liaison en arrière-plan : {problem}"
+    },
+
+    "link": {
+      "off": "non reliée",
+      "connecting": "connexion",
+      "live": "en direct",
+      "stale": "sans nouvelles",
+      "clockStopped": "l'horloge de Go.dot est arrêtée",
+      "gone": "connexion perdue - reconnexion"
+    },
+
+    "refusal": {
+      "withCommand": "{command} refusé : {reason}",
+      "plain": "Refusé : {reason}"
+    },
+
+    "notification": {
+      "channelName": "Liaison avec Go.dot",
+      "channelDescription": "Garde cette tablette reliée à Go.dot quand l'application est en arrière-plan.",
+      "linkedTo": "Reliée à {machine}",
+      "notLinked": "Non reliée"
     }
   }
 }
