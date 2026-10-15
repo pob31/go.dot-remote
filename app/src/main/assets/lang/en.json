@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "language": "English",
+    "locale": "en"
+  },
+
+  "remote": {
+    "screen": {
+      "title": "Go.dot remote",
+      "notLinked": "Not linked to a machine yet."
+    }
+  }
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    This file is part of Go.dot remote — https://github.com/pob31/go.dot-remote
+    Copyright (C) 2026 Pierre-Olivier Boulant
+    Go.dot remote is free software: you can redistribute it and/or modify it under the
+    terms of the GNU General Public License as published by the Free Software
+    Foundation, either version 3 of the License, or (at your option) any later
+    version. Go.dot remote is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+    (LICENSE, at the repository root) for more details.
+    SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<!--
+    A placeholder until the author draws one: GO's yellow disc with the dot of Go.dot
+    beside it, inside the adaptive icon's 66 dp safe zone (of 108).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFD60A"
+        android:pathData="M50,54m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+    <path
+        android:fillColor="#FFFFD60A"
+        android:pathData="M80,68m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+</vector>

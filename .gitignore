@@ -1,0 +1,19 @@
+build/
+.gradle/
+local.properties
+.idea/
+*.iml
+captures/
+.kotlin/
+.DS_Store
+.externalNativeBuild
+.cxx
+
+# Signing material never enters the repository.
+keystore.properties
+*.keystore
+*.jks
+
+# Release outputs go to GitHub Releases, not into git.
+*.apk
+*.aab
