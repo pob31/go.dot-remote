@@ -166,5 +166,54 @@
       "linkedTo": "Linked to {machine}",
       "notLinked": "Not linked"
     }
+  },
+  "running": {
+    "title": "Running",
+    "count": "{count} running",
+    "notSent": "Not sent: no machine is linked",
+    "hint": "Tap a run for its actions · swipe it far either way to kill it",
+    "emptyLine": "They do not move.",
+    "empty": "Nothing is running.",
+    "swipeKill": "Kill",
+    "swipeLetGo": "Let go to kill",
+    "inGroup": "in {group}",
+    "phase": {
+      "entering": "pre-wait",
+      "preparing": "preparing",
+      "prepared": "ready",
+      "header": "header",
+      "members": "members",
+      "footer": "footer"
+    },
+    "round": "round {at}/{of}",
+    "level": "level {level} dB",
+    "held": "pad held",
+    "soloed": "solo",
+    "seekTo": "to {time}",
+    "finer": "finer {rate}",
+    "notAnalysed": "not analysed yet",
+    "dragToSeek": "Drag to move the playhead - above or below it for finer steps",
+    "pillsHint": "Tap: skip this round · hold: skip until the group ends",
+    "pill": {
+      "played": "played",
+      "out": "not this round",
+      "pruned": "skipped"
+    },
+    "trim": "Trim - tonight only",
+    "over": "Over: it leaves this list in a few seconds.",
+    "stopNow": "Stop now - its footer runs",
+    "stopAfterMember": "Stop after this member",
+    "stopAfterRound": "Stop after this round",
+    "advance": "Advance to the next slice",
+    "solo": "Solo on its strip",
+    "unsolo": "Release the solo",
+    "kill": "Kill now - no footer",
+    "killWithMembers": "Kill it and everything under it ({count}) - no footer",
+    "close": "Close"
+  },
+  "widgets": {
+    "notANumber": "not a number",
+    "locked": "Locked",
+    "live": "live"
   }
 }

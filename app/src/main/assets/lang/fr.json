@@ -166,5 +166,54 @@
       "linkedTo": "Reliée à {machine}",
       "notLinked": "Non reliée"
     }
+  },
+  "running": {
+    "title": "En cours",
+    "count": "{count} en cours",
+    "notSent": "Pas envoyé : aucune machine n'est reliée",
+    "hint": "Toucher une ligne pour ses actions · la balayer loin d'un côté pour la couper",
+    "emptyLine": "Ils ne bougent pas.",
+    "empty": "Rien n'est en cours.",
+    "swipeKill": "Couper",
+    "swipeLetGo": "Lâcher pour couper",
+    "inGroup": "dans {group}",
+    "phase": {
+      "entering": "pre-wait",
+      "preparing": "se prépare",
+      "prepared": "prêt",
+      "header": "en-tête",
+      "members": "membres",
+      "footer": "pied"
+    },
+    "round": "tour {at}/{of}",
+    "level": "niveau {level} dB",
+    "held": "pad tenu",
+    "soloed": "solo",
+    "seekTo": "vers {time}",
+    "finer": "plus fin {rate}",
+    "notAnalysed": "pas encore analysé",
+    "dragToSeek": "Glisser pour déplacer la tête de lecture - au-dessus ou en dessous pour plus de finesse",
+    "pillsHint": "Toucher : sauter ce tour · maintenir : sauter jusqu'à la fin du groupe",
+    "pill": {
+      "played": "joué",
+      "out": "pas ce tour",
+      "pruned": "sauté"
+    },
+    "trim": "Trim - ce soir seulement",
+    "over": "Terminé : il quitte la liste dans quelques secondes.",
+    "stopNow": "Arrêter maintenant - son pied joue",
+    "stopAfterMember": "Arrêter après ce membre",
+    "stopAfterRound": "Arrêter après ce tour",
+    "advance": "Passer à la tranche suivante",
+    "solo": "Solo sur sa tranche",
+    "unsolo": "Relâcher le solo",
+    "kill": "Couper maintenant - sans pied",
+    "killWithMembers": "Couper, avec tout ce qui est en dessous ({count}) - sans pied",
+    "close": "Fermer"
+  },
+  "widgets": {
+    "notANumber": "pas un nombre",
+    "locked": "Verrouillé",
+    "live": "en direct"
   }
 }
