@@ -74,6 +74,17 @@ import com.pob31.godot.remote.ui.theme.GodotMetrics
 import com.pob31.godot.remote.ui.theme.GodotType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import com.pob31.godot.remote.localization.LocalLanguage
+import com.pob31.godot.remote.media.ShowFolder
+import com.pob31.godot.remote.media.TimbreCache
+import com.pob31.godot.remote.ui.waveform.LocalTimbreCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
 /** What the Machines tab needs of the service: a seam so a screenshot test can hand it a fixture. */
 interface MachinesModel {
@@ -153,6 +164,7 @@ fun MachinesTab(model: MachinesModel, findMe: FindMeAccess) {
                 foregroundProblem?.let { Text(loc("remote.screen.foregroundRefused", "problem" to it), color = GodotColors.failed) }
                 ThisTablet(model)
                 FindMeSection(findMe)
+                ShowFoldersSection()
             }
         }
         if (wide) {
@@ -493,5 +505,83 @@ private fun FindMeSection(findMe: FindMeAccess) {
             colors = ButtonDefaults.buttonColors(containerColor = GodotColors.panelHigh, contentColor = GodotColors.ink),
             modifier = Modifier.heightIn(min = GodotMetrics.touch)
         ) { Text(loc("remote.find.testButton")) }
+    }
+}
+
+/**
+ * SHOW FOLDERS (A.9; the author: "we can make folders for the various shows on the
+ * Android app"): the waveforms fetched from Go.dot, kept on this tablet by show, each
+ * folder with its size and how many sounds it keeps, and a Forget that asks first. Read off
+ * the tablet's files on a background thread, again whenever the tab comes back.
+ */
+@Composable
+private fun ShowFoldersSection() {
+    val cache = LocalTimbreCache.current ?: TimbreCache.shared(LocalContext.current)
+    val scope = rememberCoroutineScope()
+    var folders by remember { mutableStateOf<List<ShowFolder>?>(null) }
+    var round by remember { mutableIntStateOf(0) }
+    var forgetting by remember { mutableStateOf<ShowFolder?>(null) }
+    LifecycleResumeEffect(Unit) {
+        round++
+        onPauseOrDispose { }
+    }
+    LaunchedEffect(round) { folders = withContext(Dispatchers.IO) { cache.list() } }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Heading(loc("folders.title"))
+        Text(loc("folders.explain"), color = GodotColors.inkDim)
+        val list = folders ?: return@Column
+        if (list.isEmpty()) Text(loc("folders.none"), color = GodotColors.inkFaint)
+        for (folder in list) {
+            Surface(
+                color = GodotColors.panel, shape = RoundedCornerShape(6.dp),
+                border = BorderStroke(1.dp, GodotColors.rule), modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(Modifier.padding(start = 14.dp, end = 4.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    GodotIconMark(com.pob31.godot.remote.model.GodotIcon.MEDIA, GodotColors.inkDim, size = 24.dp)
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(folder.name, color = GodotColors.ink, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(
+                            loc(if (folder.sounds == 1) "folders.oneSound" else "folders.sounds", "count" to folder.sounds.toString()) +
+                                " · " + sizeWords(folder.bytes),
+                            color = GodotColors.inkFaint
+                        )
+                    }
+                    TextButton(onClick = { forgetting = folder }, modifier = Modifier.heightIn(min = GodotMetrics.touch)) {
+                        Text(loc("folders.forget"), color = GodotColors.inkDim)
+                    }
+                }
+            }
+        }
+    }
+    forgetting?.let { folder ->
+        AlertDialog(
+            onDismissRequest = { forgetting = null },
+            title = { Text(loc("folders.forgetTitle", "show" to folder.name)) },
+            text = { Text(loc("folders.forgetText")) },
+            confirmButton = {
+                TextButton(onClick = {
+                    forgetting = null
+                    scope.launch {
+                        withContext(Dispatchers.IO) { cache.forget(folder.name) }
+                        round++
+                    }
+                }) { Text(loc("folders.forget"), color = GodotColors.failed) }
+            },
+            dismissButton = { TextButton(onClick = { forgetting = null }) { Text(loc("folders.cancel")) } },
+            containerColor = GodotColors.panelHigh,
+        )
+    }
+}
+
+/** A size in the tablet's language: bytes, kilobytes to the tenth below ten, megabytes. */
+@Composable
+private fun sizeWords(bytes: Long): String {
+    val locale = Locale.forLanguageTag(LocalLanguage.current)
+    fun number(value: Double) = if (value < 10) String.format(locale, "%.1f", value) else String.format(locale, "%.0f", value)
+    return when {
+        bytes < 1024 -> loc("folders.bytes", "n" to bytes.toString())
+        bytes < 1024 * 1024 -> loc("folders.kb", "n" to number(bytes / 1024.0))
+        else -> loc("folders.mb", "n" to number(bytes / (1024.0 * 1024.0)))
     }
 }

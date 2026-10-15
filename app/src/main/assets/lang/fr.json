@@ -231,5 +231,23 @@
     "view": {
       "fit": "Ajuster"
     }
+  },
+  "waveform": {
+    "description": "Forme d'onde",
+    "notAnalysed": "Forme d'onde : pas encore analysée"
+  },
+  "folders": {
+    "title": "Dossiers des spectacles",
+    "explain": "Les formes d'onde reçues de Go.dot, gardées sur cette tablette par spectacle, pour être dessinées aussitôt la fois suivante.",
+    "none": "Aucun dossier de spectacle pour l'instant : le premier se crée quand une forme d'onde est dessinée.",
+    "oneSound": "1 son",
+    "sounds": "{count} sons",
+    "bytes": "{n} octets",
+    "kb": "{n} Ko",
+    "mb": "{n} Mo",
+    "forget": "Oublier",
+    "forgetTitle": "Oublier {show} ?",
+    "forgetText": "Les formes d'onde gardées pour ce spectacle sont effacées de la tablette. Rien ne change dans Go.dot : elles seront de nouveau reçues quand il le faudra.",
+    "cancel": "Annuler"
   }
 }

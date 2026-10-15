@@ -231,5 +231,23 @@
     "view": {
       "fit": "Fit"
     }
+  },
+  "waveform": {
+    "description": "Waveform",
+    "notAnalysed": "Waveform: not analysed yet"
+  },
+  "folders": {
+    "title": "Show folders",
+    "explain": "Waveforms fetched from Go.dot, kept on this tablet by show, so they are drawn at once next time.",
+    "none": "No show folders yet: one is made the first time a waveform is drawn.",
+    "oneSound": "1 sound",
+    "sounds": "{count} sounds",
+    "bytes": "{n} bytes",
+    "kb": "{n} KB",
+    "mb": "{n} MB",
+    "forget": "Forget",
+    "forgetTitle": "Forget {show}?",
+    "forgetText": "The waveforms kept for this show are deleted from the tablet. Nothing changes in Go.dot: they are fetched again when they are needed.",
+    "cancel": "Cancel"
   }
 }
