@@ -166,5 +166,70 @@
       "linkedTo": "Linked to {machine}",
       "notLinked": "Not linked"
     }
+  },
+  "mapping": {
+    "outputs": "Outputs",
+    "noOutputs": "This show has no video outputs. They are made in Go.dot, in Show settings > Video.",
+    "stale": "Nothing can be changed until the link is live again.",
+    "locked": "Locked",
+    "lockedExplain": "The show is locked: the warps, the grid and the zones' opacity and blend cannot be changed until it is unlocked. Identify still works.",
+    "output": {
+      "canvas": "Shows {canvas} · {size}",
+      "noCanvas": "Shows no canvas",
+      "display": "Display: {display}",
+      "noDisplay": "No display chosen",
+      "sends": "Sent over {kind}",
+      "off": "Off: not opened",
+      "showing": "Showing",
+      "notShowing": "Not showing"
+    },
+    "identify": {
+      "label": "Identify",
+      "on": "The test pattern is on this projector",
+      "off": "Puts a white frame and a cross on this projector"
+    },
+    "warps": {
+      "title": "Warps",
+      "own": "{canvas} - the output's own",
+      "zone": "Zone {number}: {name}",
+      "noCanvas": "no canvas"
+    },
+    "point": {
+      "title": "Point",
+      "none": "Tap a point to pick it. Drag it to move it; sliding the finger away from the line it started along slows it down.",
+      "which": "Column {column}, row {row}",
+      "step": "Step",
+      "fine": "0.001",
+      "coarse": "0.01",
+      "up": "Move the point up",
+      "down": "Move the point down",
+      "left": "Move the point left",
+      "right": "Move the point right"
+    },
+    "grid": {
+      "title": "Grid",
+      "points": "{columns} × {rows} points",
+      "columns": "Columns",
+      "rows": "Rows",
+      "columnFewer": "One column of points fewer",
+      "columnMore": "One more column of points",
+      "rowFewer": "One row of points fewer",
+      "rowMore": "One more row of points",
+      "explain": "The warp keeps its shape when points are added or taken away."
+    },
+    "zone": {
+      "opacity": "Opacity",
+      "blend": "Blend",
+      "ownHasNone": "The output's own canvas lies whole: only a zone has an opacity and a blend."
+    },
+    "blend": {
+      "normal": "normal",
+      "add": "add",
+      "screen": "screen",
+      "multiply": "multiply"
+    },
+    "view": {
+      "fit": "Fit"
+    }
   }
 }

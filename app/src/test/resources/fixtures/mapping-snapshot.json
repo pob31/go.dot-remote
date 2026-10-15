@@ -1,0 +1,1127 @@
+{
+ "FULL_PATH": "/godot",
+ "ACCESS": 0,
+ "GODOT": {
+  "KIND": "container"
+ },
+ "CONTENTS": {
+  "videoOutput": {
+   "FULL_PATH": "/godot/videoOutput",
+   "ACCESS": 0,
+   "GODOT": {
+    "KIND": "container"
+   },
+   "CONTENTS": {
+    "VD000021": {
+     "FULL_PATH": "/godot/videoOutput/VD000021",
+     "ACCESS": 0,
+     "GODOT": {
+      "KIND": "container"
+     },
+     "CONTENTS": {
+      "bound": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/bound",
+       "TYPE": "T",
+       "ACCESS": 1,
+       "VALUE": [
+        false
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "canvas": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/canvas",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "VD000011"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "cdl": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/cdl",
+       "ACCESS": 3,
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "display": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/display",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        ""
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "displayId": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/displayId",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        ""
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "enabled": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/enabled",
+       "TYPE": "T",
+       "ACCESS": 3,
+       "VALUE": [
+        true
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "frameRate": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/frameRate",
+       "TYPE": "d",
+       "ACCESS": 3,
+       "VALUE": [
+        60
+       ],
+       "RANGE": [
+        {
+         "MIN": 1,
+         "MAX": 240
+        }
+       ],
+       "UNIT": [
+        "Hz"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "framesLate": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/framesLate",
+       "TYPE": "h",
+       "ACCESS": 1,
+       "VALUE": [
+        0
+       ],
+       "RANGE": [
+        {
+         "MIN": 0
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 5,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "framesPresented": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/framesPresented",
+       "TYPE": "h",
+       "ACCESS": 1,
+       "VALUE": [
+        0
+       ],
+       "RANGE": [
+        {
+         "MIN": 0
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 5,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "kind": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/kind",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "display"
+       ],
+       "RANGE": [
+        {
+         "VALS": [
+          "display",
+          "ndi",
+          "spout",
+          "syphon"
+         ]
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "mesh": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/mesh",
+       "TYPE": "dddddddddddddddddddddddd",
+       "ACCESS": 3,
+       "VALUE": [
+        0.04,
+        0.05,
+        0.3467,
+        0.0695,
+        0.6533,
+        0.0695,
+        0.96,
+        0.05,
+        0.0676,
+        0.5,
+        0.3467,
+        0.5,
+        0.6533,
+        0.5,
+        0.9324,
+        0.5,
+        0.04,
+        0.95,
+        0.3467,
+        0.9305,
+        0.6533,
+        0.9305,
+        0.96,
+        0.95
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "meshColumns": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/meshColumns",
+       "TYPE": "i",
+       "ACCESS": 3,
+       "VALUE": [
+        4
+       ],
+       "RANGE": [
+        {
+         "MIN": 2,
+         "MAX": 16
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "meshRows": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/meshRows",
+       "TYPE": "i",
+       "ACCESS": 3,
+       "VALUE": [
+        3
+       ],
+       "RANGE": [
+        {
+         "MIN": 2,
+         "MAX": 16
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "name": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/name",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "Face"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "presentJitter": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/presentJitter",
+       "TYPE": "d",
+       "ACCESS": 1,
+       "VALUE": [
+        0
+       ],
+       "RANGE": [
+        {
+         "MIN": 0
+        }
+       ],
+       "UNIT": [
+        "ms"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 5,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "problem": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/problem",
+       "TYPE": "s",
+       "ACCESS": 1,
+       "VALUE": [
+        "the renderer has no window (--no-window)"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "sendName": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/sendName",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        ""
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "testPattern": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/testPattern",
+       "TYPE": "T",
+       "ACCESS": 1,
+       "VALUE": [
+        false
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "zones": {
+       "FULL_PATH": "/godot/videoOutput/VD000021/zones",
+       "TYPE": "s",
+       "ACCESS": 1,
+       "VALUE": [
+        "512QZPQT 6AP1QZPX"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      }
+     }
+    },
+    "conversions": {
+     "FULL_PATH": "/godot/videoOutput/conversions",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      ""
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 50,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    },
+    "displays": {
+     "FULL_PATH": "/godot/videoOutput/displays",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      ""
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 1,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    },
+    "ffmpeg": {
+     "FULL_PATH": "/godot/videoOutput/ffmpeg",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      "C:\\Users\\pierr\\AppData\\Roaming\\Go.dot\\ffmpeg\\ffmpeg.exe"
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 50,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    },
+    "ffmpegInstall": {
+     "FULL_PATH": "/godot/videoOutput/ffmpegInstall",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      ""
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 50,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    },
+    "order": {
+     "FULL_PATH": "/godot/videoOutput/order",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      "VD000021"
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 50,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    },
+    "projectorsHidden": {
+     "FULL_PATH": "/godot/videoOutput/projectorsHidden",
+     "TYPE": "T",
+     "ACCESS": 1,
+     "VALUE": [
+      false
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 5,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    },
+    "renderer": {
+     "FULL_PATH": "/godot/videoOutput/renderer",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      "running"
+     ],
+     "RANGE": [
+      {
+       "VALS": [
+        "stopped",
+        "starting",
+        "running",
+        "failed"
+       ]
+      }
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 5,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    },
+    "rendererProblem": {
+     "FULL_PATH": "/godot/videoOutput/rendererProblem",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      ""
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 5,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    }
+   }
+  },
+  "zone": {
+   "FULL_PATH": "/godot/zone",
+   "ACCESS": 0,
+   "GODOT": {
+    "KIND": "container"
+   },
+   "CONTENTS": {
+    "512QZPQT": {
+     "FULL_PATH": "/godot/zone/512QZPQT",
+     "ACCESS": 0,
+     "GODOT": {
+      "KIND": "container"
+     },
+     "CONTENTS": {
+      "blend": {
+       "FULL_PATH": "/godot/zone/512QZPQT/blend",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "screen"
+       ],
+       "RANGE": [
+        {
+         "VALS": [
+          "normal",
+          "add",
+          "screen",
+          "multiply"
+         ]
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "canvas": {
+       "FULL_PATH": "/godot/zone/512QZPQT/canvas",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "VD000011"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "mesh": {
+       "FULL_PATH": "/godot/zone/512QZPQT/mesh",
+       "TYPE": "dddddddd",
+       "ACCESS": 3,
+       "VALUE": [
+        0.62,
+        0.1,
+        0.9,
+        0.12,
+        0.6,
+        0.38,
+        0.92,
+        0.4
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "meshColumns": {
+       "FULL_PATH": "/godot/zone/512QZPQT/meshColumns",
+       "TYPE": "i",
+       "ACCESS": 3,
+       "VALUE": [
+        2
+       ],
+       "RANGE": [
+        {
+         "MIN": 2,
+         "MAX": 16
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "meshRows": {
+       "FULL_PATH": "/godot/zone/512QZPQT/meshRows",
+       "TYPE": "i",
+       "ACCESS": 3,
+       "VALUE": [
+        2
+       ],
+       "RANGE": [
+        {
+         "MIN": 2,
+         "MAX": 16
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "name": {
+       "FULL_PATH": "/godot/zone/512QZPQT/name",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "Logo"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "opacity": {
+       "FULL_PATH": "/godot/zone/512QZPQT/opacity",
+       "TYPE": "d",
+       "ACCESS": 3,
+       "VALUE": [
+        60
+       ],
+       "RANGE": [
+        {
+         "MIN": 0,
+         "MAX": 100
+        }
+       ],
+       "UNIT": [
+        "%"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "output": {
+       "FULL_PATH": "/godot/zone/512QZPQT/output",
+       "TYPE": "s",
+       "ACCESS": 1,
+       "VALUE": [
+        "VD000021"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      }
+     }
+    },
+    "6AP1QZPX": {
+     "FULL_PATH": "/godot/zone/6AP1QZPX",
+     "ACCESS": 0,
+     "GODOT": {
+      "KIND": "container"
+     },
+     "CONTENTS": {
+      "blend": {
+       "FULL_PATH": "/godot/zone/6AP1QZPX/blend",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "add"
+       ],
+       "RANGE": [
+        {
+         "VALS": [
+          "normal",
+          "add",
+          "screen",
+          "multiply"
+         ]
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "canvas": {
+       "FULL_PATH": "/godot/zone/6AP1QZPX/canvas",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "VD000011"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "mesh": {
+       "FULL_PATH": "/godot/zone/6AP1QZPX/mesh",
+       "TYPE": "dddddddddddd",
+       "ACCESS": 3,
+       "VALUE": [
+        0.1,
+        0.62,
+        0.5,
+        0.6,
+        0.9,
+        0.62,
+        0.02,
+        0.95,
+        0.5,
+        0.92,
+        0.98,
+        0.95
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "meshColumns": {
+       "FULL_PATH": "/godot/zone/6AP1QZPX/meshColumns",
+       "TYPE": "i",
+       "ACCESS": 3,
+       "VALUE": [
+        3
+       ],
+       "RANGE": [
+        {
+         "MIN": 2,
+         "MAX": 16
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "meshRows": {
+       "FULL_PATH": "/godot/zone/6AP1QZPX/meshRows",
+       "TYPE": "i",
+       "ACCESS": 3,
+       "VALUE": [
+        2
+       ],
+       "RANGE": [
+        {
+         "MIN": 2,
+         "MAX": 16
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "name": {
+       "FULL_PATH": "/godot/zone/6AP1QZPX/name",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "Floor"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "opacity": {
+       "FULL_PATH": "/godot/zone/6AP1QZPX/opacity",
+       "TYPE": "d",
+       "ACCESS": 3,
+       "VALUE": [
+        100
+       ],
+       "RANGE": [
+        {
+         "MIN": 0,
+         "MAX": 100
+        }
+       ],
+       "UNIT": [
+        "%"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "output": {
+       "FULL_PATH": "/godot/zone/6AP1QZPX/output",
+       "TYPE": "s",
+       "ACCESS": 1,
+       "VALUE": [
+        "VD000021"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      }
+     }
+    }
+   }
+  },
+  "canvas": {
+   "FULL_PATH": "/godot/canvas",
+   "ACCESS": 0,
+   "GODOT": {
+    "KIND": "container"
+   },
+   "CONTENTS": {
+    "VD000011": {
+     "FULL_PATH": "/godot/canvas/VD000011",
+     "ACCESS": 0,
+     "GODOT": {
+      "KIND": "container"
+     },
+     "CONTENTS": {
+      "dca": {
+       "FULL_PATH": "/godot/canvas/VD000011/dca",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        ""
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "height": {
+       "FULL_PATH": "/godot/canvas/VD000011/height",
+       "TYPE": "i",
+       "ACCESS": 3,
+       "VALUE": [
+        1080
+       ],
+       "RANGE": [
+        {
+         "MIN": 16,
+         "MAX": 16384
+        }
+       ],
+       "UNIT": [
+        "px"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "level": {
+       "FULL_PATH": "/godot/canvas/VD000011/level",
+       "TYPE": "d",
+       "ACCESS": 3,
+       "VALUE": [
+        100
+       ],
+       "RANGE": [
+        {
+         "MIN": 0,
+         "MAX": 100
+        }
+       ],
+       "UNIT": [
+        "%"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "name": {
+       "FULL_PATH": "/godot/canvas/VD000011/name",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "Stage"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "tint": {
+       "FULL_PATH": "/godot/canvas/VD000011/tint",
+       "TYPE": "s",
+       "ACCESS": 1,
+       "VALUE": [
+        "#000000"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 10,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "width": {
+       "FULL_PATH": "/godot/canvas/VD000011/width",
+       "TYPE": "i",
+       "ACCESS": 3,
+       "VALUE": [
+        1920
+       ],
+       "RANGE": [
+        {
+         "MIN": 16,
+         "MAX": 16384
+        }
+       ],
+       "UNIT": [
+        "px"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      }
+     }
+    },
+    "order": {
+     "FULL_PATH": "/godot/canvas/order",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      "VD000011"
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 50,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    }
+   }
+  },
+  "document": {
+   "FULL_PATH": "/godot/document",
+   "ACCESS": 0,
+   "GODOT": {
+    "KIND": "container"
+   },
+   "CONTENTS": {
+    "locked": {
+     "FULL_PATH": "/godot/document/locked",
+     "TYPE": "T",
+     "ACCESS": 3,
+     "VALUE": [
+      false
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 5,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    },
+    "name": {
+     "FULL_PATH": "/godot/document/name",
+     "TYPE": "s",
+     "ACCESS": 1,
+     "VALUE": [
+      "mapping-bundle"
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 1,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    }
+   }
+  },
+  "engine": {
+   "FULL_PATH": "/godot/engine",
+   "ACCESS": 0,
+   "GODOT": {
+    "KIND": "container"
+   },
+   "CONTENTS": {
+    "tick": {
+     "FULL_PATH": "/godot/engine/tick",
+     "TYPE": "h",
+     "ACCESS": 1,
+     "VALUE": [
+      67
+     ],
+     "UNIT": [
+      "tick"
+     ],
+     "GODOT": {
+      "KIND": "state",
+      "RATE_CAP": 5,
+      "ANTICIPATABLE": false,
+      "PANIC": "park"
+     }
+    }
+   }
+  },
+  "cue": {
+   "FULL_PATH": "/godot/cue",
+   "ACCESS": 0,
+   "GODOT": {
+    "KIND": "container"
+   },
+   "CONTENTS": {
+    "VD000005": {
+     "FULL_PATH": "/godot/cue/VD000005",
+     "ACCESS": 0,
+     "GODOT": {
+      "KIND": "container"
+     },
+     "CONTENTS": {
+      "file": {
+       "FULL_PATH": "/godot/cue/VD000005/file",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "sweep.wav"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "hash": {
+       "FULL_PATH": "/godot/cue/VD000005/hash",
+       "TYPE": "s",
+       "ACCESS": 1,
+       "VALUE": [
+        "bb791f4dd8ca4d37f9ab7bb99af4ab316fcec49ee144cae02958744635a32ac3"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 1,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "kind": {
+       "FULL_PATH": "/godot/cue/VD000005/kind",
+       "TYPE": "s",
+       "ACCESS": 1,
+       "VALUE": [
+        "media"
+       ],
+       "RANGE": [
+        {
+         "VALS": [
+          "memo",
+          "group",
+          "media",
+          "fade",
+          "transport",
+          "osc",
+          "midi",
+          "start",
+          "mic",
+          "video",
+          "process",
+          "timecode",
+          "script"
+         ]
+        }
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "name": {
+       "FULL_PATH": "/godot/cue/VD000005/name",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "Sweep"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      },
+      "number": {
+       "FULL_PATH": "/godot/cue/VD000005/number",
+       "TYPE": "s",
+       "ACCESS": 3,
+       "VALUE": [
+        "3"
+       ],
+       "GODOT": {
+        "KIND": "state",
+        "RATE_CAP": 50,
+        "ANTICIPATABLE": false,
+        "PANIC": "park"
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

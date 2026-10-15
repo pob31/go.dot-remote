@@ -50,6 +50,7 @@ import com.pob31.godot.remote.link.LinkState
 import com.pob31.godot.remote.link.LinkedMachine
 import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.GodotIcon
+import com.pob31.godot.remote.ui.mapping.MappingTab
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 
@@ -111,6 +112,7 @@ fun Shell(
         ) {
             when (tab) {
                 RemoteTab.MACHINES -> machinesTab()
+                RemoteTab.MAPPING -> MappingTab(onScreen)
                 else -> LaterTab(tab, onScreen)
             }
         }

@@ -166,5 +166,70 @@
       "linkedTo": "Reliée à {machine}",
       "notLinked": "Non reliée"
     }
+  },
+  "mapping": {
+    "outputs": "Sorties",
+    "noOutputs": "Ce spectacle n'a aucune sortie vidéo. Elles se créent dans Go.dot, dans Show settings > Video.",
+    "stale": "Rien ne peut être modifié avant que la liaison soit de nouveau active.",
+    "locked": "Verrouillé",
+    "lockedExplain": "Le spectacle est verrouillé : les déformations, la grille, l'opacité et le mode de fusion des zones ne peuvent pas être modifiés avant son déverrouillage. Identifier fonctionne toujours.",
+    "output": {
+      "canvas": "Montre {canvas} · {size}",
+      "noCanvas": "Ne montre aucun canevas",
+      "display": "Écran : {display}",
+      "noDisplay": "Aucun écran choisi",
+      "sends": "Envoyée par {kind}",
+      "off": "Éteinte : non ouverte",
+      "showing": "Affiche",
+      "notShowing": "N'affiche pas"
+    },
+    "identify": {
+      "label": "Identifier",
+      "on": "La mire est sur ce projecteur",
+      "off": "Met un cadre blanc et une croix sur ce projecteur"
+    },
+    "warps": {
+      "title": "Déformations",
+      "own": "{canvas} - celle de la sortie",
+      "zone": "Zone {number} : {name}",
+      "noCanvas": "aucun canevas"
+    },
+    "point": {
+      "title": "Point",
+      "none": "Touchez un point pour le choisir. Faites-le glisser pour le déplacer ; écarter le doigt de la ligne de départ le ralentit.",
+      "which": "Colonne {column}, rangée {row}",
+      "step": "Pas",
+      "fine": "0.001",
+      "coarse": "0.01",
+      "up": "Monter le point",
+      "down": "Descendre le point",
+      "left": "Déplacer le point à gauche",
+      "right": "Déplacer le point à droite"
+    },
+    "grid": {
+      "title": "Grille",
+      "points": "{columns} × {rows} points",
+      "columns": "Colonnes",
+      "rows": "Rangées",
+      "columnFewer": "Une colonne de points en moins",
+      "columnMore": "Une colonne de points en plus",
+      "rowFewer": "Une rangée de points en moins",
+      "rowMore": "Une rangée de points en plus",
+      "explain": "La déformation garde sa forme quand on ajoute ou retire des points."
+    },
+    "zone": {
+      "opacity": "Opacité",
+      "blend": "Fusion",
+      "ownHasNone": "Le canevas propre à la sortie est posé entier : seule une zone a une opacité et un mode de fusion."
+    },
+    "blend": {
+      "normal": "normal",
+      "add": "addition",
+      "screen": "écran",
+      "multiply": "produit"
+    },
+    "view": {
+      "fit": "Ajuster"
+    }
   }
 }
