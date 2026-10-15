@@ -115,6 +115,9 @@ object GodotColors {
         "timegroup" -> kindTimeGroup
         else -> inkFaint
     }
+
+    /** A group's accent by its mode: a time group wears its own (Icons.cpp `accentFor`), every other group the group's. */
+    fun kindAccent(kind: String, mode: String): Color = if (kind == "group" && mode == "time") kindTimeGroup else kindAccent(kind)
 }
 
 /** The desktop's `type` (1.25) and `row` (26 px before `type`), read as dp. */

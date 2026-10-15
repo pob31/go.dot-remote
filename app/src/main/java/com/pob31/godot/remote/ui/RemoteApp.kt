@@ -15,10 +15,10 @@ package com.pob31.godot.remote.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,7 +42,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.pob31.godot.remote.link.EngineLinkService
 import com.pob31.godot.remote.link.LinkState
 import com.pob31.godot.remote.link.LinkedMachine
@@ -77,7 +80,7 @@ fun RemoteApp(service: EngineLinkService?) {
             return@Box
         }
         val onScreen by service.onScreen.collectAsState()
-        val machines = androidx.compose.runtime.remember(service) { ServiceMachines(service) }
+        val machines = remember(service) { ServiceMachines(service) }
         Shell(
             onScreen = onScreen,
             header = { TransportHeader(onScreen) },
@@ -94,7 +97,11 @@ fun Shell(
     initialTab: RemoteTab? = null,
 ) {
     var tab by rememberSaveable { mutableStateOf(initialTab ?: if (onScreen == null) RemoteTab.MACHINES else RemoteTab.CUES) }
-    Column(Modifier.fillMaxSize()) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(GodotColors.ground)
+    ) {
         header()
         TabStrip(tab) { tab = it }
         Box(
@@ -111,46 +118,58 @@ fun Shell(
 }
 
 /**
- * The tab row: a word and a picture each, as wide as they need and at least a finger's
- * height; the tab shown is lit in the picked colour AND marked by a bar under it. Scrolls
- * sideways on a phone.
+ * The tab row: a word and a picture each, at least a finger's height; the tab shown is
+ * lit in the picked colour AND marked by a bar under it.
  */
 @Composable
 private fun TabStrip(current: RemoteTab, onPick: (RemoteTab) -> Unit) {
-    Row(
+    BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .background(GodotColors.titleBar)
-            .horizontalScroll(rememberScrollState())
     ) {
-        for (each in RemoteTab.entries) {
-            val selected = each == current
-            Column(
-                Modifier
-                    .clickable(role = Role.Tab) { onPick(each) }
-                    .widthIn(min = 120.dp)
-                    .height(GodotMetrics.touch + 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    Modifier
-                        .weight(1f)
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+        // Side by side when they fit; on a phone, each a fifth of the width, its word under its picture.
+        val stacked = maxWidth < 640.dp
+        Row(Modifier.fillMaxWidth()) {
+            for (each in RemoteTab.entries) {
+                val selected = each == current
+                val ink = if (selected) GodotColors.ink else GodotColors.inkFaint
+                val picture = if (selected) GodotColors.picked else GodotColors.inkFaint
+                val weight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                Column(
+                    (if (stacked) Modifier.weight(1f) else Modifier.width(IntrinsicSize.Max).widthIn(min = 132.dp))
+                        .clickable(role = Role.Tab) { onPick(each) }
+                        .height(if (stacked) 60.dp else GodotMetrics.touch + 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    GodotIconMark(each.icon, if (selected) GodotColors.picked else GodotColors.inkFaint, size = 22.dp)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        loc(each.key), color = if (selected) GodotColors.ink else GodotColors.inkFaint, maxLines = 1,
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                    if (stacked) {
+                        Column(
+                            Modifier.weight(1f),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            GodotIconMark(each.icon, picture, size = 22.dp)
+                            Text(loc(each.key), color = ink, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = weight)
+                        }
+                    } else {
+                        Row(
+                            Modifier
+                                .weight(1f)
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            GodotIconMark(each.icon, picture, size = 22.dp)
+                            Spacer(Modifier.width(8.dp))
+                            Text(loc(each.key), color = ink, maxLines = 1, fontWeight = weight)
+                        }
+                    }
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(3.dp)
+                            .background(if (selected) GodotColors.picked else GodotColors.titleBar)
                     )
                 }
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(3.dp)
-                        .background(if (selected) GodotColors.picked else GodotColors.titleBar)
-                )
             }
         }
     }

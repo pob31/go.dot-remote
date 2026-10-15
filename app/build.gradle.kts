@@ -54,6 +54,13 @@ android {
         compose = true
     }
 
+    testOptions {
+        unitTests {
+            // The screenshot tests (Robolectric) read the app's assets: the words.
+            isIncludeAndroidResources = true
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -65,6 +72,14 @@ kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
+}
+
+/*  THE SCREENSHOTS (ui/ScreenshotTest) draw the header and the tabs on the JVM with
+    Robolectric into app/build/screenshots/, to be looked at: run them with
+    `gradlew testDebugUnitTest -Pscreenshots`. Left out of the plain `gradlew test` (and CI),
+    which would otherwise fetch Robolectric's Android jar on every clean run. */
+tasks.withType<Test>().configureEach {
+    if (!project.hasProperty("screenshots")) exclude("**/ScreenshotTest*")
 }
 
 dependencies {
@@ -86,6 +101,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.robolectric)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

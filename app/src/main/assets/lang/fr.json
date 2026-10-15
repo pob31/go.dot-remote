@@ -3,10 +3,8 @@
     "language": "Français",
     "locale": "fr"
   },
-
   "remote": {
     "verbatim": "{text}",
-
     "screen": {
       "starting": "Démarrage de la liaison...",
       "host": "Adresse",
@@ -18,7 +16,6 @@
       "lastProblem": "Dernier problème : {problem}",
       "foregroundRefused": "Android refuse de garder la liaison en arrière-plan : {problem}"
     },
-
     "tabs": {
       "cues": "Cues",
       "running": "En cours",
@@ -31,11 +28,58 @@
       "mappingLater": "Le mapping vidéo arrive dans une prochaine version.",
       "noMachine": "Aucune machine à l'écran : ajoutez-en une dans l'onglet Machines."
     },
-
     "header": {
-      "noMachine": "Aucune machine à l'écran"
+      "noMachine": "Aucune machine à l'écran",
+      "locked": "Verrouillé",
+      "notSent": "Pas envoyé : {machine} n'est pas reliée",
+      "current": "Actuelle",
+      "next": "Suivante",
+      "nothingFired": "Rien de lancé",
+      "nothingInStandby": "Aucune cue en attente",
+      "standbyPrevious": "Attente une cue en arrière",
+      "standbyNext": "Attente une cue en avant",
+      "left": "reste {time}",
+      "dohLeft": "{seconds} s",
+      "dohForget": "depuis le début",
+      "stopAll": "tout arrêter",
+      "killAll": "TOUT COUPER",
+      "noAudio": "pas d'audio",
+      "noClock": "pas d'horloge",
+      "audioUnsaid": "audio —",
+      "resumes": "reprend",
+      "resumesAt": "reprend à {time}"
     },
-
+    "kind": {
+      "memo": "mémo",
+      "group": "groupe",
+      "media": "média",
+      "fade": "fondu",
+      "transport": "transport",
+      "osc": "osc",
+      "midi": "midi",
+      "start": "départ",
+      "mic": "micro",
+      "video": "vidéo",
+      "process": "process",
+      "timecode": "timecode",
+      "script": "script"
+    },
+    "runState": {
+      "preparing": "prépare",
+      "waiting": "attend",
+      "armed": "armée",
+      "playing": "joue",
+      "stopping": "s'arrête",
+      "postWait": "post-attente",
+      "done": "finie",
+      "failed": "échouée"
+    },
+    "origin": {
+      "go": "GO",
+      "byName": "par son nom",
+      "trigger": "déclencheur",
+      "press": "appui"
+    },
     "machines": {
       "title": "Machines",
       "none": "Pas encore de machine. Tapez ci-dessous l'adresse de l'ordinateur où tourne Go.dot.",
@@ -55,7 +99,6 @@
       "removeText": "Sa liaison se ferme et elle quitte la liste. Rien ne change sur la machine elle-même.",
       "tooOld": "Ce Go.dot ne sait pas diffuser son état vers une télécommande : mettez-le à jour vers une version qui la connaît."
     },
-
     "tablet": {
       "title": "Cette tablette",
       "name": "Son nom",
@@ -64,7 +107,6 @@
       "addresses": "Adresses : {addresses}",
       "installId": "Identifiant d'installation : {id}"
     },
-
     "pair": {
       "seat": {
         "mainSending": "Principal - envoie",
@@ -80,7 +122,6 @@
       "handOver": "Passer la main",
       "keep": "Faire de celui-ci le principal"
     },
-
     "find": {
       "title": "Retrouver cette tablette",
       "explain": "Dans Go.dot, Show settings > Network a un bouton Find pour cette tablette : son écran clignote, elle sonne son alarme et vibre jusqu'à ce qu'on la touche.",
@@ -95,9 +136,8 @@
       "channelName": "Retrouver cette tablette",
       "channelDescription": "L'alarme que Go.dot déclenche pour retrouver cette tablette.",
       "notificationTitle": "{machine} cherche cette tablette",
-      "notificationText": "Touchez pour arrêter l'alarme."
+      "notificationText": "Balayez-la pour arrêter l'alarme."
     },
-
     "link": {
       "off": "non reliée",
       "connecting": "connexion",
@@ -107,12 +147,19 @@
       "gone": "connexion perdue - reconnexion",
       "tooOld": "ce Go.dot est trop ancien pour la télécommande"
     },
-
     "refusal": {
       "withCommand": "{command} refusé : {reason}",
-      "plain": "Refusé : {reason}"
+      "noClock": "Audio déconnecté - cues en pause ; en attente de l'interface et de l'horloge.",
+      "setMany": "node.setMany refusé : {reason} à {where} - aucune de ses valeurs n'a été écrite",
+      "goTooSoon": "GO ignoré : trop tôt après le précédent (Show settings > Playback)",
+      "dohTooLate": "Doh! ignoré : le dernier GO est trop ancien pour être repris (Show settings > Playback)",
+      "dohOff": "Doh! est désactivé (Show settings > Playback)",
+      "dohNothing": "Doh! ignoré : aucun GO à reprendre",
+      "dohTrigger": "Doh! ignoré : un déclencheur est parti après le dernier GO",
+      "dohTooSoon": "Doh! ignoré : pressé de nouveau trop tôt (Show settings > Playback)",
+      "flagNothing": "Rien de marqué : aucun GO n'a encore lancé de cue",
+      "flagGone": "Rien de marqué : la cue lancée par le dernier GO a été supprimée"
     },
-
     "notification": {
       "channelName": "Liaison avec Go.dot",
       "channelDescription": "Garde cette tablette reliée à Go.dot quand l'application est en arrière-plan.",

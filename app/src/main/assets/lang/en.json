@@ -3,10 +3,8 @@
     "language": "English",
     "locale": "en"
   },
-
   "remote": {
     "verbatim": "{text}",
-
     "screen": {
       "starting": "Starting the link...",
       "host": "Address",
@@ -18,7 +16,6 @@
       "lastProblem": "Last problem: {problem}",
       "foregroundRefused": "Android refused to keep the link in the background: {problem}"
     },
-
     "tabs": {
       "cues": "Cues",
       "running": "Running",
@@ -31,11 +28,58 @@
       "mappingLater": "The video mapping comes in a later build.",
       "noMachine": "No machine on screen: add one on the Machines tab."
     },
-
     "header": {
-      "noMachine": "No machine on screen"
+      "noMachine": "No machine on screen",
+      "locked": "Locked",
+      "notSent": "Not sent: {machine} is not linked",
+      "current": "Current",
+      "next": "Next",
+      "nothingFired": "Nothing fired yet",
+      "nothingInStandby": "Nothing in standby",
+      "standbyPrevious": "Standby back one cue",
+      "standbyNext": "Standby on one cue",
+      "left": "{time} left",
+      "dohLeft": "{seconds} s",
+      "dohForget": "from the top",
+      "stopAll": "stop all",
+      "killAll": "KILL ALL",
+      "noAudio": "no audio",
+      "noClock": "no clock",
+      "audioUnsaid": "audio —",
+      "resumes": "resumes",
+      "resumesAt": "resumes at {time}"
     },
-
+    "kind": {
+      "memo": "memo",
+      "group": "group",
+      "media": "media",
+      "fade": "fade",
+      "transport": "transport",
+      "osc": "osc",
+      "midi": "midi",
+      "start": "start",
+      "mic": "mic",
+      "video": "video",
+      "process": "process",
+      "timecode": "timecode",
+      "script": "script"
+    },
+    "runState": {
+      "preparing": "preparing",
+      "waiting": "waiting",
+      "armed": "armed",
+      "playing": "playing",
+      "stopping": "stopping",
+      "postWait": "post-wait",
+      "done": "done",
+      "failed": "failed"
+    },
+    "origin": {
+      "go": "GO",
+      "byName": "by name",
+      "trigger": "trigger",
+      "press": "press"
+    },
     "machines": {
       "title": "Machines",
       "none": "No machine yet. Type the address of the computer running Go.dot below.",
@@ -55,7 +99,6 @@
       "removeText": "Its link closes and it leaves the list. Nothing changes on the machine itself.",
       "tooOld": "This Go.dot cannot stream its state to a remote: update it to a build with the remote."
     },
-
     "tablet": {
       "title": "This tablet",
       "name": "Its name",
@@ -64,7 +107,6 @@
       "addresses": "Addresses: {addresses}",
       "installId": "Install id: {id}"
     },
-
     "pair": {
       "seat": {
         "mainSending": "Main - sending",
@@ -80,7 +122,6 @@
       "handOver": "Hand over",
       "keep": "Make this the main"
     },
-
     "find": {
       "title": "Find this tablet",
       "explain": "Go.dot's Show settings > Network has a Find button for this tablet: its screen flashes, it sounds its alarm and vibrates until it is touched.",
@@ -95,9 +136,8 @@
       "channelName": "Find this tablet",
       "channelDescription": "The alarm Go.dot sounds to find this tablet.",
       "notificationTitle": "{machine} is looking for this tablet",
-      "notificationText": "Touch to stop the alarm."
+      "notificationText": "Swipe it away to stop the alarm."
     },
-
     "link": {
       "off": "not linked",
       "connecting": "connecting",
@@ -107,12 +147,19 @@
       "gone": "connection lost - reconnecting",
       "tooOld": "this Go.dot is too old for the remote"
     },
-
     "refusal": {
       "withCommand": "{command} refused: {reason}",
-      "plain": "Refused: {reason}"
+      "noClock": "Audio disconnected - cues paused; waiting for the interface and clock.",
+      "setMany": "node.setMany refused: {reason} at {where} - none of its values was written",
+      "goTooSoon": "GO ignored: too soon after the last one (Show settings > Playback)",
+      "dohTooLate": "Doh! ignored: the last GO is too long ago to take back (Show settings > Playback)",
+      "dohOff": "Doh! is off (Show settings > Playback)",
+      "dohNothing": "Doh! ignored: there is no GO it can take back",
+      "dohTrigger": "Doh! ignored: a trigger fired after the last GO",
+      "dohTooSoon": "Doh! ignored: pressed again too soon (Show settings > Playback)",
+      "flagNothing": "Nothing flagged: no GO has fired a cue yet",
+      "flagGone": "Nothing flagged: the cue the last GO fired has been deleted"
     },
-
     "notification": {
       "channelName": "Link to Go.dot",
       "channelDescription": "Keeps this tablet linked to Go.dot while the app is in the background.",

@@ -23,10 +23,10 @@ renumbered or renamed from the tablet.
 ## Status
 
 Early. The stages are in Go.dot's namespace draft §68 and devplan Phase 7 (A.0–A.11). Built so far:
-the skeleton (A.0), the OSC codec (A.1) and the link (A.2) — the service, one WebSocket per machine,
-the mirror fed by the snapshot and the stream, the writes — behind a plain scaffolding screen
-(an address, Connect, how the link stands, the tick, the node count, the cue in standby). The tabs
-come next.
+the skeleton (A.0), the OSC codec (A.1), the link (A.2) — the service, one WebSocket per machine,
+the mirror fed by the snapshot and the stream, the writes — the Machines tab with find-me (A.3) and
+the transport header (A.4): the current and next cues, GO, Doh! and PANIC on every tab. The Cues,
+Running, Surface and Mapping tabs say they come in a later build.
 
 The link service runs as a `connectedDevice` foreground service, not `dataSync`: Android 15 caps a
 `dataSync` service at six hours in twenty-four, shorter than a long day of rehearsal. Its
@@ -43,6 +43,10 @@ installed (`gradle/gradle-daemon-jvm.properties`).
 ./gradlew test assembleDebug          # JVM tests, then app/build/outputs/apk/debug/
 adb install -r app/build/outputs/apk/debug/godot-remote-*-debug.apk
 ```
+
+`./gradlew testDebugUnitTest -Pscreenshots` also draws the header and the tabs on the JVM
+(Robolectric) into `app/build/screenshots/`, to be looked at without a tablet; left out of the
+plain `test`, which would otherwise fetch Robolectric's Android jar on every clean run.
 
 `local.properties` (not in git) names the SDK: `sdk.dir=/path/to/Android/Sdk`. Android Studio
 writes it on first open.
