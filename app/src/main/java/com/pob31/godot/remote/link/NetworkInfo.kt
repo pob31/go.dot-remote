@@ -37,3 +37,25 @@ fun currentIpAddress(): String? {
         return null
     }
 }
+
+/**
+ * Every address this tablet has on the local network, IPv4 first: a tablet on Wi-Fi and
+ * a cable at once has two, and the desk may know it by either.
+ */
+fun currentIpAddresses(): List<String> {
+    try {
+        val v4 = ArrayList<String>()
+        val others = ArrayList<String>()
+        for (networkInterface in NetworkInterface.getNetworkInterfaces() ?: return emptyList()) {
+            if (!networkInterface.isUp || networkInterface.isLoopback) continue
+            for (address in networkInterface.inetAddresses) {
+                if (address.isLoopbackAddress || !address.isSiteLocalAddress) continue
+                val text = address.hostAddress ?: continue
+                if (address is Inet4Address) v4 += text else others += text.substringBefore('%')
+            }
+        }
+        return (v4 + others).distinct()
+    } catch (e: Exception) {
+        return emptyList()
+    }
+}

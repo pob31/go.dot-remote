@@ -127,6 +127,48 @@ class LinkTest {
         assertEquals(OscValue.Float64(-4.0), link.mirror.value(level))
     }
 
+    @Test
+    fun aGoDotWithoutStreamIsSaidTooOldAndNeverAskedForItsTree() {
+        engine.streams = false
+        val link = link()
+        link.start()
+        await("too old") { link.state.value == LinkState.TOO_OLD }
+        assertEquals(0, engine.getsOf("/godot"))
+        assertNull(link.problem.value)
+    }
+
+    @Test
+    fun hostInfoIsReadOncePerConnectionBeforeTheSnapshot() {
+        live()
+        assertEquals(1, engine.getsOf("/"))
+        assertEquals(listOf("/", "/godot"), engine.gets.toList().take(2))
+    }
+
+    @Test
+    fun streamsReadsOnlyATrueStreamInExtensions() {
+        assertTrue(Link.streams("{\"EXTENSIONS\": {\"LISTEN\": true, \"STREAM\": true}}"))
+        assertFalse(Link.streams("{\"EXTENSIONS\": {\"LISTEN\": true}}"))
+        assertFalse(Link.streams("{\"EXTENSIONS\": {\"STREAM\": false}}"))
+        assertFalse(Link.streams("{\"STREAM\": true}"))
+        assertFalse(Link.streams("not json"))
+    }
+
+    @Test
+    fun aNewNameConnectsAgainAndSaysItInHello() {
+        val link = live()
+        val first = engine.upgrades.get()
+        link.reintroduce(Identity("tablet-id-1", "Front of house"))
+        await("a second connection said the new name") {
+            engine.upgrades.get() > first && engine.texts.any { commandOf(it) == ("HELLO" to "tablet-id-1	Front of house") }
+        }
+        await("live again") { link.state.value == LinkState.LIVE }
+    }
+
+    @Test
+    fun aPingTakesOneAndAHalfSeconds() {
+        assertEquals(1500L, LinkTiming().pingMs)
+    }
+
     // ------------------------------------------------------------------ structure
 
     private fun runJson(id: String, state: String) = """

@@ -29,6 +29,13 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!--
+        Find-me (namespace draft §68, ANP): the alarm opens over the lock screen through a
+        full-screen notification - Android 14+ may ask the operator to allow it (the
+        Machines tab offers the page) - and vibrates.
+    -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!--
         No backup: the install id is drawn once per install so that a tablet is the same
@@ -58,6 +65,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Over the lock screen, the screen turned on; its own task, out of the recent apps. -->
+        <activity
+            android:name=".findme.FindMeActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:screenOrientation="unspecified"
+            android:theme="@style/Theme.GodotRemote" />
 
         <service
             android:name=".link.EngineLinkService"

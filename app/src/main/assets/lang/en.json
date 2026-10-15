@@ -5,27 +5,97 @@
   },
 
   "remote": {
+    "verbatim": "{text}",
+
     "screen": {
-      "title": "Go.dot remote",
-      "notLinked": "Not linked to a machine yet.",
       "starting": "Starting the link...",
-      "machine": "Machine",
       "host": "Address",
       "port": "Port",
       "name": "Name",
-      "connect": "Connect",
-      "disconnect": "Disconnect",
-      "thisTablet": "This tablet: {name}, at {ip}",
       "noAddress": "no network address",
       "knownAs": "Go.dot knows this tablet as {origin}",
       "notKnownYet": "Go.dot has not named this tablet yet",
-      "link": "Link",
-      "tick": "Tick",
-      "nodes": "Nodes",
-      "standby": "Standby",
-      "nothingInStandby": "Nothing in standby",
       "lastProblem": "Last problem: {problem}",
       "foregroundRefused": "Android refused to keep the link in the background: {problem}"
+    },
+
+    "tabs": {
+      "cues": "Cues",
+      "running": "Running",
+      "surface": "Surface",
+      "mapping": "Mapping",
+      "machines": "Machines",
+      "cuesLater": "The cue list comes in a later build.",
+      "runningLater": "The running cues come in a later build.",
+      "surfaceLater": "The surface comes in a later build.",
+      "mappingLater": "The video mapping comes in a later build.",
+      "noMachine": "No machine on screen: add one on the Machines tab."
+    },
+
+    "header": {
+      "noMachine": "No machine on screen"
+    },
+
+    "machines": {
+      "title": "Machines",
+      "none": "No machine yet. Type the address of the computer running Go.dot below.",
+      "onScreen": "On screen",
+      "putOnScreen": "Put on screen",
+      "linked": "Linked",
+      "notLinked": "Not linked",
+      "edit": "Edit",
+      "remove": "Remove",
+      "cancel": "Cancel",
+      "save": "Save",
+      "add": "Add a machine",
+      "addAndLink": "Add and link",
+      "editTitle": "Edit the machine",
+      "taken": "Another machine in the list has this address and port.",
+      "removeTitle": "Forget {machine}?",
+      "removeText": "Its link closes and it leaves the list. Nothing changes on the machine itself.",
+      "tooOld": "This Go.dot cannot stream its state to a remote: update it to a build with the remote."
+    },
+
+    "tablet": {
+      "title": "This tablet",
+      "name": "Its name",
+      "rename": "Rename",
+      "nameSaid": "Go.dot shows this name in Show settings > Network.",
+      "addresses": "Addresses: {addresses}",
+      "installId": "Install id: {id}"
+    },
+
+    "pair": {
+      "seat": {
+        "mainSending": "Main - sending",
+        "mainAlone": "Main - alone",
+        "mainFollowing": "Main - following",
+        "mainWaiting": "Main - waiting",
+        "backupFollowing": "Backup - following",
+        "backupWaiting": "Backup - waiting",
+        "backupSending": "Backup - sending",
+        "twoMains": "Two mains!"
+      },
+      "takeOver": "Take over",
+      "handOver": "Hand over",
+      "keep": "Make this the main"
+    },
+
+    "find": {
+      "title": "Find this tablet",
+      "explain": "Go.dot's Show settings > Network has a Find button for this tablet: its screen flashes, it sounds its alarm and vibrates until it is touched.",
+      "notificationsOff": "Notifications are off for this app: Go.dot cannot find the tablet while the app is in the background.",
+      "openNotificationSettings": "Turn notifications on",
+      "overLockOff": "Android does not let the alarm open over the lock screen: a locked tablet will sound and vibrate, without the flashing screen.",
+      "allowOverLock": "Allow it over the lock screen",
+      "testButton": "Test find (3 s)",
+      "test": "Test",
+      "here": "Here",
+      "touchToStop": "Touch anywhere to stop",
+      "channelName": "Find this tablet",
+      "channelDescription": "The alarm Go.dot sounds to find this tablet.",
+      "notificationTitle": "{machine} is looking for this tablet",
+      "notificationText": "Touch to stop the alarm."
     },
 
     "link": {
@@ -34,7 +104,8 @@
       "live": "live",
       "stale": "stale",
       "clockStopped": "Go.dot's clock has stopped",
-      "gone": "connection lost - reconnecting"
+      "gone": "connection lost - reconnecting",
+      "tooOld": "this Go.dot is too old for the remote"
     },
 
     "refusal": {

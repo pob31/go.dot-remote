@@ -5,27 +5,97 @@
   },
 
   "remote": {
+    "verbatim": "{text}",
+
     "screen": {
-      "title": "Go.dot remote",
-      "notLinked": "Pas encore reliée à une machine.",
       "starting": "Démarrage de la liaison...",
-      "machine": "Machine",
       "host": "Adresse",
       "port": "Port",
       "name": "Nom",
-      "connect": "Se connecter",
-      "disconnect": "Se déconnecter",
-      "thisTablet": "Cette tablette : {name}, à {ip}",
       "noAddress": "pas d'adresse réseau",
       "knownAs": "Go.dot connaît cette tablette sous {origin}",
       "notKnownYet": "Go.dot n'a pas encore nommé cette tablette",
-      "link": "Liaison",
-      "tick": "Tick",
-      "nodes": "Nœuds",
-      "standby": "En attente",
-      "nothingInStandby": "Aucune cue en attente",
       "lastProblem": "Dernier problème : {problem}",
       "foregroundRefused": "Android refuse de garder la liaison en arrière-plan : {problem}"
+    },
+
+    "tabs": {
+      "cues": "Cues",
+      "running": "En cours",
+      "surface": "Surface",
+      "mapping": "Mapping",
+      "machines": "Machines",
+      "cuesLater": "La liste des cues arrive dans une prochaine version.",
+      "runningLater": "Les cues en cours arrivent dans une prochaine version.",
+      "surfaceLater": "La surface arrive dans une prochaine version.",
+      "mappingLater": "Le mapping vidéo arrive dans une prochaine version.",
+      "noMachine": "Aucune machine à l'écran : ajoutez-en une dans l'onglet Machines."
+    },
+
+    "header": {
+      "noMachine": "Aucune machine à l'écran"
+    },
+
+    "machines": {
+      "title": "Machines",
+      "none": "Pas encore de machine. Tapez ci-dessous l'adresse de l'ordinateur où tourne Go.dot.",
+      "onScreen": "À l'écran",
+      "putOnScreen": "Mettre à l'écran",
+      "linked": "Reliée",
+      "notLinked": "Non reliée",
+      "edit": "Modifier",
+      "remove": "Retirer",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "add": "Ajouter une machine",
+      "addAndLink": "Ajouter et relier",
+      "editTitle": "Modifier la machine",
+      "taken": "Une autre machine de la liste a déjà cette adresse et ce port.",
+      "removeTitle": "Oublier {machine} ?",
+      "removeText": "Sa liaison se ferme et elle quitte la liste. Rien ne change sur la machine elle-même.",
+      "tooOld": "Ce Go.dot ne sait pas diffuser son état vers une télécommande : mettez-le à jour vers une version qui la connaît."
+    },
+
+    "tablet": {
+      "title": "Cette tablette",
+      "name": "Son nom",
+      "rename": "Renommer",
+      "nameSaid": "Go.dot affiche ce nom dans Show settings > Network.",
+      "addresses": "Adresses : {addresses}",
+      "installId": "Identifiant d'installation : {id}"
+    },
+
+    "pair": {
+      "seat": {
+        "mainSending": "Principal - envoie",
+        "mainAlone": "Principal - seul",
+        "mainFollowing": "Principal - suit",
+        "mainWaiting": "Principal - attend",
+        "backupFollowing": "Secours - suit",
+        "backupWaiting": "Secours - attend",
+        "backupSending": "Secours - envoie",
+        "twoMains": "Deux principaux !"
+      },
+      "takeOver": "Prendre la main",
+      "handOver": "Passer la main",
+      "keep": "Faire de celui-ci le principal"
+    },
+
+    "find": {
+      "title": "Retrouver cette tablette",
+      "explain": "Dans Go.dot, Show settings > Network a un bouton Find pour cette tablette : son écran clignote, elle sonne son alarme et vibre jusqu'à ce qu'on la touche.",
+      "notificationsOff": "Les notifications de l'application sont coupées : Go.dot ne peut pas retrouver la tablette quand l'application est en arrière-plan.",
+      "openNotificationSettings": "Activer les notifications",
+      "overLockOff": "Android ne laisse pas l'alarme s'ouvrir par-dessus l'écran de verrouillage : une tablette verrouillée sonnera et vibrera, sans l'écran qui clignote.",
+      "allowOverLock": "L'autoriser sur l'écran de verrouillage",
+      "testButton": "Tester (3 s)",
+      "test": "Essai",
+      "here": "Ici",
+      "touchToStop": "Touchez l'écran pour arrêter",
+      "channelName": "Retrouver cette tablette",
+      "channelDescription": "L'alarme que Go.dot déclenche pour retrouver cette tablette.",
+      "notificationTitle": "{machine} cherche cette tablette",
+      "notificationText": "Touchez pour arrêter l'alarme."
     },
 
     "link": {
@@ -34,7 +104,8 @@
       "live": "en direct",
       "stale": "sans nouvelles",
       "clockStopped": "l'horloge de Go.dot est arrêtée",
-      "gone": "connexion perdue - reconnexion"
+      "gone": "connexion perdue - reconnexion",
+      "tooOld": "ce Go.dot est trop ancien pour la télécommande"
     },
 
     "refusal": {

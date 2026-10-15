@@ -31,23 +31,27 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.pob31.godot.remote.MainActivity
 import com.pob31.godot.remote.R
+import com.pob31.godot.remote.findme.FindMe
 import com.pob31.godot.remote.localization.locStatic
+import com.pob31.godot.remote.model.readPair
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 
 /** A remembered machine and its link. */
 data class LinkedMachine(val machine: Machine, val link: Link)
 
 /**
- * THE LINK SERVICE: a foreground service that holds one [Link] per remembered machine for
+ * THE LINK SERVICE: a foreground service that holds one [Link] per linked machine for
  * as long as the app is linked, whether its screen is in front or swiped away, so coming
  * back is a redraw and never a reconnect (PRD §3.17).
  *
@@ -56,9 +60,14 @@ data class LinkedMachine(val machine: Machine, val link: Link)
  * for one of its prerequisites; CHANGE_WIFI_STATE (a normal permission, granted at install)
  * is declared for it.
  *
+ * SEVERAL MACHINES AT ONCE (§8): a main and its backup may both be linked, each its own
+ * link and mirror; ONE is on screen, and every tab and the transport header read its
+ * mirror. The one the operator put there stays while it is linked; otherwise
+ * [chooseOnScreen] picks the one sending to the devices.
+ *
  * While any link is wanted it holds a Wi-Fi lock in low-latency mode, so the radio does
  * not doze between bundles. Bound by the activity through [LinkBinder]; the UI reads
- * StateFlows.
+ * StateFlows. A FIND from any linked machine sounds the find-me alarm ([FindMe]).
  */
 class EngineLinkService : LifecycleService() {
 
@@ -72,7 +81,14 @@ class EngineLinkService : LifecycleService() {
     private val http by lazy { Link.httpClient(timing) }
     private var wifiLock: WifiManager.WifiLock? = null
 
+    private val _machines = MutableStateFlow<List<Machine>>(emptyList())
+
+    /** Every remembered machine, linked or not, in the operator's order. */
+    val machines: StateFlow<List<Machine>> = _machines.asStateFlow()
+
     private val _links = MutableStateFlow<List<LinkedMachine>>(emptyList())
+
+    /** The linked machines and their links. */
     val links: StateFlow<List<LinkedMachine>> = _links.asStateFlow()
 
     private val _onScreen = MutableStateFlow<LinkedMachine?>(null)
@@ -85,22 +101,29 @@ class EngineLinkService : LifecycleService() {
     /** Why the system refused to keep the service in the foreground, if it did. */
     val foregroundProblem: StateFlow<String?> = _foregroundProblem.asStateFlow()
 
+    private val _tabletName = MutableStateFlow("")
+
+    /** What the operator calls this tablet: said in HELLO. */
+    val tabletName: StateFlow<String> = _tabletName.asStateFlow()
+
     val identity: Identity get() = Identity(store.installId, store.tabletName)
 
-    val tabletName: String get() = store.tabletName
-
-    val machines: List<Machine> get() = store.machines
+    /** Drawn once at install: how Go.dot tells this tablet from another (HELLO, §5). */
+    val installId: String get() = store.installId
 
     override fun onCreate() {
         super.onCreate()
         store = MachineStore(this)
         createChannel()
+        FindMe.createChannel(this)
+        _tabletName.value = store.tabletName
+        _machines.value = store.machines
 
         // The machines left linked are linked again.
         val restored = store.machines.filter { it.linked }.map { LinkedMachine(it, newLink(it)) }
         _links.value = restored
-        _onScreen.value = restored.firstOrNull { it.machine.key == store.onScreen } ?: restored.firstOrNull()
         restored.forEach { it.link.start() }
+        reconsiderOnScreen()
 
         watchLinks()
     }
@@ -127,34 +150,76 @@ class EngineLinkService : LifecycleService() {
     // ---------------------------------------------------------------- what the screen asks
 
     /**
-     * Link to [host]:[port], remembered under [name], and put it on screen. A machine
-     * already linked at that address keeps its link (and its mirror); a new name is kept.
+     * A machine remembered and linked: a new one at the end of the list; one already there
+     * (by address and port) renamed and linked, keeping its link and its mirror.
      */
-    fun connect(name: String, host: String, port: Int) {
+    fun addMachine(name: String, host: String, port: Int) {
         val machine = Machine(name.trim(), host.trim(), port, linked = true)
+        val list = MachineList.put(_machines.value, machine) ?: return
+        remember(list)
         val existing = _links.value.firstOrNull { it.machine.key == machine.key }
-        val linked = if (existing != null) {
-            existing.copy(machine = machine).also { updated ->
-                _links.value = _links.value.map { if (it.machine.key == machine.key) updated else it }
+        if (existing != null) {
+            replaceLinked(existing.copy(machine = machine))
+        } else {
+            val linked = LinkedMachine(machine, newLink(machine))
+            _links.value = _links.value + linked
+            linked.link.start()
+        }
+        reconsiderOnScreen()
+    }
+
+    /**
+     * The machine at [oldKey] edited. The same address keeps its link (a new name only); a
+     * new one is a new link, on screen if the old one was. False when the new address is
+     * another remembered machine's.
+     */
+    fun editMachine(oldKey: String, name: String, host: String, port: Int): Boolean {
+        val old = _machines.value.firstOrNull { it.key == oldKey } ?: return false
+        val machine = old.copy(name = name.trim(), host = host.trim(), port = port)
+        val list = MachineList.put(_machines.value, machine, replacing = oldKey) ?: return false
+        remember(list)
+        val linked = _links.value.firstOrNull { it.machine.key == oldKey }
+        if (linked != null) {
+            if (machine.key == oldKey) {
+                replaceLinked(linked.copy(machine = machine))
+            } else {
+                linked.link.close()
+                val fresh = LinkedMachine(machine, newLink(machine))
+                _links.value = _links.value.map { if (it === linked) fresh else it }
+                if (store.onScreen == oldKey) store.onScreen = machine.key
+                if (_onScreen.value === linked) _onScreen.value = fresh
+                fresh.link.start()
+            }
+        }
+        reconsiderOnScreen()
+        return true
+    }
+
+    /** Forget [key]'s machine: unlinked, and gone from the list. */
+    fun removeMachine(key: String) {
+        unlink(key)
+        remember(MachineList.remove(_machines.value, key))
+        if (store.onScreen == key) store.onScreen = null
+        reconsiderOnScreen()
+    }
+
+    /** Link [key]'s machine, or unlink it; it stays remembered either way. */
+    fun setLinked(key: String, linked: Boolean) {
+        val machine = _machines.value.firstOrNull { it.key == key } ?: return
+        remember(MachineList.setLinked(_machines.value, key, linked))
+        if (linked) {
+            if (_links.value.none { it.machine.key == key }) {
+                val fresh = LinkedMachine(machine.copy(linked = true), newLink(machine))
+                _links.value = _links.value + fresh
+                fresh.link.start()
             }
         } else {
-            LinkedMachine(machine, newLink(machine)).also { _links.value = _links.value + it }
+            unlink(key)
         }
-        linked.link.start()
-        _onScreen.value = linked
-        remember(machine)
-        store.onScreen = machine.key
+        reconsiderOnScreen()
     }
 
-    /** Unlink [key]'s machine; it stays remembered, unlinked. */
-    fun disconnect(key: String) {
-        val linked = _links.value.firstOrNull { it.machine.key == key } ?: return
-        linked.link.close()
-        _links.value = _links.value - linked
-        if (_onScreen.value?.machine?.key == key) _onScreen.value = _links.value.firstOrNull()
-        remember(linked.machine.copy(linked = false))
-    }
-
+    /** One tap: [key]'s machine on screen, and kept there while it is linked. */
     fun putOnScreen(key: String) {
         _links.value.firstOrNull { it.machine.key == key }?.let {
             _onScreen.value = it
@@ -162,9 +227,51 @@ class EngineLinkService : LifecycleService() {
         }
     }
 
-    private fun remember(machine: Machine) {
-        val others = store.machines.filter { it.key != machine.key }
-        store.machines = listOf(machine) + others
+    /** The tablet renamed: every link connects again, so its HELLO says the new name. */
+    fun setTabletName(name: String) {
+        val cleaned = name.trim().replace('\t', ' ').replace('\n', ' ')
+        if (cleaned.isEmpty() || cleaned == store.tabletName) return
+        store.tabletName = cleaned
+        _tabletName.value = cleaned
+        val now = identity
+        _links.value.forEach { it.link.reintroduce(now) }
+    }
+
+    private fun unlink(key: String) {
+        val linked = _links.value.firstOrNull { it.machine.key == key } ?: return
+        linked.link.close()
+        _links.value = _links.value - linked
+        if (_onScreen.value === linked) _onScreen.value = null
+    }
+
+    private fun replaceLinked(updated: LinkedMachine) {
+        _links.value = _links.value.map { if (it.link === updated.link) updated else it }
+        if (_onScreen.value?.link === updated.link) _onScreen.value = updated
+    }
+
+    private fun remember(list: List<Machine>) {
+        _machines.value = list
+        store.machines = list
+    }
+
+    /** Whether a linked machine sends to the devices, from its own mirror; null while it has not said. */
+    private fun sendsOf(key: String): Boolean? {
+        val link = _links.value.firstOrNull { it.machine.key == key }?.link ?: return null
+        if (link.mirror.tick.value < 0 || link.mirror["/godot/pair/role"] == null) return null
+        return readPair(link.mirror).sends
+    }
+
+    /** The machine on screen chosen again ([chooseOnScreen]): whenever the links change or one comes live. */
+    private fun reconsiderOnScreen() {
+        val linked = _links.value
+        val key = chooseOnScreen(
+            chosen = store.onScreen,
+            current = _onScreen.value?.machine?.key,
+            linked = linked.map { it.machine.key },
+            sends = ::sendsOf,
+        )
+        val chosen = linked.firstOrNull { it.machine.key == key }
+        if (_onScreen.value !== chosen) _onScreen.value = chosen
     }
 
     // ---------------------------------------------------------------- foreground
@@ -229,13 +336,24 @@ class EngineLinkService : LifecycleService() {
                 getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification(linked, state))
             }
         }
-        // The Wi-Fi lock is held while any link is wanted.
+        // The Wi-Fi lock is held while any link is wanted; the machine on screen is chosen
+        // again as links come and go (a main found sending once its link is live).
         lifecycleScope.launch {
             _links.flatMapLatest { list ->
-                if (list.isEmpty()) flowOf(false)
-                else combine(list.map { it.link.state }) { states -> states.any { it != LinkState.OFF } }
-            }.distinctUntilChanged().collect { anyUp ->
-                if (anyUp) acquireWifiLock() else releaseWifiLock()
+                if (list.isEmpty()) flowOf(emptyList())
+                else combine(list.map { it.link.state }) { states -> states.toList() }
+            }.distinctUntilChanged().collect { states ->
+                if (states.any { it != LinkState.OFF }) acquireWifiLock() else releaseWifiLock()
+                reconsiderOnScreen()
+            }
+        }
+        // Any linked machine may ask the tablet to show itself.
+        lifecycleScope.launch {
+            _links.flatMapLatest { list ->
+                if (list.isEmpty()) emptyFlow()
+                else merge(*list.map { linked -> linked.link.finds.map { linked.machine.label to it } }.toTypedArray())
+            }.collect { (machine, request) ->
+                FindMe.alert(this@EngineLinkService, machine, request.seconds)
             }
         }
     }
@@ -262,15 +380,17 @@ class EngineLinkService : LifecycleService() {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "link"
 
-        fun linkWord(state: LinkState): String = locStatic(
-            when (state) {
-                LinkState.OFF -> "remote.link.off"
-                LinkState.CONNECTING -> "remote.link.connecting"
-                LinkState.LIVE -> "remote.link.live"
-                LinkState.STALE -> "remote.link.stale"
-                LinkState.CLOCK_STOPPED -> "remote.link.clockStopped"
-                LinkState.GONE -> "remote.link.gone"
-            }
-        )
+        /** The key of [state]'s word, for the screen and the notification alike. */
+        fun linkWordKey(state: LinkState): String = when (state) {
+            LinkState.OFF -> "remote.link.off"
+            LinkState.CONNECTING -> "remote.link.connecting"
+            LinkState.LIVE -> "remote.link.live"
+            LinkState.STALE -> "remote.link.stale"
+            LinkState.CLOCK_STOPPED -> "remote.link.clockStopped"
+            LinkState.GONE -> "remote.link.gone"
+            LinkState.TOO_OLD -> "remote.link.tooOld"
+        }
+
+        fun linkWord(state: LinkState): String = locStatic(linkWordKey(state))
     }
 }

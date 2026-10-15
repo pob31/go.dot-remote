@@ -66,4 +66,23 @@ data class RemoteLine(val origin: String, val id: String, val name: String) {
 }
 
 /** Go.dot asking this tablet to show itself, for [seconds] (30 when it did not say). */
-data class FindRequest(val seconds: Int)
+data class FindRequest(val seconds: Int) {
+    companion object {
+        /** When FIND says no time, or a time that is no time: the engine's own default. */
+        const val DEFAULT_SECONDS = 30
+
+        /** Five minutes at most, as `remote.find` (namespace draft §68): never an alarm without end. */
+        const val MOST_SECONDS = 300
+
+        /**
+         * FIND's DATA (`"<seconds>"`, §5) as a request: whole seconds, a fraction rounded up;
+         * nothing, nought, a negative or a word read as [DEFAULT_SECONDS]; more than
+         * [MOST_SECONDS] held to it.
+         */
+        fun parse(data: String): FindRequest {
+            val asked = data.trim().replace(',', '.').toDoubleOrNull()
+            if (asked == null || !asked.isFinite() || asked <= 0.0) return FindRequest(DEFAULT_SECONDS)
+            return FindRequest(kotlin.math.ceil(minOf(asked, MOST_SECONDS.toDouble())).toInt().coerceIn(1, MOST_SECONDS))
+        }
+    }
+}

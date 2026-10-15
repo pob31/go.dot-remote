@@ -60,16 +60,23 @@ import java.util.concurrent.TimeUnit
  * - [CLOCK_STOPPED]: none for three seconds while the socket still answers its pings -
  *   Go.dot's clock is standing still (an audio interface lost, PRD §6.2), not the network;
  * - [GONE]: the socket failed or closed, or a ping went unanswered; a new one is on its way;
+ * - [TOO_OLD]: the machine answers but its Go.dot has no STREAM (`HOST_INFO`, §1) - a build
+ *   from before the remote; asked again every few seconds, so an updated one is found;
  * - [OFF]: not linked, by the operator's choice.
  */
-enum class LinkState { OFF, CONNECTING, LIVE, STALE, CLOCK_STOPPED, GONE }
+enum class LinkState { OFF, CONNECTING, LIVE, STALE, CLOCK_STOPPED, GONE, TOO_OLD }
 
 /** The link's clocks. The defaults are the contract's; the tests shrink the waits. */
 data class LinkTiming(
     val staleMs: Long = 500,
     val clockStoppedMs: Long = 3000,
-    /** A WebSocket ping this often; OkHttp fails the socket when one goes unanswered by the next. */
-    val pingMs: Long = 1000,
+    /**
+     * A WebSocket ping this often. OkHttp fails the socket when a pong has not come back by
+     * the next ping, so this is also how long one may take: 1.5 s, because a tablet's Wi-Fi
+     * saving power sits on a pong for longer than a second now and then, and the contract
+     * (§7) calls a link gone after three seconds, not one.
+     */
+    val pingMs: Long = 1500,
     val watchMs: Long = 100,
     val backoffMs: List<Long> = listOf(500, 1000, 2000, 5000),
     val throttleMs: Long = 20,
@@ -103,13 +110,17 @@ data class Identity(val id: String, val name: String)
 class Link(
     val host: String,
     val port: Int,
-    private val identity: Identity,
+    identity: Identity,
     private val http: OkHttpClient,
     private val timing: LinkTiming = LinkTiming(),
     private val clockMs: () -> Long = { System.nanoTime() / 1_000_000 },
 ) : Closeable {
 
     val mirror = Mirror()
+
+    /** Who this tablet says it is in HELLO; [reintroduce] changes it. */
+    @Volatile var identity: Identity = identity
+        private set
 
     private val _state = MutableStateFlow(LinkState.OFF)
     val state: StateFlow<LinkState> = _state.asStateFlow()
@@ -171,6 +182,7 @@ class Link(
         data object Start : Event()
         data object Stop : Event()
         data object Watch : Event()
+        data object Restart : Event()
         class Reconnect(val gen: Int) : Event()
         class Opened(val gen: Int) : Event()
         sealed class Frame(val gen: Int) : Event()
@@ -178,6 +190,7 @@ class Link(
         class Binary(gen: Int, val bytes: ByteArray) : Frame(gen)
         class Down(val gen: Int, val why: String) : Event()
         class Snapshot(val gen: Int, val result: SnapshotReader.Result) : Event()
+        class TooOld(val gen: Int) : Event()
         class Meta(val gen: Int, val keys: Set<String>, val result: SnapshotReader.Result?) : Event()
     }
 
@@ -199,6 +212,15 @@ class Link(
     /** Unlink, by the operator's choice. */
     fun stop() {
         events.trySend(Event.Stop)
+    }
+
+    /**
+     * The tablet has a new name: a linked link connects again at once, so its HELLO says
+     * it - the server reads one HELLO a connection (§5). An unlinked one keeps it for later.
+     */
+    fun reintroduce(identity: Identity) {
+        this.identity = identity
+        events.trySend(Event.Restart)
     }
 
     override fun close() {
@@ -261,11 +283,19 @@ class Link(
                 _state.value = LinkState.OFF
             }
             Event.Watch -> watch()
+            Event.Restart -> if (wanted) {
+                teardown()
+                socket?.close(1000, null)
+                socket = null
+                attempt = 0
+                connect()
+            }
             is Event.Reconnect -> if (wanted && phase == Phase.DOWN && event.gen == generation) connect()
             is Event.Opened -> if (event.gen == generation && phase == Phase.OPENING) opened()
             is Event.Frame -> if (event.gen == generation) frame(event)
             is Event.Down -> if (event.gen == generation && (phase == Phase.OPENING || phase == Phase.SNAPSHOT || phase == Phase.LIVE)) goDown(event.why)
             is Event.Snapshot -> if (event.gen == generation && phase == Phase.SNAPSHOT) snapshot(event.result)
+            is Event.TooOld -> if (event.gen == generation && phase == Phase.SNAPSHOT) tooOld()
             is Event.Meta -> if (event.gen == generation) meta(event)
         }
     }
@@ -275,7 +305,8 @@ class Link(
         val gen = generation
         liveGeneration = gen
         phase = Phase.OPENING
-        _state.value = LinkState.CONNECTING
+        // A machine found too old stays said so while it is asked again: no flicker of "connecting".
+        if (_state.value != LinkState.TOO_OLD) _state.value = LinkState.CONNECTING
         kept.clear()
         burst.clear()
         inFlightKeys.clear()
@@ -324,10 +355,44 @@ class Link(
         val gen = generation
         scope.launch {
             try {
+                // Once a connection: a Go.dot from before the remote has no STREAM, and would
+                // otherwise read as stale for ever (§1).
+                if (!streams(fetchText("/?HOST_INFO"))) {
+                    events.trySend(Event.TooOld(gen))
+                    return@launch
+                }
                 events.trySend(Event.Snapshot(gen, fetch("/godot")))
             } catch (e: Exception) {
                 events.trySend(Event.Down(gen, "the snapshot: ${e.message ?: e.javaClass.simpleName}"))
             }
+        }
+    }
+
+    private fun fetchText(path: String): String {
+        val call = http.newCall(Request.Builder().url("http://$host:$port$path").build())
+        calls.add(call)
+        try {
+            call.execute().use { response ->
+                if (!response.isSuccessful) throw IOException("HTTP ${response.code} for $path")
+                return response.body.string()
+            }
+        } finally {
+            calls.remove(call)
+        }
+    }
+
+    /** Too old: said, the socket let go, and asked again at the longest wait. */
+    private fun tooOld() {
+        teardown()
+        socket?.close(1000, null)
+        socket = null
+        phase = Phase.DOWN
+        _state.value = LinkState.TOO_OLD
+        _problem.value = null
+        val gen = generation
+        scope.launch {
+            delay(timing.backoffMs.last())
+            events.trySend(Event.Reconnect(gen))
         }
     }
 
@@ -412,7 +477,7 @@ class Link(
                 }
             }
             "PATH_REMOVED" -> mirror.removed(data)
-            "FIND" -> _finds.tryEmit(FindRequest(data.trim().toIntOrNull()?.takeIf { it > 0 } ?: 30))
+            "FIND" -> _finds.tryEmit(FindRequest.parse(data))
         }
     }
 
@@ -530,7 +595,33 @@ class Link(
     companion object {
         const val STREAM_FRAME = "{\"COMMAND\": \"STREAM\", \"DATA\": \"/godot\"}"
 
-        /** The client every link shares: a ping a second (§7), no timeout on the socket itself. */
+        /**
+         * Whether a `GET /?HOST_INFO` answer says `"STREAM": true` in its EXTENSIONS - a
+         * Go.dot that streams. Anything else, an answer that is not JSON included, is no.
+         */
+        fun streams(hostInfo: String): Boolean = try {
+            var found = false
+            JsonPull(StringReader(hostInfo)).use { json ->
+                json.beginObject()
+                while (json.hasNext()) {
+                    if (json.nextName() != "EXTENSIONS" || json.peek() != JsonPull.Token.BEGIN_OBJECT) {
+                        json.skipValue()
+                        continue
+                    }
+                    json.beginObject()
+                    while (json.hasNext()) {
+                        if (json.nextName() == "STREAM" && json.peek() == JsonPull.Token.BOOLEAN) found = json.nextBoolean()
+                        else json.skipValue()
+                    }
+                    json.endObject()
+                }
+            }
+            found
+        } catch (e: Exception) {
+            false
+        }
+
+        /** The client every link shares: a ping every [LinkTiming.pingMs] (§7), no timeout on the socket itself. */
         fun httpClient(timing: LinkTiming = LinkTiming()): OkHttpClient = OkHttpClient.Builder()
             .pingInterval(timing.pingMs, TimeUnit.MILLISECONDS)
             .connectTimeout(3, TimeUnit.SECONDS)

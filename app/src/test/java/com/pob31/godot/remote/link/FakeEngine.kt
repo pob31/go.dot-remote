@@ -45,6 +45,9 @@ class FakeEngine : Closeable {
 
     @Volatile var snapshot: String = Fixtures.snapshotSmall()
 
+    /** Whether `GET /?HOST_INFO` says STREAM: false is a Go.dot from before the remote. */
+    @Volatile var streams: Boolean = true
+
     /** Run while `GET /godot` is being answered, before the answer leaves. */
     @Volatile var beforeSnapshot: (() -> Unit)? = null
 
@@ -94,6 +97,12 @@ class FakeEngine : Closeable {
             }
             val path = request.url.encodedPath
             gets.add(path)
+            if (path == "/" && request.url.encodedQuery == "HOST_INFO") {
+                val stream = if (streams) "\"STREAM\": true, " else ""
+                return MockResponse.Builder().body(
+                    "{\"NAME\": \"Go.dot\", \"OSC_PORT\": 8010, \"EXTENSIONS\": {\"ACCESS\": true, ${stream}\"VALUE\": true}}"
+                ).build()
+            }
             if (path == "/godot") {
                 // The app sends STREAM and HELLO before it asks: wait for both to be read.
                 val until = System.nanoTime() + 2_000_000_000L

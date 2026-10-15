@@ -22,6 +22,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,16 +30,18 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import com.pob31.godot.remote.findme.AppVisibility
 import com.pob31.godot.remote.link.EngineLinkService
 import com.pob31.godot.remote.localization.LocalLanguage
 import com.pob31.godot.remote.localization.LocalizationManager
-import com.pob31.godot.remote.ui.LinkScreen
+import com.pob31.godot.remote.ui.RemoteApp
 import com.pob31.godot.remote.ui.theme.GodotTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * The one activity. It starts the link service (which outlives it) and binds to it while
- * it is in front; swiped away and back, it finds the links where they were.
+ * it is in front; swiped away and back, it finds the links where they were. The screen
+ * stays on while it is in front: a tablet that dims mid-cue is a tablet nobody trusts.
  */
 class MainActivity : ComponentActivity() {
 
@@ -61,12 +64,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContent {
             val language by LocalizationManager.currentLanguage.collectAsState()
             val bound by service.collectAsState()
             CompositionLocalProvider(LocalLanguage provides language) {
                 GodotTheme {
-                    LinkScreen(bound)
+                    RemoteApp(bound)
                 }
             }
         }
@@ -87,10 +91,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        AppVisibility.inFront = true
         bindService(Intent(this, EngineLinkService::class.java), connection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onStop() {
+        AppVisibility.inFront = false
         unbindService(connection)
         service.value = null
         super.onStop()

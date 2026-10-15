@@ -91,3 +91,42 @@ class MachineStore(context: Context) {
             }
     }
 }
+
+/**
+ * The remembered machines as the Machines tab edits them: pure, so a test reads the
+ * rules. A machine is known by its address and port ([Machine.key]); two entries never
+ * share one.
+ */
+object MachineList {
+
+    /**
+     * [machine] put in the list: in the place of the entry keyed [replacing] (an edit, which
+     * may change the address), else in the place of the entry with its own key, else at the
+     * end. Null when the edit would give it the address of ANOTHER entry.
+     */
+    fun put(list: List<Machine>, machine: Machine, replacing: String? = null): List<Machine>? {
+        val at = replacing ?: machine.key
+        if (list.any { it.key == machine.key && it.key != at }) return null
+        val index = list.indexOfFirst { it.key == at }
+        return if (index < 0) list + machine else list.toMutableList().also { it[index] = machine }
+    }
+
+    fun remove(list: List<Machine>, key: String): List<Machine> = list.filter { it.key != key }
+
+    fun setLinked(list: List<Machine>, key: String, linked: Boolean): List<Machine> =
+        list.map { if (it.key == key) it.copy(linked = linked) else it }
+}
+
+/**
+ * WHICH MACHINE IS ON SCREEN (A.3). The one the operator put there ([chosen]) while it is
+ * linked. Otherwise a default: the one on screen now ([current]) while it is linked and
+ * sends to the devices; else the first linked one that sends - a main leading, a machine
+ * alone, one not paired - so a main and its backup open on the one the show is coming
+ * from; else the first linked one. [sends] answers null while a machine's link has not
+ * read its pair rows yet. Null when nothing is linked.
+ */
+fun chooseOnScreen(chosen: String?, current: String?, linked: List<String>, sends: (String) -> Boolean?): String? {
+    if (chosen != null && chosen in linked) return chosen
+    if (current != null && current in linked && sends(current) == true) return current
+    return linked.firstOrNull { sends(it) == true } ?: linked.firstOrNull()
+}
