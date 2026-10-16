@@ -122,6 +122,36 @@ class MappingReadingTest {
     }
 
     @Test
+    fun anOutputSentToACardIsNamedByTheCardAndItsMaker() {
+        val mirror = mirror()
+        val base = "/godot/videoOutput/$OUTPUT/"
+        // The fixture is from a Go.dot before the cards: no rows, no card.
+        assertEquals("", readMapping(mirror).outputs[0].cardLabel)
+        mirror.putValues(base + "kind", "s", listOf(OscValue.Str("card")))
+        mirror.putValues(base + "card", "s", listOf(OscValue.Str("dl-0")))
+        val unnamed = readMapping(mirror).outputs[0]
+        assertTrue(unnamed.sends)
+        // No name kept: the plain kind word is the fallback.
+        assertEquals("", unnamed.cardLabel)
+        mirror.putValues(base + "cardName", "s", listOf(OscValue.Str("Duo 2 (1)")))
+        assertEquals("DeckLink Duo 2 (1)", readMapping(mirror).outputs[0].cardLabel)
+        // The rows on an output that is not a card name nothing.
+        mirror.putValues(base + "kind", "s", listOf(OscValue.Str("ndi")))
+        assertEquals("", readMapping(mirror).outputs[0].cardLabel)
+    }
+
+    @Test
+    fun theMakerComesFromThePrefixAndIsNotSaidTwice() {
+        assertEquals("DeckLink Duo 2 (1)", cardLabel("dl-1", "DeckLink Duo 2 (1)"))
+        assertEquals("DeckLink Duo 2 (1)", cardLabel("dlt-1", "Duo 2 (1)"))
+        assertEquals("AJA Kona 5", cardLabel("aja-0", "Kona 5"))
+        assertEquals("AJA Kona 5", cardLabel("aja-0", "AJA Kona 5"))
+        assertEquals("Go.dot test card", cardLabel("fake-0", "Go.dot test card"))
+        assertEquals("Mystery", cardLabel("other-0", "Mystery"))
+        assertEquals("", cardLabel("dl-0", " "))
+    }
+
+    @Test
     fun theLockIsRead() {
         val mirror = mirror()
         mirror.putValues("/godot/document/locked", "T", listOf(OscValue.True))

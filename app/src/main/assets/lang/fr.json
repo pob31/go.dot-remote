@@ -201,6 +201,7 @@
       "display": "Écran : {display}",
       "noDisplay": "Aucun écran choisi",
       "sends": "Envoyée par {kind}",
+      "sendsTo": "Envoyée vers {card}",
       "off": "Éteinte : non ouverte",
       "showing": "Affiche",
       "notShowing": "N'affiche pas"

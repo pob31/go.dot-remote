@@ -201,6 +201,7 @@
       "display": "Display: {display}",
       "noDisplay": "No display chosen",
       "sends": "Sent over {kind}",
+      "sendsTo": "Sent to {card}",
       "off": "Off: not opened",
       "showing": "Showing",
       "notShowing": "Not showing"

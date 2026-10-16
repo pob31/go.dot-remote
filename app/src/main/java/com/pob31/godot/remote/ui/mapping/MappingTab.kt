@@ -400,6 +400,7 @@ private fun OutputWords(reading: MappingReading, output: OutputRow, enabled: Boo
         )
         Text(
             when {
+                output.cardLabel.isNotEmpty() -> loc("mapping.output.sendsTo", "card" to output.cardLabel)
                 output.sends -> loc("mapping.output.sends", "kind" to kindWord(output.kind))
                 output.display.isEmpty() -> loc("mapping.output.noDisplay")
                 else -> loc("mapping.output.display", "display" to output.display)

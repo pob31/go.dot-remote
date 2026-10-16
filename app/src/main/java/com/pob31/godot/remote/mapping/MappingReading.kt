@@ -72,9 +72,36 @@ data class OutputRow(
      * grid, whose switch is then not offered.
      */
     val grid: Boolean? = null,
+    /**
+     * `<output>/card` and `<output>/cardName`, for an output of kind "card": the video card's
+     * identifier and its name when it was picked, kept even when the card is not on that
+     * machine. Empty on any other output and on a Go.dot older than the cards.
+     */
+    val card: String = "",
+    val cardName: String = "",
 ) {
     val label: String get() = name.ifEmpty { id }
     val sends: Boolean get() = kind.isNotEmpty() && kind != "display"
+
+    /** The card as Go.dot's Video tab names it (see [cardLabel]); empty when it has no name. */
+    val cardLabel: String get() = if (kind == "card") cardLabel(card, cardName) else ""
+}
+
+/**
+ * A video card's name with its maker before it, as Go.dot's Video tab shows it: the maker
+ * comes from the identifier's prefix (`dl-` or `dlt-` DeckLink, `aja-` AJA, anything else -
+ * the test card's `fake-` - none) and is left out when the name already starts with it.
+ * "DeckLink Duo 2 (1)", "AJA Kona 5", "Go.dot test card". Empty when the name is.
+ */
+fun cardLabel(card: String, cardName: String): String {
+    val name = cardName.trim()
+    if (name.isEmpty()) return ""
+    val maker = when {
+        card.startsWith("dl-") || card.startsWith("dlt-") -> "DeckLink"
+        card.startsWith("aja-") -> "AJA"
+        else -> return name
+    }
+    return if (name.startsWith(maker, ignoreCase = true)) name else "$maker $name"
 }
 
 /** Everything the Mapping tab reads, in one reading; equal readings recompose nothing. */
@@ -146,6 +173,8 @@ fun readMapping(mirror: Mirror): MappingReading {
             testPattern = mirror.value(base + "testPattern")?.asBoolean() ?: false,
             layers = layers,
             grid = mirror[base + "grid"]?.let { it.value?.asBoolean() ?: false },
+            card = mirror.text(base + "card") ?: "",
+            cardName = mirror.text(base + "cardName") ?: "",
         )
     }
     return MappingReading(outputs, canvases, mirror.value("/godot/document/locked")?.asBoolean() ?: false)
