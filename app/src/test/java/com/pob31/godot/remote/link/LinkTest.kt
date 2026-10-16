@@ -182,7 +182,9 @@ class LinkTest {
     fun pathAddedFetchesAnUndescribedObjectOncePerBurstAndTakesNoValuesFromIt() {
         engine.objects["/godot/run/R1234567"] = runJson("R1234567", "FROM_HTTP")
         engine.objects["/godot/run/R7654321"] = runJson("R7654321", "FROM_HTTP")
-        val link = live()
+        // The burst ends at the bundle: a watchdog beat that falls among the four frames on a
+        // slow runner would end it early and fetch twice (seen on CI), so the beat is slowed.
+        val link = live(LinkTiming(watchMs = 2000))
 
         // A new run: rows nobody has described yet. Twice over in one burst, as an object's rows come.
         for (address in listOf("/godot/run/R1234567", "/godot/run/R1234567/state", "/godot/run/R1234567/position", "/godot/run/R1234567/state")) {

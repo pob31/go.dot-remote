@@ -130,9 +130,19 @@ class FakeEngine : Closeable {
         val port = server.port
         socket = null
         server.close()
-        server = MockWebServer().also {
-            it.dispatcher = dispatcher
-            it.start(port)
+        // The port may not be free again at once (seen on CI's Linux): tried for a few seconds.
+        val until = System.nanoTime() + 5_000_000_000L
+        while (true) {
+            val next = MockWebServer().also { it.dispatcher = dispatcher }
+            try {
+                next.start(port)
+                server = next
+                return
+            } catch (e: java.net.BindException) {
+                runCatching { next.close() }
+                if (System.nanoTime() > until) throw e
+                Thread.sleep(50)
+            }
         }
     }
 
