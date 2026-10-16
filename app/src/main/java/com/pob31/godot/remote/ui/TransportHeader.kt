@@ -63,11 +63,14 @@ import com.pob31.godot.remote.model.CueLine
 import com.pob31.godot.remote.model.DohPhase
 import com.pob31.godot.remote.model.GodotIcon
 import com.pob31.godot.remote.model.HeaderReading
+import com.pob31.godot.remote.model.PairReading
+import com.pob31.godot.remote.model.Said
 import com.pob31.godot.remote.model.Panic
 import com.pob31.godot.remote.model.RunLine
 import com.pob31.godot.remote.model.clockText
 import com.pob31.godot.remote.model.originKey
 import com.pob31.godot.remote.model.readHeader
+import com.pob31.godot.remote.model.readPair
 import com.pob31.godot.remote.model.refusalLine
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
@@ -81,13 +84,14 @@ private val noRefusal: StateFlow<Refusal?> = MutableStateFlow(null)
 
 /**
  * THE TRANSPORT HEADER (A.4), on every tab: the machine on screen's current cue and its
- * run, the next cue with the standby arrows, GO, Doh! and PANIC, and a line of words.
+ * run, the next cue with the standby arrows, GO, Doh! and PANIC, and the machine's words.
  * Reads that machine's mirror at 25 Hz; sends to it.
  */
 @Composable
 fun TransportHeader(onScreen: LinkedMachine?) {
     val link = onScreen?.link
     val reading = rememberReading(link, HeaderReading()) { readHeader(it) }
+    val pair = rememberReading(link, PairReading.UNPAIRED) { readPair(it) }
     val state by (link?.state ?: offState).collectAsState()
     val refusal by (link?.lastRefusal ?: noRefusal).collectAsState()
     TransportHeaderView(
@@ -96,6 +100,8 @@ fun TransportHeader(onScreen: LinkedMachine?) {
         reading = reading,
         refusal = refusal,
         send = { command -> link?.command(command) ?: false },
+        seat = pair.seat(),
+        twoMains = pair.state == "bothSending",
     )
 }
 
@@ -108,6 +114,12 @@ fun TransportHeader(onScreen: LinkedMachine?) {
  * avoid a total disaster"). GO drawn at twice the type, PANIC at one and a half, Doh! a
  * little larger. Every one is a button with words on it - nothing is a gesture only, and no
  * colour says anything a word does not.
+ *
+ * THE MACHINE'S WORDS SIT IN THE ROW (the author, 2026-10-16: the line above GO "could be
+ * placed between the buttons"): the machine on screen, its seat in a pair, its link when not
+ * live, Locked and the last refusal, in a column between the cues and Doh! - no line of
+ * their own above the buttons. Where that column would squeeze the next cue onto two lines
+ * (an upright tablet, a phone) they are one short line above the cues instead.
  */
 @Composable
 fun TransportHeaderView(
@@ -117,6 +129,8 @@ fun TransportHeaderView(
     refusal: Refusal?,
     send: (String) -> Boolean,
     nowMs: () -> Long = SystemClock::uptimeMillis,
+    seat: Said? = null,
+    twoMains: Boolean = false,
 ) {
     val panic = remember { Panic() }
     var panicPresses by remember { mutableIntStateOf(0) }
@@ -142,6 +156,12 @@ fun TransportHeaderView(
     val sendOrSay: (String) -> Unit = { command -> if (!send(command)) notSent++ }
     // Read again at each press and when its time is up: no timer runs while nobody pressed.
     val killNext = remember(panicPresses) { panic.nextIsDouble(nowMs()) }
+    val sentence = when {
+        machine == null -> null
+        notSent > 0 -> loc("remote.header.notSent", "machine" to machine)
+        else -> refusalLine(refusal, reading.dohWindowSeconds, reading.audioStatus)?.let { say(it) }
+    }
+    val words = MachineWords(machine, seat, twoMains, state, reading.locked == true, sentence)
 
     BoxWithConstraints(
         Modifier
@@ -159,10 +179,13 @@ fun TransportHeaderView(
             else -> null
         }
         // The room the next cue has beside its label and the two arrows: under 360 dp its name gets a line of its own.
-        val cuesWidth = if (row != null) maxWidth - 24.dp - row.go - row.doh - row.panic - 32.dp - GodotMetrics.row else maxWidth - 24.dp
-        val stacked = cuesWidth - (row?.label ?: 60.dp) - 110.dp < 360.dp
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            WordsLine(machine, state, reading, refusal, notSent > 0)
+        val rowRoom = if (row != null) maxWidth - 24.dp - row.go - row.doh - row.panic - 32.dp - GodotMetrics.row else maxWidth - 24.dp
+        fun fitsOneLine(room: Dp) = room - (row?.label ?: 60.dp) - 110.dp >= 360.dp
+        // The machine's words take a column in the row only when the next cue keeps its one line beside it.
+        val wordsBeside = row != null && fitsOneLine(rowRoom - WORDS_WIDTH - 16.dp)
+        val stacked = !fitsOneLine(if (wordsBeside) rowRoom - WORDS_WIDTH - 16.dp else rowRoom)
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (!wordsBeside) WordsLine(words)
             val live = state == LinkState.LIVE
             // GO is never shorter than 96 dp: 128 on the wide row, 120 on the narrower, 104 on a phone's.
             if (row != null) {
@@ -172,6 +195,10 @@ fun TransportHeaderView(
                     Spacer(Modifier.width(16.dp))
                     CuesBlock(reading, live, Modifier.weight(1f), row.label, stacked, sendOrSay)
                     Spacer(Modifier.width(16.dp))
+                    if (wordsBeside) {
+                        WordsColumn(words, Modifier.width(WORDS_WIDTH).fillMaxHeight())
+                        Spacer(Modifier.width(16.dp))
+                    }
                     DohButton(reading, Modifier.width(row.doh).fillMaxHeight()) { sendOrSay("go.doh") }
                     Spacer(Modifier.width(GodotMetrics.row))
                     PanicButton(killNext, Modifier.width(row.panic).fillMaxHeight()) {
@@ -196,31 +223,85 @@ fun TransportHeaderView(
     }
 }
 
-/** The machine on screen, the link when it is not live, the lock, and the last refusal of this tablet. */
+/** The width of the machine's words when they sit in the row, between the cues and Doh!. */
+private val WORDS_WIDTH = 220.dp
+
+/** What the header says of the machine on screen: its name, its seat, its link, the lock, and the last refusal. */
+private class MachineWords(
+    val machine: String?,
+    val seat: Said?,
+    val twoMains: Boolean,
+    val state: LinkState,
+    val locked: Boolean,
+    val sentence: String?,
+)
+
 @Composable
-private fun WordsLine(machine: String?, state: LinkState, reading: HeaderReading, refusal: Refusal?, notSent: Boolean) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-        if (machine == null) {
-            Text(loc("remote.header.noMachine"), color = GodotColors.inkFaint, maxLines = 1)
+private fun LockedBadge() {
+    Text(
+        loc("remote.header.locked"), color = GodotColors.standby, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1,
+        modifier = Modifier
+            .background(GodotColors.panelHigh, RoundedCornerShape(4.dp))
+            .padding(horizontal = 6.dp, vertical = 1.dp)
+    )
+}
+
+@Composable
+private fun SeatWords(words: MachineWords) {
+    words.seat?.let {
+        Text(
+            say(it), color = if (words.twoMains) GodotColors.failed else GodotColors.inkDim, fontSize = 13.sp,
+            fontWeight = FontWeight.Medium, maxLines = 1, softWrap = false
+        )
+    }
+}
+
+/**
+ * The machine's words as a column in the header's row: the name (and its seat in a pair),
+ * the link when it is not live, Locked, and the refusal on two lines at most, ended with an
+ * ellipsis. Short lines, so the column stays narrow.
+ */
+@Composable
+private fun WordsColumn(words: MachineWords, modifier: Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically)) {
+        if (words.machine == null) {
+            Text(loc("remote.header.noMachine"), color = GodotColors.inkFaint, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            return@Column
+        }
+        Text(
+            words.machine, color = GodotColors.ink, fontWeight = FontWeight.SemiBold, fontSize = 16.sp,
+            maxLines = 1, overflow = TextOverflow.Ellipsis
+        )
+        if (words.seat != null || words.locked) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SeatWords(words)
+                if (words.locked) LockedBadge()
+            }
+        }
+        if (words.state != LinkState.LIVE) LinkMark(words.state, style = TextStyle(fontSize = 13.sp))
+        words.sentence?.let {
+            Text(it, color = GodotColors.failed, fontSize = 13.sp, lineHeight = 16.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+/** The same words as one short line above the cues, where the row has no room for a column. */
+@Composable
+private fun WordsLine(words: MachineWords) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (words.machine == null) {
+            Text(loc("remote.header.noMachine"), color = GodotColors.inkFaint, fontSize = 13.sp, maxLines = 1)
             return@Row
         }
-        Text(machine, color = GodotColors.ink, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.widthIn(max = 240.dp))
-        if (state != LinkState.LIVE) LinkMark(state)
-        if (reading.locked == true) {
-            Text(
-                loc("remote.header.locked"), color = GodotColors.standby, fontWeight = FontWeight.SemiBold, maxLines = 1,
-                modifier = Modifier
-                    .background(GodotColors.panelHigh, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            )
-        }
-        val sentence = when {
-            notSent -> loc("remote.header.notSent", "machine" to machine)
-            else -> refusalLine(refusal, reading.dohWindowSeconds, reading.audioStatus)?.let { say(it) }
-        }
-        sentence?.let {
-            Text(it, color = GodotColors.failed, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+        Text(
+            words.machine, color = GodotColors.ink, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, maxLines = 1,
+            overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 200.dp)
+        )
+        SeatWords(words)
+        if (words.state != LinkState.LIVE) LinkMark(words.state, style = TextStyle(fontSize = 13.sp))
+        if (words.locked) LockedBadge()
+        words.sentence?.let {
+            Text(it, color = GodotColors.failed, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
         }
     }
 }

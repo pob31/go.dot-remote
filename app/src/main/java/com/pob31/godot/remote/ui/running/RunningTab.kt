@@ -92,7 +92,6 @@ import com.pob31.godot.remote.model.TabWrites
 import com.pob31.godot.remote.model.clockText
 import com.pob31.godot.remote.model.readRuns
 import com.pob31.godot.remote.ui.GodotIconMark
-import com.pob31.godot.remote.ui.LinkMark
 import com.pob31.godot.remote.ui.rememberReading
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
@@ -148,7 +147,7 @@ fun RunningView(
     BoxWithConstraints(Modifier.fillMaxSize().background(GodotColors.panelRuns)) {
         val wide = maxWidth >= 760.dp
         Column(Modifier.fillMaxSize()) {
-            // The tab's line: how many, and the link when it is not live - greyed rows say why in words.
+            // The tab's line: how many (the header says how the link stands; greyed rows are its echo).
             Row(
                 Modifier.fillMaxWidth().background(GodotColors.panel).padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -158,7 +157,6 @@ fun RunningView(
                     if (rows.isEmpty()) loc("running.title") else loc("running.count", "count" to rows.count { !it.finished }.toString()),
                     color = GodotColors.ink, fontWeight = FontWeight.SemiBold, fontSize = 18.sp
                 )
-                if (hasMachine && !live) LinkMark(state)
                 if (notSent > 0) Text(loc("running.notSent"), color = GodotColors.failed, maxLines = 1)
                 Spacer(Modifier.weight(1f))
                 if (rows.isNotEmpty() && wide) {

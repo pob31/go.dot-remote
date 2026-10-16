@@ -13,6 +13,7 @@
 
 package com.pob31.godot.remote.ui
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +27,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.areNavigationBarsVisible
+import androidx.compose.foundation.layout.areStatusBarsVisible
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
@@ -39,6 +50,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,6 +69,28 @@ import com.pob31.godot.remote.ui.cues.CuesTab
 import com.pob31.godot.remote.ui.running.RunningTab
 import com.pob31.godot.remote.ui.surface.SurfaceTab
 import com.pob31.godot.remote.ui.theme.GodotMetrics
+
+/**
+ * WHAT THE APP KEEPS CLEAR OF: a camera cutout, the keyboard, and the status and navigation
+ * bars - which the activity hides, so they take nothing. NOT the caption bar while the app
+ * fills the screen: a tablet's window handle (the three dots at the top of a Lenovo's) stays
+ * over the app whatever it asks, and keeping clear of it would give back the band the hidden
+ * status bar freed (the author, 2026-10-16). In a window of its own (split screen, a
+ * desktop-like window) the caption carries the window's buttons, so it is kept clear of.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun appInsets(): WindowInsets {
+    LocalConfiguration.current // read: entering or leaving a window of its own changes it
+    val inWindow = (LocalContext.current as? Activity)?.isInMultiWindowMode == true
+    if (inWindow) return WindowInsets.safeDrawing
+    // A hidden bar's insets are not always nothing: the Lenovo reports the status bar's band,
+    // hidden, because the window handle overlaps it. Only a bar on screen is kept clear of.
+    var insets = WindowInsets.displayCutout.union(WindowInsets.ime)
+    if (WindowInsets.areStatusBarsVisible) insets = insets.union(WindowInsets.statusBars)
+    if (WindowInsets.areNavigationBarsVisible) insets = insets.union(WindowInsets.navigationBars)
+    return insets
+}
 
 /** The five tabs, each a word and a drawn picture (never the picture alone). */
 enum class RemoteTab(val key: String, val icon: GodotIcon, val laterKey: String?) {
@@ -77,7 +112,7 @@ fun RemoteApp(service: EngineLinkService?) {
         Modifier
             .fillMaxSize()
             .background(GodotColors.ground)
-            .safeDrawingPadding()
+            .windowInsetsPadding(appInsets())
     ) {
         if (service == null) {
             Text(loc("remote.screen.starting"), color = GodotColors.inkFaint, modifier = Modifier.padding(24.dp))
@@ -188,7 +223,7 @@ private fun TabStrip(current: RemoteTab, onPick: (RemoteTab) -> Unit) {
     }
 }
 
-/** A tab to come: says so, and says how the link stands when the machine on screen is not live. */
+/** A tab to come: says so. */
 @Composable
 private fun LaterTab(tab: RemoteTab, onScreen: LinkedMachine?) {
     Column(
@@ -200,14 +235,7 @@ private fun LaterTab(tab: RemoteTab, onScreen: LinkedMachine?) {
     ) {
         GodotIconMark(tab.icon, GodotColors.inkOff, size = 48.dp)
         tab.laterKey?.let { Text(loc(it), color = GodotColors.inkFaint, textAlign = TextAlign.Center) }
-        if (onScreen == null) {
-            Text(loc("remote.tabs.noMachine"), color = GodotColors.inkFaint, textAlign = TextAlign.Center)
-        } else {
-            val state by onScreen.link.state.collectAsState()
-            if (state != LinkState.LIVE) {
-                Text(onScreen.machine.label, color = GodotColors.inkDim)
-                LinkMark(state)
-            }
-        }
+        // How the link stands is the header's to say.
+        if (onScreen == null) Text(loc("remote.tabs.noMachine"), color = GodotColors.inkFaint, textAlign = TextAlign.Center)
     }
 }

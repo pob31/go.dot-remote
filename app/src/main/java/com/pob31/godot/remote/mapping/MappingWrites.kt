@@ -18,7 +18,7 @@ import com.pob31.godot.remote.link.WireText
 
 /**
  * WHAT THE MAPPING TAB SENDS, and nothing else: values, a drag's brackets, a regrid as one
- * `node.setMany`, and Identify. No `zone.create`, no `object.delete` - the tablet changes
+ * `node.setMany`, Identify and the grid. No `zone.create`, no `object.delete` - the tablet changes
  * no structure (§68.2, ANO). A seam, so a test reads the writes a gesture makes.
  */
 interface MappingWrites {
@@ -39,6 +39,9 @@ interface MappingWrites {
 
     /** `videoOutput.identify <output> <on>`: the test pattern on that projector (machine-local). */
     fun identify(output: String, on: Boolean): Boolean
+
+    /** `videoOutput.grid <output> <on>`: the alignment grid on that projector (machine-local, as Identify). */
+    fun grid(output: String, on: Boolean): Boolean
 }
 
 /** The writes, to the machine on screen. */
@@ -50,6 +53,7 @@ class LinkMappingWrites(private val link: Link) : MappingWrites {
     override fun setMany(writes: List<Pair<String, String>>): Boolean =
         link.command("node.setMany", *writes.flatMap { listOf(it.first, it.second) }.toTypedArray())
     override fun identify(output: String, on: Boolean) = link.command("videoOutput.identify", output, WireText.bool(on))
+    override fun grid(output: String, on: Boolean) = link.command("videoOutput.grid", output, WireText.bool(on))
 }
 
 /**

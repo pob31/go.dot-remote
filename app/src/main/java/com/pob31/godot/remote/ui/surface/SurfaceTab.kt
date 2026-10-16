@@ -91,7 +91,6 @@ import com.pob31.godot.remote.model.TabWrites
 import com.pob31.godot.remote.model.readSurface
 import com.pob31.godot.remote.model.sendKnobs
 import com.pob31.godot.remote.ui.GodotIconMark
-import com.pob31.godot.remote.ui.LinkMark
 import com.pob31.godot.remote.ui.rememberReading
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
@@ -194,7 +193,6 @@ private fun SurfaceBar(
                     SurfaceChip(surface, surface.id == reading.shown.id) { onSurface(surface.id) }
                 }
             }
-            if (hasMachine && state != LinkState.LIVE) LinkMark(state)
             if (wide) for (each in SurfacePage.entries) PageChip(each, each == page) { onPage(each) }
         }
         if (!wide) {

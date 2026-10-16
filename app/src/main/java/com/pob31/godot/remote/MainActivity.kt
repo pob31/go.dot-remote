@@ -25,23 +25,37 @@ import android.os.IBinder
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.lifecycleScope
 import com.pob31.godot.remote.findme.AppVisibility
 import com.pob31.godot.remote.link.EngineLinkService
+import com.pob31.godot.remote.link.Quit
 import com.pob31.godot.remote.localization.LocalLanguage
 import com.pob31.godot.remote.localization.LocalizationManager
 import com.pob31.godot.remote.ui.RemoteApp
 import com.pob31.godot.remote.ui.theme.GodotTheme
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * The one activity. It starts the link service (which outlives it) and binds to it while
  * it is in front; swiped away and back, it finds the links where they were. The screen
  * stays on while it is in front: a tablet that dims mid-cue is a tablet nobody trusts.
+ *
+ * THE WHOLE SCREEN IS THE APP'S (the author, 2026-10-16: "the Android top status bar can be
+ * reclaimed too"): drawn edge to edge, the status bar and the navigation bar hidden - a
+ * swipe from the edge shows them for a moment - and hidden again whenever the app comes
+ * back or gets the focus back. The header starts at the top, clear of a camera cutout.
+ *
+ * Quit ([Quit]) finishes it and takes its task out of the recent apps.
  */
 class MainActivity : ComponentActivity() {
 
@@ -64,7 +78,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        hideSystemBars()
+        lifecycleScope.launch { Quit.asked.collect { finishAndRemoveTask() } }
         setContent {
             val language by LocalizationManager.currentLanguage.collectAsState()
             val bound by service.collectAsState()
@@ -83,6 +100,23 @@ class MainActivity : ComponentActivity() {
         } else {
             startLinkService()
         }
+    }
+
+    private fun hideSystemBars() {
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hideSystemBars()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Back from a dialog, the notification shade or the keyboard: hidden again.
+        if (hasFocus) hideSystemBars()
     }
 
     private fun startLinkService() {

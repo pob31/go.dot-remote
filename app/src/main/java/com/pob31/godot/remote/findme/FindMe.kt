@@ -23,6 +23,8 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
@@ -48,6 +50,10 @@ object AppVisibility {
  *   itself. Android 14 may withhold full-screen intents ([canShowOverLock]); the
  *   notification is then a heads-up that still sounds (on the alarm stream, over and over:
  *   FLAG_INSISTENT) and vibrates until it is touched, swiped away, or its time is up.
+ *
+ * EITHER WAY IT IS HEARD: an alarm volume left at nothing is turned up to its loudest for
+ * the alarm and put back after ([AlarmVolume]); the find screen also flashes the camera's
+ * light in step with itself ([Torch]).
  */
 object FindMe {
     private const val TAG = "FindMe"
@@ -66,10 +72,12 @@ object FindMe {
         .build()
 
     /** The tablet's alarm sound, or its ringtone, or its notification sound: never silence by choice. */
-    fun alarmSound(): Uri? =
-        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+    fun alarmSound(): Uri? = alarmSounds().firstOrNull()
+
+    /** Every sound the alarm may try, in order: the alarm, the ringtone, the notification sound. */
+    fun alarmSounds(): List<Uri> = listOf(RingtoneManager.TYPE_ALARM, RingtoneManager.TYPE_RINGTONE, RingtoneManager.TYPE_NOTIFICATION)
+        .mapNotNull { RingtoneManager.getDefaultUri(it) }
+        .distinct()
 
     fun createChannel(context: Context) {
         val channel = NotificationChannel(
@@ -140,6 +148,9 @@ object FindMe {
             .setOnlyAlertOnce(false)
             .build()
         notification.flags = notification.flags or Notification.FLAG_INSISTENT
+        // Heard even with the alarm volume at nothing: turned up for the time asked, then put back.
+        AlarmVolume.raise(context)
+        Handler(Looper.getMainLooper()).postDelayed({ AlarmVolume.restore(context.applicationContext) }, seconds * 1000L)
         try {
             NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
         } catch (e: SecurityException) {

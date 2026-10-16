@@ -99,6 +99,13 @@
       "removeText": "Its link closes and it leaves the list. Nothing changes on the computer itself.",
       "tooOld": "This Go.dot cannot stream its state to a remote: update it to a build with the remote."
     },
+    "quit": {
+      "button": "Quit the remote",
+      "keeps": "Every machine is unlinked and the app closes. They stay in the list with their Linked switch: the next launch links them again.",
+      "title": "Quit the remote?",
+      "explain": "Every machine is unlinked, the app closes and stops running in the background. Nothing changes in Go.dot.",
+      "confirm": "Quit"
+    },
     "tablet": {
       "title": "This tablet",
       "name": "Its name",
@@ -124,7 +131,7 @@
     },
     "find": {
       "title": "Find this tablet",
-      "explain": "Go.dot's Show settings > Network has a Find button for this tablet: its screen flashes, it sounds its alarm and vibrates until it is touched.",
+      "explain": "Go.dot's Show settings > Network has a Find button for this tablet: its screen and its camera light flash, it sounds its alarm - turned up if it was at nothing - and vibrates until it is touched.",
       "notificationsOff": "Notifications are off for this app: Go.dot cannot find the tablet while the app is in the background.",
       "openNotificationSettings": "Turn notifications on",
       "overLockOff": "Android does not let the alarm open over the lock screen: a locked tablet will sound and vibrate, without the flashing screen.",
@@ -164,7 +171,8 @@
       "channelName": "Link to Go.dot",
       "channelDescription": "Keeps this tablet linked to Go.dot while the app is in the background.",
       "linkedTo": "Linked to {machine}",
-      "notLinked": "Not linked"
+      "notLinked": "Not linked",
+      "quit": "Quit"
     }
   },
   "mapping": {
@@ -172,7 +180,7 @@
     "noOutputs": "This show has no video outputs. They are made in Go.dot, in Show settings > Video.",
     "stale": "Nothing can be changed until the link is live again.",
     "locked": "Locked",
-    "lockedExplain": "The show is locked: the warps, the grid and the zones' opacity and blend cannot be changed until it is unlocked. Identify still works.",
+    "lockedExplain": "The show is locked: the warps, the grid and the zones' opacity and blend cannot be changed until it is unlocked. Identify and the grid on the projector still work.",
     "output": {
       "canvas": "Shows {canvas} · {size}",
       "noCanvas": "Shows no canvas",
@@ -187,6 +195,11 @@
       "label": "Identify",
       "on": "The test pattern is on this projector",
       "off": "Puts a white frame and a cross on this projector"
+    },
+    "projectorGrid": {
+      "label": "Grid",
+      "on": "A grid is drawn on this projector, bent by its warps",
+      "off": "Draws a grid on this projector, bent by its warps, to set the geometry by"
     },
     "warps": {
       "title": "Warps",

@@ -38,6 +38,7 @@ import com.pob31.godot.remote.model.CueLine
 import com.pob31.godot.remote.model.HeaderReading
 import com.pob31.godot.remote.model.Mirror
 import com.pob31.godot.remote.model.RunLine
+import com.pob31.godot.remote.model.Said
 import com.pob31.godot.remote.model.SnapshotReader
 import com.pob31.godot.remote.osc.OscValue
 import com.pob31.godot.remote.ui.theme.GodotColors
@@ -109,8 +110,8 @@ class ScreenshotTest {
     private val refused = Refusal.parse("1090 7 ws:192.168.1.20:5000 too-soon go")
 
     @Composable
-    private fun header(reading: HeaderReading = playing, state: LinkState = LinkState.LIVE, refusal: Refusal? = refused) =
-        TransportHeaderView("Main FOH", state, reading, refusal, send = { true }, nowMs = { 0L })
+    private fun header(reading: HeaderReading = playing, state: LinkState = LinkState.LIVE, refusal: Refusal? = refused, seat: Said? = null) =
+        TransportHeaderView("Main FOH", state, reading, refusal, send = { true }, nowMs = { 0L }, seat = seat)
 
     @Test
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
@@ -129,6 +130,19 @@ class ScreenshotTest {
     @Test
     @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
     fun headerOnAPhone() = shoot("header-phone") { header() }
+
+    /** The machine's words between the cues and Doh!: its seat in a pair, the lost link, Locked and a refusal at once. */
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun headerWithEveryWordOnTheTablet() = shoot("header-words-tablet") {
+        header(state = LinkState.GONE, seat = Said("remote.pair.seat.mainSending"))
+    }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun headerWithEveryWordInFrench() = shoot("header-words-tablet-fr", "fr") {
+        header(state = LinkState.GONE, seat = Said("remote.pair.seat.backupFollowing"))
+    }
 
     private fun linkWith(machine: Machine, role: String, state: String, linked: Boolean): LinkedMachine {
         val link = Link(machine.host, machine.port, Identity("id", "tablet"), OkHttpClient()).also { links += it }
@@ -165,6 +179,7 @@ class ScreenshotTest {
             override fun setLinked(key: String, linked: Boolean) = Unit
             override fun putOnScreen(key: String) = Unit
             override fun setTabletName(name: String) = Unit
+            override fun quit() = Unit
         }
     }
 

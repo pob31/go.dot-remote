@@ -35,6 +35,7 @@ import com.pob31.godot.remote.findme.FindMe
 import com.pob31.godot.remote.localization.locStatic
 import com.pob31.godot.remote.model.readPair
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -80,6 +81,28 @@ class EngineLinkService : LifecycleService() {
     private val timing = LinkTiming()
     private val http by lazy { Link.httpClient(timing) }
     private var wifiLock: WifiManager.WifiLock? = null
+    private val watchers = ArrayList<Job>()
+
+    /** Quit (the Connections tab's button, the notification's action): see [Quit]. */
+    private val quitter = Quitter(object : QuitSteps {
+        override fun stopWatching() {
+            watchers.forEach { it.cancel() }
+            watchers.clear()
+        }
+
+        override fun closeLinks() = closeAllLinks(_links, _onScreen)
+
+        override fun releaseWifiLock() = this@EngineLinkService.releaseWifiLock()
+
+        override fun removeNotification() {
+            ServiceCompat.stopForeground(this@EngineLinkService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID)
+        }
+
+        override fun stopService() = stopSelf()
+
+        override fun closeScreens() = Quit.closeScreens()
+    })
 
     private val _machines = MutableStateFlow<List<Machine>>(emptyList())
 
@@ -118,20 +141,37 @@ class EngineLinkService : LifecycleService() {
         FindMe.createChannel(this)
         _tabletName.value = store.tabletName
         _machines.value = store.machines
+        startLinking()
+    }
 
-        // The machines left linked are linked again.
+    /** The machines left linked are linked again, and the links watched. */
+    private fun startLinking() {
         val restored = store.machines.filter { it.linked }.map { LinkedMachine(it, newLink(it)) }
         _links.value = restored
         restored.forEach { it.link.start() }
         reconsiderOnScreen()
-
         watchLinks()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        if (intent?.action == Quit.ACTION) {
+            quit()
+            return START_NOT_STICKY
+        }
+        // Launched again while a quit service was still bound by a screen on its way out.
+        if (quitter.revive()) startLinking()
         goForeground()
         return START_STICKY
+    }
+
+    /**
+     * QUIT: every machine unlinked - each keeping its Linked switch, so the next launch links
+     * it again - the Wi-Fi lock let go, the notification gone, the service stopped, and the
+     * open screen finished with its task.
+     */
+    fun quit() {
+        quitter.quit()
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -312,8 +352,14 @@ class EngineLinkService : LifecycleService() {
         )
         val title = if (onScreen != null) locStatic("remote.notification.linkedTo", "machine" to onScreen.machine.label)
                     else locStatic("remote.notification.notLinked")
+        val quit = PendingIntent.getService(
+            this, 1,
+            Intent(this, EngineLinkService::class.java).setAction(Quit.ACTION),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_link)
+            .addAction(R.drawable.ic_stat_link, locStatic("remote.notification.quit"), quit)
             .setContentTitle(title)
             .setContentText(if (onScreen != null) linkWord(state) else null)
             .setContentIntent(open)
@@ -329,7 +375,7 @@ class EngineLinkService : LifecycleService() {
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun watchLinks() {
         // The notification says the machine on screen and how its link stands.
-        lifecycleScope.launch {
+        watchers += lifecycleScope.launch {
             _onScreen.flatMapLatest { linked ->
                 linked?.link?.state?.map { linked to it } ?: flowOf(null to LinkState.OFF)
             }.distinctUntilChanged().collect { (linked, state) ->
@@ -338,7 +384,7 @@ class EngineLinkService : LifecycleService() {
         }
         // The Wi-Fi lock is held while any link is wanted; the machine on screen is chosen
         // again as links come and go (a main found sending once its link is live).
-        lifecycleScope.launch {
+        watchers += lifecycleScope.launch {
             _links.flatMapLatest { list ->
                 if (list.isEmpty()) flowOf(emptyList())
                 else combine(list.map { it.link.state }) { states -> states.toList() }
@@ -348,7 +394,7 @@ class EngineLinkService : LifecycleService() {
             }
         }
         // Any linked machine may ask the tablet to show itself.
-        lifecycleScope.launch {
+        watchers += lifecycleScope.launch {
             _links.flatMapLatest { list ->
                 if (list.isEmpty()) emptyFlow()
                 else merge(*list.map { linked -> linked.link.finds.map { linked.machine.label to it } }.toTypedArray())

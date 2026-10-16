@@ -102,7 +102,6 @@ import com.pob31.godot.remote.mapping.regridded
 import com.pob31.godot.remote.model.GodotIcon
 import com.pob31.godot.remote.model.TypedNumber
 import com.pob31.godot.remote.ui.GodotIconMark
-import com.pob31.godot.remote.ui.LinkMark
 import com.pob31.godot.remote.ui.rememberReading
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
@@ -118,8 +117,9 @@ val LocalMappingPick = compositionLocalOf { MappingPick() }
 /**
  * THE MAPPING TAB (A.8; PRD §3.17, "video mapping at the projection surface - walk to the
  * wall"): the machine on screen's video outputs, each output's warps drawn as the renderer
- * bends them, a point dragged or nudged, the grid split, a zone's opacity and blend, and
- * Identify to find which projector is which. Nothing structural: no zone made or taken
+ * bends them, a point dragged or nudged, the grid split, a zone's opacity and blend,
+ * Identify to find which projector is which, and the alignment grid drawn on the projector
+ * through its warp to set the geometry by. Nothing structural: no zone made or taken
  * away (§68.2, ANO).
  */
 @Composable
@@ -154,7 +154,6 @@ fun MappingView(
         ) {
             GodotIconMark(GodotIcon.VIDEO, GodotColors.inkOff, size = 48.dp)
             Text(loc("mapping.noOutputs"), color = GodotColors.inkFaint, textAlign = TextAlign.Center)
-            if (linkState != LinkState.LIVE) LinkMark(linkState)
         }
         return
     }
@@ -193,6 +192,7 @@ fun MappingView(
 
     val actions = MappingActions(
         identify = { writes.identify(output.id, !output.testPattern) },
+        grid = { writes.grid(output.id, output.grid != true) },
         nudge = { direction ->
             val at = pickedPoint
             if (editable && at != null) {
@@ -255,7 +255,7 @@ fun MappingView(
         val panel: @Composable (Modifier) -> Unit = { modifier ->
             Column(modifier, verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 BlockLine(block, linkState)
-                OutputWords(reading, output, enabled = live, onIdentify = actions.identify)
+                OutputWords(reading, output, enabled = live, onIdentify = actions.identify, onGrid = actions.grid)
                 WarpList(reading, output, layerIndex, onPick = { pick(it, null) })
                 GridPanel(warp, editable, actions)
                 if (layer.isZone) ZonePanel(layer, editable, writes)
@@ -302,6 +302,7 @@ fun MappingView(
 /** The tab's buttons as callbacks, so the panels below stay drawing only. */
 private class MappingActions(
     val identify: () -> Unit,
+    val grid: () -> Unit,
     val nudge: (NudgeDirection) -> Unit,
     val regrid: (columns: Int, rows: Int) -> Unit,
     val step: (NudgeStep) -> Unit,
@@ -320,10 +321,8 @@ private fun layerName(reading: MappingReading, layer: WarpLayer, n: Int): String
 private fun BlockLine(block: MappingBlock, linkState: LinkState) {
     when (block) {
         MappingBlock.NONE -> Unit
-        MappingBlock.LINK -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            LinkMark(linkState)
-            Text(loc("mapping.stale"), color = GodotColors.inkDim)
-        }
+        // The header says how the link stands; here, only what it stops.
+        MappingBlock.LINK -> Text(loc("mapping.stale"), color = GodotColors.inkDim)
         MappingBlock.LOCKED -> Surface(
             color = GodotColors.panelIn, shape = RoundedCornerShape(6.dp),
             border = BorderStroke(1.dp, GodotColors.standby), modifier = Modifier.fillMaxWidth()
@@ -387,7 +386,7 @@ private fun Heading(text: String) {
 
 /** The output in words: what it shows and where, whether it is on, and whether it is showing or why not (§4.8). */
 @Composable
-private fun OutputWords(reading: MappingReading, output: OutputRow, enabled: Boolean, onIdentify: () -> Unit) {
+private fun OutputWords(reading: MappingReading, output: OutputRow, enabled: Boolean, onIdentify: () -> Unit, onGrid: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
             output.label, style = MaterialTheme.typography.titleLarge, color = GodotColors.ink,
@@ -434,21 +433,26 @@ private fun OutputWords(reading: MappingReading, output: OutputRow, enabled: Boo
         if (output.enabled && !showing && output.problem.isNotEmpty()) {
             Text(output.problem, color = GodotColors.failed)
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Switch(
-                checked = output.testPattern,
-                onCheckedChange = { onIdentify() },
-                enabled = enabled,
-                colors = SwitchDefaults.colors(checkedTrackColor = GodotColors.standby, checkedThumbColor = Color.Black)
-            )
-            Spacer(Modifier.width(10.dp))
-            Column {
-                Text(loc("mapping.identify.label"), color = GodotColors.ink, fontWeight = FontWeight.Medium)
-                Text(
-                    loc(if (output.testPattern) "mapping.identify.on" else "mapping.identify.off"),
-                    color = if (output.testPattern) GodotColors.standby else GodotColors.inkFaint
-                )
-            }
+        ProjectorSwitch(output.testPattern, enabled, "mapping.identify", onIdentify)
+        // The grid, beside Identify: offered only by a Go.dot that has it (its row is there).
+        output.grid?.let { ProjectorSwitch(it, enabled, "mapping.projectorGrid", onGrid) }
+    }
+}
+
+/** A switch that puts something on the projector itself - Identify, the grid - its word and what it does. */
+@Composable
+private fun ProjectorSwitch(on: Boolean, enabled: Boolean, key: String, onToggle: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Switch(
+            checked = on,
+            onCheckedChange = { onToggle() },
+            enabled = enabled,
+            colors = SwitchDefaults.colors(checkedTrackColor = GodotColors.standby, checkedThumbColor = Color.Black)
+        )
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text(loc("$key.label"), color = GodotColors.ink, fontWeight = FontWeight.Medium)
+            Text(loc(if (on) "$key.on" else "$key.off"), color = if (on) GodotColors.standby else GodotColors.inkFaint)
         }
     }
 }

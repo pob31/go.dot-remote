@@ -99,6 +99,13 @@
       "removeText": "Sa liaison se ferme et elle quitte la liste. Rien ne change sur l'ordinateur lui-même.",
       "tooOld": "Ce Go.dot ne sait pas diffuser son état vers une télécommande : mettez-le à jour vers une version qui la connaît."
     },
+    "quit": {
+      "button": "Quitter la télécommande",
+      "keeps": "Chaque liaison est coupée et l'application se ferme. Les machines restent dans la liste avec leur interrupteur Reliée : au prochain lancement, elles sont reliées de nouveau.",
+      "title": "Quitter la télécommande ?",
+      "explain": "Chaque liaison est coupée, l'application se ferme et ne tourne plus en arrière-plan. Rien ne change dans Go.dot.",
+      "confirm": "Quitter"
+    },
     "tablet": {
       "title": "Cette tablette",
       "name": "Son nom",
@@ -124,7 +131,7 @@
     },
     "find": {
       "title": "Retrouver cette tablette",
-      "explain": "Dans Go.dot, Show settings > Network a un bouton Find pour cette tablette : son écran clignote, elle sonne son alarme et vibre jusqu'à ce qu'on la touche.",
+      "explain": "Dans Go.dot, Show settings > Network a un bouton Find pour cette tablette : son écran et la lumière de son appareil photo clignotent, elle sonne son alarme - montée si elle était à zéro - et vibre jusqu'à ce qu'on la touche.",
       "notificationsOff": "Les notifications de l'application sont coupées : Go.dot ne peut pas retrouver la tablette quand l'application est en arrière-plan.",
       "openNotificationSettings": "Activer les notifications",
       "overLockOff": "Android ne laisse pas l'alarme s'ouvrir par-dessus l'écran de verrouillage : une tablette verrouillée sonnera et vibrera, sans l'écran qui clignote.",
@@ -164,7 +171,8 @@
       "channelName": "Liaison avec Go.dot",
       "channelDescription": "Garde cette tablette reliée à Go.dot quand l'application est en arrière-plan.",
       "linkedTo": "Reliée à {machine}",
-      "notLinked": "Non reliée"
+      "notLinked": "Non reliée",
+      "quit": "Quitter"
     }
   },
   "mapping": {
@@ -172,7 +180,7 @@
     "noOutputs": "Ce spectacle n'a aucune sortie vidéo. Elles se créent dans Go.dot, dans Show settings > Video.",
     "stale": "Rien ne peut être modifié avant que la liaison soit de nouveau active.",
     "locked": "Verrouillé",
-    "lockedExplain": "Le spectacle est verrouillé : les déformations, la grille, l'opacité et le mode de fusion des zones ne peuvent pas être modifiés avant son déverrouillage. Identifier fonctionne toujours.",
+    "lockedExplain": "Le spectacle est verrouillé : les déformations, la grille, l'opacité et le mode de fusion des zones ne peuvent pas être modifiés avant son déverrouillage. Identifier et la grille sur le projecteur fonctionnent toujours.",
     "output": {
       "canvas": "Montre {canvas} · {size}",
       "noCanvas": "Ne montre aucun canevas",
@@ -187,6 +195,11 @@
       "label": "Identifier",
       "on": "La mire est sur ce projecteur",
       "off": "Met un cadre blanc et une croix sur ce projecteur"
+    },
+    "projectorGrid": {
+      "label": "Grille",
+      "on": "Une grille est dessinée sur ce projecteur, courbée par ses déformations",
+      "off": "Dessine sur ce projecteur une grille courbée par ses déformations, pour régler la géométrie"
     },
     "warps": {
       "title": "Déformations",

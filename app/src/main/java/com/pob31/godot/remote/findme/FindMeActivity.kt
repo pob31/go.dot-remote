@@ -15,8 +15,6 @@ package com.pob31.godot.remote.findme
 
 import android.content.Context
 import android.content.Intent
-import android.media.Ringtone
-import android.media.RingtoneManager
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -69,12 +67,17 @@ import kotlinx.coroutines.delay
  * turning the screen on (WFS-DIY's FlashScreenActivity, carried over).
  *
  * THE FLASH CHANGES COLOUR EVERY 250 MS - two yellow flashes a second, under the three a
- * second at which a full-screen flash becomes a risk to somebody photosensitive.
+ * second at which a full-screen flash becomes a risk to somebody photosensitive - and the
+ * camera's light, where the tablet has one, flashes with it ([Torch]). The alarm stream is
+ * turned up for the alarm when it was at nothing, and put back after ([AlarmVolume]).
+ * Touch, Back, the time up or the screen destroyed: all of it stops, the light left off.
  */
 class FindMeActivity : ComponentActivity() {
 
-    private var ringtone: Ringtone? = null
+    private var sound: AlarmSound? = null
+    private var torch: Torch? = null
     private var vibrator: Vibrator? = null
+    private var ended = false
 
     private val machine = mutableStateOf("")
     private val until = mutableLongStateOf(0L)
@@ -93,7 +96,7 @@ class FindMeActivity : ComponentActivity() {
         setContent {
             val language by LocalizationManager.currentLanguage.collectAsState()
             CompositionLocalProvider(LocalLanguage provides language) {
-                FindMeScreen(machine.value, until.longValue, onDone = { finish() })
+                FindMeScreen(machine.value, until.longValue, onDone = { end() })
             }
         }
     }
@@ -131,15 +134,9 @@ class FindMeActivity : ComponentActivity() {
     }
 
     private fun startAlarm() {
-        try {
-            ringtone = FindMe.alarmSound()?.let { RingtoneManager.getRingtone(this, it) }?.apply {
-                audioAttributes = FindMe.alarmAttributes
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) isLooping = true
-                play()
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "no alarm sound", e)
-        }
+        AlarmVolume.raise(this)
+        sound = AlarmSound(this).also { it.start() }
+        torch = Torch(this).also { it.set(true) }
         try {
             vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 (getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
@@ -159,27 +156,39 @@ class FindMeActivity : ComponentActivity() {
         }
     }
 
-    /** Before Android 9 a ringtone cannot loop by itself: played again whenever it ends. */
-    internal fun keepSounding() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) ringtone?.let { if (!it.isPlaying) it.play() }
+    /** The camera's light in step with the screen; nothing once the alarm has ended. */
+    private fun flash(lit: Boolean) {
+        if (!ended) torch?.set(lit)
     }
 
+    /** Everything stopped - the sound, the light, the vibration - and the volume put back. Safe twice. */
     private fun stopAlarm() {
-        try { ringtone?.stop() } catch (e: Exception) { /* already stopped */ }
-        ringtone = null
+        sound?.stop()
+        sound = null
+        torch?.off()
+        torch = null
         try { vibrator?.cancel() } catch (e: Exception) { /* already still */ }
         vibrator = null
+        AlarmVolume.restore(this)
+    }
+
+    /** Touch, Back or the time up: stopped at once, before the screen goes. */
+    private fun end() {
+        ended = true
+        stopAlarm()
+        finish()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            finish()
+            end()
             return true
         }
         return super.onKeyDown(keyCode, event)
     }
 
     override fun onDestroy() {
+        ended = true
         stopAlarm()
         super.onDestroy()
     }
@@ -189,9 +198,9 @@ class FindMeActivity : ComponentActivity() {
         var lit by remember { mutableStateOf(true) }
         LaunchedEffect(until) {
             while (SystemClock.elapsedRealtime() < until) {
-                delay(FLASH_MS)
+                delay(FindMePlan.FLASH_MS)
                 lit = !lit
-                keepSounding()
+                flash(lit)
             }
             onDone()
         }
@@ -219,6 +228,5 @@ class FindMeActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "FindMeActivity"
-        private const val FLASH_MS = 250L
     }
 }

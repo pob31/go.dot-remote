@@ -91,12 +91,14 @@ class ScreenshotTestMapping {
         file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    private fun machine(locked: Boolean = false, state: LinkState = LinkState.LIVE): LinkedMachine {
+    private fun machine(locked: Boolean = false, state: LinkState = LinkState.LIVE, grid: Boolean? = null): LinkedMachine {
         val machine = Machine("Main FOH", "192.168.1.10", 5010, linked = true)
         val link = Link(machine.host, machine.port, Identity("id", "tablet"), OkHttpClient()).also { links += it }
         val result = SnapshotReader.read(StringReader(Fixtures.text("fixtures/mapping-snapshot.json")))
         link.mirror.install(result.state, result.tick)
         link.mirror.putValues("/godot/document/locked", "T", listOf(OscValue.of(locked)))
+        // A Go.dot with the alignment grid has its row; the fixture's is older and has none.
+        grid?.let { link.mirror.putValues("/godot/videoOutput/VD000021/grid", "T", listOf(OscValue.of(it))) }
         val field = Link::class.java.getDeclaredField("_state").apply { isAccessible = true }
         @Suppress("UNCHECKED_CAST")
         (field.get(link) as MutableStateFlow<LinkState>).value = state
@@ -130,6 +132,20 @@ class ScreenshotTestMapping {
     fun theZonesOnTheTablet() {
         val onScreen = machine()
         shoot("mapping-tablet", "en", zones) { app(onScreen) }
+    }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun theGridBesideIdentifyOnTheTablet() {
+        val onScreen = machine(grid = true)
+        shoot("mapping-grid-tablet", "en", zones) { app(onScreen) }
+    }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun theGridInFrench() {
+        val onScreen = machine(grid = false)
+        shoot("mapping-grid-tablet-fr", "fr", zones) { app(onScreen) }
     }
 
     @Test

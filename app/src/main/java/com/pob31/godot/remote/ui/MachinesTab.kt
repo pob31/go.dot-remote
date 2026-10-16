@@ -103,6 +103,9 @@ interface MachinesModel {
     fun setLinked(key: String, linked: Boolean)
     fun putOnScreen(key: String)
     fun setTabletName(name: String)
+
+    /** Quit the remote for good: every machine unlinked (each keeps its Linked switch) and the app closed. */
+    fun quit()
 }
 
 /** The service as the Machines tab sees it. */
@@ -119,6 +122,7 @@ class ServiceMachines(private val service: EngineLinkService) : MachinesModel {
     override fun setLinked(key: String, linked: Boolean) = service.setLinked(key, linked)
     override fun putOnScreen(key: String) = service.putOnScreen(key)
     override fun setTabletName(name: String) = service.setTabletName(name)
+    override fun quit() = service.quit()
 }
 
 private val offState: StateFlow<LinkState> = MutableStateFlow(LinkState.OFF)
@@ -138,6 +142,7 @@ fun MachinesTab(model: MachinesModel, findMe: FindMeAccess) {
     val onScreen by model.onScreen.collectAsState()
     var editing by remember { mutableStateOf<Machine?>(null) }
     var removing by remember { mutableStateOf<Machine?>(null) }
+    var quitting by remember { mutableStateOf(false) }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = maxWidth >= 840.dp
@@ -156,6 +161,7 @@ fun MachinesTab(model: MachinesModel, findMe: FindMeAccess) {
                     )
                 }
                 AddMachine(model)
+                QuitSection { quitting = true }
             }
         }
         val tabletColumn: @Composable (Modifier) -> Unit = { modifier ->
@@ -196,6 +202,21 @@ fun MachinesTab(model: MachinesModel, findMe: FindMeAccess) {
         MachineDialog(machine, onDismiss = { editing = null }) { name, host, port ->
             model.editMachine(machine.key, name, host, port).also { if (it) editing = null }
         }
+    }
+    if (quitting) {
+        // Asked first: a stray tap mid-show would otherwise drop every link at once.
+        AlertDialog(
+            onDismissRequest = { quitting = false },
+            title = { Text(loc("remote.quit.title")) },
+            text = { Text(loc("remote.quit.explain")) },
+            confirmButton = {
+                TextButton(onClick = { quitting = false; model.quit() }) {
+                    Text(loc("remote.quit.confirm"), color = GodotColors.failed)
+                }
+            },
+            dismissButton = { TextButton(onClick = { quitting = false }) { Text(loc("remote.machines.cancel")) } },
+            containerColor = GodotColors.panelHigh,
+        )
     }
     removing?.let { machine ->
         AlertDialog(
@@ -320,6 +341,26 @@ private fun MachineCard(
                 }
             }
         }
+    }
+}
+
+/**
+ * QUIT THE REMOTE, at the foot of the connections: the one way to end the link service
+ * short of Android's force stop - and the line beside it says what it keeps.
+ */
+@Composable
+private fun QuitSection(onQuit: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().padding(top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        OutlinedButton(
+            onClick = onQuit,
+            border = BorderStroke(1.dp, GodotColors.failed),
+            modifier = Modifier.heightIn(min = GodotMetrics.touch)
+        ) { Text(loc("remote.quit.button"), color = GodotColors.failed, fontWeight = FontWeight.SemiBold) }
+        Text(loc("remote.quit.keeps"), color = GodotColors.inkFaint, modifier = Modifier.weight(1f))
     }
 }
 

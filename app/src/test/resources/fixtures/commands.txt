@@ -133,6 +133,7 @@ curve.record [from:d] [run:s]
 curve.stop [how:s] [points:i] [curves:s]
 curve.ride <curve:s> <value:d> [more:*...]
 videoOutput.identify <output:s> <on:T>
+videoOutput.grid <output:s> <on:T>
 video.hideProjectors <on:T>
 remote.find <remote:s> [seconds:i]
 media.convert <file:s> [scope:s] [format:s] [sound:T]

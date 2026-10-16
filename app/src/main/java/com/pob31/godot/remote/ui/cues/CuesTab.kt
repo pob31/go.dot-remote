@@ -82,7 +82,6 @@ import com.pob31.godot.remote.model.SurfaceTables
 import com.pob31.godot.remote.model.TabWrites
 import com.pob31.godot.remote.model.readCues
 import com.pob31.godot.remote.ui.GodotIconMark
-import com.pob31.godot.remote.ui.LinkMark
 import com.pob31.godot.remote.ui.rememberReading
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
@@ -152,7 +151,11 @@ fun CuesView(
     BoxWithConstraints(Modifier.fillMaxSize().background(GodotColors.ground)) {
         val wide = maxWidth >= 900.dp
         Column(Modifier.fillMaxSize()) {
-            ListBar(reading, state, hasMachine, isGoList, notSent > 0, onView) { send(CueActions.focus(reading.listId)) }
+            // One list, shown and the GO list: nothing to pick, so no bar - its row goes to the cues (the author, 2026-10-16).
+            val onlyList = reading.lists.size <= 1 && (reading.lists.isEmpty() || isGoList)
+            if (!onlyList || notSent > 0) {
+                ListBar(reading, hasMachine, isGoList, notSent > 0, onView) { send(CueActions.focus(reading.listId)) }
+            }
             if (!hasMachine) {
                 Text(loc("remote.tabs.noMachine"), color = GodotColors.inkFaint, modifier = Modifier.padding(24.dp))
                 return@Column
@@ -211,7 +214,7 @@ fun CuesView(
  * at a list is not making it the GO list - a button says so and does it (`list.focus`).
  */
 @Composable
-private fun ListBar(reading: CuesReading, state: LinkState, hasMachine: Boolean, isGoList: Boolean, notSent: Boolean, onView: (String) -> Unit, onFocus: () -> Unit) {
+private fun ListBar(reading: CuesReading, hasMachine: Boolean, isGoList: Boolean, notSent: Boolean, onView: (String) -> Unit, onFocus: () -> Unit) {
     Column(Modifier.fillMaxWidth().background(GodotColors.panel).padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             LazyRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -234,7 +237,6 @@ private fun ListBar(reading: CuesReading, state: LinkState, hasMachine: Boolean,
                     }
                 }
             }
-            if (hasMachine && state != LinkState.LIVE) LinkMark(state)
         }
         if (notSent) Text(loc("running.notSent"), color = GodotColors.failed)
         if (hasMachine && reading.listId.isNotEmpty() && !isGoList) {

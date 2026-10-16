@@ -66,6 +66,12 @@ data class OutputRow(
     val problem: String,
     val testPattern: Boolean,
     val layers: List<WarpLayer>,
+    /**
+     * `<output>/grid`, tonight's: whether the alignment grid is drawn on it, in the canvas's
+     * space and bent through the warp. Null when the row is absent - a Go.dot older than the
+     * grid, whose switch is then not offered.
+     */
+    val grid: Boolean? = null,
 ) {
     val label: String get() = name.ifEmpty { id }
     val sends: Boolean get() = kind.isNotEmpty() && kind != "display"
@@ -139,6 +145,7 @@ fun readMapping(mirror: Mirror): MappingReading {
             problem = mirror.text(base + "problem") ?: "",
             testPattern = mirror.value(base + "testPattern")?.asBoolean() ?: false,
             layers = layers,
+            grid = mirror[base + "grid"]?.let { it.value?.asBoolean() ?: false },
         )
     }
     return MappingReading(outputs, canvases, mirror.value("/godot/document/locked")?.asBoolean() ?: false)
@@ -161,8 +168,8 @@ private fun inOrder(order: String?, known: List<String>): List<String> {
  * WHETHER THE WARPS MAY BE CHANGED FROM HERE, and the word that says why not. The mesh,
  * the splits, a zone's opacity and blend are show rows: refused under the lock (remote
  * protocol §6), so they are greyed with the word "Locked" rather than offered and refused.
- * A link that is not live greys everything with its own word (§7). Identify is no edit of
- * the show and is taken under the lock (§35.9): only the link stops it.
+ * A link that is not live greys everything with its own word (§7). Identify and the grid
+ * are no edit of the show and are taken under the lock (§35.9): only the link stops them.
  */
 enum class MappingBlock { NONE, LOCKED, LINK }
 

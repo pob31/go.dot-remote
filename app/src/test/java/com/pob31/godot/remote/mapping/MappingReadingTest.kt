@@ -20,6 +20,7 @@ import com.pob31.godot.remote.model.SnapshotReader
 import com.pob31.godot.remote.osc.OscValue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.StringReader
@@ -107,6 +108,17 @@ class MappingReadingTest {
         assertEquals(listOf(null, FLOOR, LOGO), readMapping(mirror).outputs[0].layers.map { it.zoneId })
         mirror.putValues("/godot/videoOutput/$OUTPUT/zones", "s", listOf(OscValue.Str(LOGO)))
         assertEquals(listOf(null, LOGO), readMapping(mirror).outputs[0].layers.map { it.zoneId })
+    }
+
+    @Test
+    fun theGridIsReadAndAbsentOnAnOlderGoDot() {
+        val mirror = mirror()
+        // The fixture is from a Go.dot before the grid: no row, so no switch.
+        assertNull(readMapping(mirror).outputs[0].grid)
+        mirror.putValues("/godot/videoOutput/$OUTPUT/grid", "F", listOf(OscValue.False))
+        assertEquals(false, readMapping(mirror).outputs[0].grid)
+        mirror.putValues("/godot/videoOutput/$OUTPUT/grid", "T", listOf(OscValue.True))
+        assertEquals(true, readMapping(mirror).outputs[0].grid)
     }
 
     @Test

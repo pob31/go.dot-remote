@@ -69,6 +69,9 @@ class FakeEngine : Closeable {
 
     @Volatile var socket: WebSocket? = null
 
+    /** The code the app closed its WebSocket with, once it has. */
+    @Volatile var closedWith: Int? = null
+
     val port: Int get() = server.port
 
     private val serverSide = object : WebSocketListener() {
@@ -85,6 +88,7 @@ class FakeEngine : Closeable {
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            closedWith = code
             webSocket.close(1000, null)
         }
     }

@@ -39,6 +39,7 @@ class MappingWritesTest {
         override fun setNow(address: String, text: String) = true.also { said += "now $address $text" }
         override fun setMany(writes: List<Pair<String, String>>) = true.also { said += "many " + writes.joinToString(" ") { "${it.first}=${it.second}" } }
         override fun identify(output: String, on: Boolean) = true.also { said += "identify $output $on" }
+        override fun grid(output: String, on: Boolean) = true.also { said += "grid $output $on" }
     }
 
     private val base = "/godot/zone/512QZPQT/"
@@ -143,6 +144,16 @@ class MappingWritesTest {
             messages()[0]
         )
         assertEquals(OscMessage("/godot/cmd/videoOutput/identify", str(MappingReadingTest.OUTPUT), str("true")), messages()[1])
+    }
+
+    @Test
+    fun theGridIsItsOwnMachineLocalCommand() {
+        val writes = LinkMappingWrites(live())
+        assertTrue(writes.grid(MappingReadingTest.OUTPUT, true))
+        assertTrue(writes.grid(MappingReadingTest.OUTPUT, false))
+        await("two writes") { engine.writes.size == 2 }
+        assertEquals(OscMessage("/godot/cmd/videoOutput/grid", str(MappingReadingTest.OUTPUT), str("true")), messages()[0])
+        assertEquals(OscMessage("/godot/cmd/videoOutput/grid", str(MappingReadingTest.OUTPUT), str("false")), messages()[1])
     }
 
     @Test
