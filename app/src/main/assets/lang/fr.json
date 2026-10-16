@@ -20,6 +20,7 @@
       "cues": "Cues",
       "running": "En cours",
       "surface": "Surface",
+      "cart": "Cart",
       "mapping": "Mapping",
       "script": "Script",
       "machines": "Connexions",
@@ -446,6 +447,13 @@
       "lockedNote": "Les réglages du spectacle sont grisés. EQ, envois, drapeaux et trims bougent encore.",
       "liveCount": "{count} changements en direct - non enregistrés tant que le spectacle n'est pas déverrouillé et qu'ils ne sont pas gardés"
     }
+  },
+  "cart": {
+    "about": "Chaque cue des carts du spectacle est un pad : touchez pour le déclencher, hors de l'ordre - le GO ne passe jamais par un cart. Un cue en maintien joue tant que le doigt est posé.",
+    "lockedNote": "Le spectacle est verrouillé : les pads jouent toujours.",
+    "none": "Ce spectacle n'a pas de cart.",
+    "empty": "Rien dans ce cart pour l'instant.",
+    "going": "en cours"
   },
   "surface": {
     "thisTablet": "Cette tablette",

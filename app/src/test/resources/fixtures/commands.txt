@@ -1,7 +1,7 @@
 # wfg commands (Go.dot build of 2026-10-16), signatures only: what the remote's tabs may send is held to these
 noop
 audio.configure <enabled:T> <deviceType:s> <outputDevice:s> <inputDevice:s> <bufferSize:i> <inputPatch:s> <outputPatch:s>
-list.create <name:s> [id:s]
+list.create <name:s> [id:s] [attribute:s...]
 cue.create <parent:s> <index:i> <kind:s> <name:s> [id:s] [attribute:s...]
 route.create <cue:s> <bus:s> [id:s]
 send.create <cue:s> <bus:s> [id:s] [level:s]
@@ -23,7 +23,7 @@ input.width <input:s> <width:i>
 channel.create <class:s> [id:s]
 feed.create <cue:s> <slot:s> [id:s]
 insert.create <cue:s> <channel:s> [id:s]
-trigger.create <cue:s> <kind:s> [id:s]
+trigger.create <cue:s> <kind:s> [id:s] [attribute:s...]
 group.role <group:s> <role:s> [id:s]
 list.persistent <list:s> [id:s]
 port.create <name:s> [id:s]
@@ -107,10 +107,13 @@ go.dohRelaunch <run:s> [made:s...]
 list.dohReport <list:s> <text:s> [append:T]
 go.dohPlayhead <run:s> <from:d> [range:i]
 cue.fire <cue:s> [run:s] [cause:h]
+cue.press <cue:s> [velocity:i] [run:s]
+cue.release <cue:s>
 standby.jump <list:s> <target:s> <andGo:T> <cause:h> [run:s...]
 process.send <run:s> <name:s> [atoms:*...]
 serial.heard <serial:s> <line:s>
 trigger.fire <trigger:s> [run:s]
+trigger.release <trigger:s>
 code.heard <source:s> <what:s> <rate:s> <frame:h> <sample:h> <speed:d> [runs:s...]
 code.seat <run:s> <sample:h> [runs:s...]
 strip.press <strip:s> [velocity:i]

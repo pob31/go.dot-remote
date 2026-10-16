@@ -16,8 +16,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-val appVersionCode = 6
-val appVersionName = "0.1.4"
+val appVersionCode = 7
+val appVersionName = "0.1.5"
 
 base {
     archivesName.set("godot-remote-$appVersionName")

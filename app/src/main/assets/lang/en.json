@@ -20,6 +20,7 @@
       "cues": "Cues",
       "running": "Running",
       "surface": "Surface",
+      "cart": "Cart",
       "mapping": "Mapping",
       "script": "Script",
       "machines": "Connections",
@@ -446,6 +447,13 @@
       "lockedNote": "The show's rows are greyed. EQ, sends, flags and trims still move.",
       "liveCount": "{count} changes ride live - not saved until the show is unlocked and they are kept"
     }
+  },
+  "cart": {
+    "about": "Each cue of the show's carts is a pad: touch to fire it, out of order - GO never meets a cart. A hold cue plays while your finger is on it.",
+    "lockedNote": "The show is locked: the pads still play.",
+    "none": "This show has no cart.",
+    "empty": "Nothing in this cart yet.",
+    "going": "going"
   },
   "surface": {
     "thisTablet": "This tablet",

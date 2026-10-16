@@ -41,4 +41,15 @@ class TabsTest {
         assertEquals(RemoteTab.MACHINES, tabToShow(RemoteTab.SCRIPT, script = false))
         assertEquals(RemoteTab.CUES, tabToShow(RemoteTab.CUES, script = false))
     }
+
+    /** The Cart tab (Go.dot's namespace draft §74): after Surface while the show has a cart, and gone with it. */
+    @Test
+    fun aShowWithACartHasTheCartTabAfterSurface() {
+        assertEquals(
+            listOf(RemoteTab.CUES, RemoteTab.RUNNING, RemoteTab.SURFACE, RemoteTab.CART, RemoteTab.MAPPING, RemoteTab.MACHINES),
+            shownTabs(script = false, cart = true)
+        )
+        assertEquals(RemoteTab.CART, tabToShow(RemoteTab.CART, script = false, cart = true))
+        assertEquals(RemoteTab.MACHINES, tabToShow(RemoteTab.CART, script = false, cart = false))
+    }
 }

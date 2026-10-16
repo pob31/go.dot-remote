@@ -258,8 +258,14 @@ fun readMarks(mirror: Mirror, listId: String, rows: List<CueRow>): CueMarks {
 /** A list as the picker shows it. */
 data class ListLine(val id: String, val name: String)
 
+/**
+ * The show's lists GO can act on, as the picker shows them: never a cart (Go.dot's namespace
+ * draft §74), whose cues are fired out of order and drawn on the Cart tab instead.
+ */
 fun readLists(mirror: Mirror): List<ListLine> =
-    words(mirror.text("/godot/list/order")).map { ListLine(it, mirror.text("/godot/list/$it/name") ?: "") }
+    words(mirror.text("/godot/list/order"))
+        .filter { mirror.text("/godot/list/$it/kind") != "cart" }
+        .map { ListLine(it, mirror.text("/godot/list/$it/name") ?: "") }
 
 /**
  * THE ROWS, REBUILT ONLY WHEN THEY CAN HAVE CHANGED (ShowModel `refresh`): the show's

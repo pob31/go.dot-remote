@@ -120,6 +120,10 @@ class EditableTest {
         holds(CueActions.park("X"))
         holds(CueActions.fire("X"))
         holds(CueActions.focus("X"))
+        // The Cart tab's pads (Go.dot's namespace draft §74).
+        val pad = CartPad("X", "1", "Door", "memo")
+        holds(CartActions.press(pad, 100))
+        holds(CartActions.release(pad))
         for (structure in listOf("cue.create", "object.delete", "object.move", "cue.renumber")) {
             assertFalse("$structure is sent from the tablet", structure in Editables.COMMANDS)
         }

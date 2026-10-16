@@ -64,12 +64,14 @@ import com.pob31.godot.remote.link.LinkState
 import com.pob31.godot.remote.link.LinkedMachine
 import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.GodotIcon
+import com.pob31.godot.remote.model.hasCart
 import com.pob31.godot.remote.buzzer.BuzzerLink
 import com.pob31.godot.remote.prompt.PromptPage
 import com.pob31.godot.remote.prompt.PromptStore
 import com.pob31.godot.remote.ui.mapping.MappingTab
 import com.pob31.godot.remote.ui.prompt.ScriptTab
 import com.pob31.godot.remote.ui.theme.GodotColors
+import com.pob31.godot.remote.ui.cart.CartTab
 import com.pob31.godot.remote.ui.cues.CuesTab
 import com.pob31.godot.remote.ui.running.RunningTab
 import com.pob31.godot.remote.ui.surface.SurfaceTab
@@ -99,22 +101,28 @@ private fun appInsets(): WindowInsets {
 
 /**
  * The tabs, each a word and a drawn picture (never the picture alone). Script is shown only
- * while a Choufleur address is set ([shownTabs]).
+ * while a Choufleur address is set, Cart only while the show has a cart ([shownTabs]).
  */
 enum class RemoteTab(val key: String, val icon: GodotIcon, val laterKey: String?) {
     CUES("remote.tabs.cues", GodotIcon.LIST, "remote.tabs.cuesLater"),
     RUNNING("remote.tabs.running", GodotIcon.START, "remote.tabs.runningLater"),
     SURFACE("remote.tabs.surface", GodotIcon.SURFACE, "remote.tabs.surfaceLater"),
+    CART("remote.tabs.cart", GodotIcon.SAMPLER, null),
     MAPPING("remote.tabs.mapping", GodotIcon.VIDEO, "remote.tabs.mappingLater"),
     SCRIPT("remote.tabs.script", GodotIcon.PROMPT, null),
     MACHINES("remote.tabs.machines", GodotIcon.MACHINE, null),
 }
 
-/** The tabs in the row: Script only while there is a Choufleur page to show. */
-fun shownTabs(script: Boolean): List<RemoteTab> = RemoteTab.entries.filter { it != RemoteTab.SCRIPT || script }
+/**
+ * The tabs in the row: Script only while there is a Choufleur page to show, Cart only while
+ * the show on screen has a cart (Go.dot's namespace draft §74).
+ */
+fun shownTabs(script: Boolean, cart: Boolean = false): List<RemoteTab> =
+    RemoteTab.entries.filter { (it != RemoteTab.SCRIPT || script) && (it != RemoteTab.CART || cart) }
 
 /** The tab to show: [picked], unless it is no longer in the row - the Connections tab then, where it was cleared. */
-fun tabToShow(picked: RemoteTab, script: Boolean): RemoteTab = if (picked in shownTabs(script)) picked else RemoteTab.MACHINES
+fun tabToShow(picked: RemoteTab, script: Boolean, cart: Boolean = false): RemoteTab =
+    if (picked in shownTabs(script, cart)) picked else RemoteTab.MACHINES
 
 /**
  * THE APP'S SHELL: the transport header always at the top, whatever the tab; the tab row
@@ -146,6 +154,8 @@ fun RemoteApp(service: EngineLinkService?, initialTab: RemoteTab? = null) {
             if (promptAddress != null) PromptPage.shared(context) else null,
             BuzzerLink.shared(context),
         )
+        // The Cart tab in the row while the show on screen has a cart (namespace draft §74).
+        val cartShown = rememberReading(onScreen?.link, false) { hasCart(it) }
         Shell(
             onScreen = onScreen,
             initialTab = initialTab,
@@ -155,6 +165,7 @@ fun RemoteApp(service: EngineLinkService?, initialTab: RemoteTab? = null) {
             runningTab = { RunningTab(onScreen) },
             cuesTab = { CuesTab(onScreen) },
             surfaceTab = { SurfaceTab(onScreen) },
+            cartTab = if (cartShown) ({ CartTab(onScreen) }) else null,
             scriptTab = promptAddress?.let { address -> { ScriptTab(address, PromptPage.shared(context)) } },
         )
     }
@@ -169,20 +180,22 @@ fun Shell(
     runningTab: (@Composable () -> Unit)? = null,
     cuesTab: (@Composable () -> Unit)? = null,
     surfaceTab: (@Composable () -> Unit)? = null,
+    /** The show's carts; null while it has none, and the Cart tab is then not in the row. */
+    cartTab: (@Composable () -> Unit)? = null,
     /** Choufleur's page; null when no address is set, and the Script tab is then not in the row. */
     scriptTab: (@Composable () -> Unit)? = null,
     /** The connections shown at the end of the tab bar ([connectionMarks]); a tap on them opens the Connections tab. */
     connections: List<ConnectionMark> = emptyList(),
 ) {
     var picked by rememberSaveable { mutableStateOf(initialTab ?: if (onScreen == null) RemoteTab.MACHINES else RemoteTab.CUES) }
-    val tab = tabToShow(picked, scriptTab != null)
+    val tab = tabToShow(picked, scriptTab != null, cartTab != null)
     Column(
         Modifier
             .fillMaxSize()
             .background(GodotColors.ground)
     ) {
         header()
-        TabStrip(tab, shownTabs(scriptTab != null), connections) { picked = it }
+        TabStrip(tab, shownTabs(scriptTab != null, cartTab != null), connections) { picked = it }
         Box(
             Modifier
                 .fillMaxWidth()
@@ -194,6 +207,7 @@ fun Shell(
                 RemoteTab.RUNNING -> runningTab?.invoke() ?: LaterTab(tab, onScreen)
                 RemoteTab.CUES -> cuesTab?.invoke() ?: LaterTab(tab, onScreen)
                 RemoteTab.SURFACE -> surfaceTab?.invoke() ?: LaterTab(tab, onScreen)
+                RemoteTab.CART -> cartTab?.invoke()
                 RemoteTab.SCRIPT -> scriptTab?.invoke()
             }
         }
