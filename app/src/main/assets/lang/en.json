@@ -21,15 +21,15 @@
       "running": "Running",
       "surface": "Surface",
       "mapping": "Mapping",
-      "machines": "Machines",
+      "machines": "Connections",
       "cuesLater": "The cue list comes in a later build.",
       "runningLater": "The running cues come in a later build.",
       "surfaceLater": "The surface comes in a later build.",
       "mappingLater": "The video mapping comes in a later build.",
-      "noMachine": "No machine on screen: add one on the Machines tab."
+      "noMachine": "No connection on screen: add one on the Connections tab."
     },
     "header": {
-      "noMachine": "No machine on screen",
+      "noMachine": "No connection on screen",
       "locked": "Locked",
       "notSent": "Not sent: {machine} is not linked",
       "current": "Current",
@@ -81,8 +81,8 @@
       "press": "press"
     },
     "machines": {
-      "title": "Machines",
-      "none": "No machine yet. Type the address of the computer running Go.dot below.",
+      "title": "Connections",
+      "none": "No connection yet. Type the address of the computer running Go.dot below.",
       "onScreen": "On screen",
       "putOnScreen": "Put on screen",
       "linked": "Linked",
@@ -91,12 +91,12 @@
       "remove": "Remove",
       "cancel": "Cancel",
       "save": "Save",
-      "add": "Add a machine",
+      "add": "Add a connection",
       "addAndLink": "Add and link",
-      "editTitle": "Edit the machine",
-      "taken": "Another machine in the list has this address and port.",
+      "editTitle": "Edit the connection",
+      "taken": "Another connection in the list has this address and port.",
       "removeTitle": "Forget {machine}?",
-      "removeText": "Its link closes and it leaves the list. Nothing changes on the machine itself.",
+      "removeText": "Its link closes and it leaves the list. Nothing changes on the computer itself.",
       "tooOld": "This Go.dot cannot stream its state to a remote: update it to a build with the remote."
     },
     "tablet": {
@@ -253,7 +253,7 @@
   "running": {
     "title": "Running",
     "count": "{count} running",
-    "notSent": "Not sent: no machine is linked",
+    "notSent": "Not sent: no connection is linked",
     "hint": "Tap a run for its actions · swipe it far either way to kill it",
     "emptyLine": "They do not move.",
     "empty": "Nothing is running.",

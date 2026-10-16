@@ -21,15 +21,15 @@
       "running": "En cours",
       "surface": "Surface",
       "mapping": "Mapping",
-      "machines": "Machines",
+      "machines": "Connexions",
       "cuesLater": "La liste des cues arrive dans une prochaine version.",
       "runningLater": "Les cues en cours arrivent dans une prochaine version.",
       "surfaceLater": "La surface arrive dans une prochaine version.",
       "mappingLater": "Le mapping vidéo arrive dans une prochaine version.",
-      "noMachine": "Aucune machine à l'écran : ajoutez-en une dans l'onglet Machines."
+      "noMachine": "Aucune connexion à l'écran : ajoutez-en une dans l'onglet Connexions."
     },
     "header": {
-      "noMachine": "Aucune machine à l'écran",
+      "noMachine": "Aucune connexion à l'écran",
       "locked": "Verrouillé",
       "notSent": "Pas envoyé : {machine} n'est pas reliée",
       "current": "Actuelle",
@@ -81,8 +81,8 @@
       "press": "appui"
     },
     "machines": {
-      "title": "Machines",
-      "none": "Pas encore de machine. Tapez ci-dessous l'adresse de l'ordinateur où tourne Go.dot.",
+      "title": "Connexions",
+      "none": "Pas encore de connexion. Tapez ci-dessous l'adresse de l'ordinateur où tourne Go.dot.",
       "onScreen": "À l'écran",
       "putOnScreen": "Mettre à l'écran",
       "linked": "Reliée",
@@ -91,12 +91,12 @@
       "remove": "Retirer",
       "cancel": "Annuler",
       "save": "Enregistrer",
-      "add": "Ajouter une machine",
+      "add": "Ajouter une connexion",
       "addAndLink": "Ajouter et relier",
-      "editTitle": "Modifier la machine",
-      "taken": "Une autre machine de la liste a déjà cette adresse et ce port.",
+      "editTitle": "Modifier la connexion",
+      "taken": "Une autre connexion de la liste a déjà cette adresse et ce port.",
       "removeTitle": "Oublier {machine} ?",
-      "removeText": "Sa liaison se ferme et elle quitte la liste. Rien ne change sur la machine elle-même.",
+      "removeText": "Sa liaison se ferme et elle quitte la liste. Rien ne change sur l'ordinateur lui-même.",
       "tooOld": "Ce Go.dot ne sait pas diffuser son état vers une télécommande : mettez-le à jour vers une version qui la connaît."
     },
     "tablet": {
@@ -253,7 +253,7 @@
   "running": {
     "title": "En cours",
     "count": "{count} en cours",
-    "notSent": "Pas envoyé : aucune machine n'est reliée",
+    "notSent": "Pas envoyé : aucune connexion n'est reliée",
     "hint": "Toucher une ligne pour ses actions · la balayer loin d'un côté pour la couper",
     "emptyLine": "Ils ne bougent pas.",
     "empty": "Rien n'est en cours.",
