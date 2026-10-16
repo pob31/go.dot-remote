@@ -212,6 +212,7 @@ class ScreenshotTestWaveform {
             override fun setLinked(key: String, linked: Boolean) = Unit
             override fun putOnScreen(key: String) = Unit
             override fun setTabletName(name: String) = Unit
+            override fun quit() = Unit
         }
     }
 
