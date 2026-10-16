@@ -33,7 +33,7 @@ enum class GodotIcon {
     // Marks and panels the tabs use.
     DISABLED, LIST, SURFACE, WARNING,
     // The remote's own.
-    PREVIOUS, NEXT, MACHINE,
+    PREVIOUS, NEXT, MACHINE, PROMPT,
 }
 
 /**

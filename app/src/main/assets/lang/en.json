@@ -21,6 +21,7 @@
       "running": "Running",
       "surface": "Surface",
       "mapping": "Mapping",
+      "script": "Script",
       "machines": "Connections",
       "cuesLater": "The cue list comes in a later build.",
       "runningLater": "The running cues come in a later build.",
@@ -248,6 +249,36 @@
   "waveform": {
     "description": "Waveform",
     "notAnalysed": "Waveform: not analysed yet"
+  },
+  "prompt": {
+    "title": "Script prompt (Choufleur)",
+    "explain": "The address of your Choufleur cue list, as Choufleur's library screen shows it or its code carries it: http://<number>:8080/list/<list>. A host alone is completed to port 8080. Once it is saved, the Script tab shows the page.",
+    "address": "Choufleur address",
+    "save": "Save",
+    "clear": "Clear",
+    "scan": "Scan the code",
+    "scanPrompt": "Aim at the code on Choufleur's screen",
+    "notAnAddress": "Not an address: type http://host:port/list/name, or the host alone.",
+    "willSave": "Will be saved as {address}",
+    "localName": "Android does not look up .local names: use the number Choufleur's screen gives.",
+    "scanNotAddress": "The code does not carry a web address: {text}",
+    "cameraRefused": "The camera was refused, so the code cannot be scanned: type the address instead.",
+    "buzzer": "The wrist buzzer cannot pair inside the remote: Open in Chrome on the Script tab, and follow Choufleur's chrome://flags instructions there.",
+    "awake": "The remote keeps the screen awake itself: the page's warning that the screen can sleep does not apply here.",
+    "reload": "Reload",
+    "openInChrome": "Open in Chrome",
+    "noBrowser": "No browser on this tablet opens {address}.",
+    "loading": "Loading the script page from {address}...",
+    "failed": "The script page did not load from {address}.",
+    "retry": "Retry",
+    "problem": {
+      "connect": "Nothing answered at that address: is Choufleur running, and is this tablet on its network?",
+      "hostLookup": "That name was not found on the network: use the number Choufleur's screen gives.",
+      "timeout": "No answer in time.",
+      "http": "Choufleur answered with an error ({status}): is the list still in the show?",
+      "stopped": "The page stopped (Android closed it).",
+      "other": "{detail}"
+    }
   },
   "folders": {
     "title": "Show folders",

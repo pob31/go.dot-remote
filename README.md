@@ -1,7 +1,8 @@
 # Go.dot remote
 
 An Android app that puts a [Go.dot](https://github.com/pob31/go.dot) show in the operator's hands:
-GO, Doh! and PANIC with the current and next cue on every screen, and five tabs.
+GO, Doh! and PANIC with the current and next cue on every screen, and five tabs - six with
+Choufleur's script page.
 
 - **Cues** — the cue list, its groups folded or open, and an inspector for the cue you tap: its
   level, sends, EQ, DCA, waits, speed, on/off switches, flag and notes, and the waveform of a sound.
@@ -11,8 +12,10 @@ GO, Doh! and PANIC with the current and next cue on every screen, and five tabs.
   left in the régie or of a Mackie that did not come, the selected sound's EQ and sends on
   rotaries, and "This tablet", a fader for every DCA of the show.
 - **Mapping** — the video outputs' warps and zones, adjusted while standing at the wall.
+- **Script** — [Choufleur](https://github.com/pob31/choufleur_prompt)'s script page for this
+  operator's cue list, when its address is set on the Connections tab.
 - **Connections** — the Go.dot machines this tablet knows, which one is on screen, the main and
-  backup of a pair, and *Quit the remote*.
+  backup of a pair, the Choufleur address, and *Quit the remote*.
 
 It is a second surface, not a second screen (Go.dot PRD §3.17). It may change levels, sends, EQ,
 DCA trims, waits, speed, the on/off switches, flags and notes — never the shape of the cue list:
@@ -58,6 +61,21 @@ tablet's alarm volume is at zero: it is turned up for the alarm and put back aft
 The **Find this tablet** part of the Connections tab says which of the two is missing, with a button
 to the Android setting, and a test that rings for three seconds.
 
+## The Script tab (Choufleur)
+
+[Choufleur](https://github.com/pob31/choufleur_prompt) follows the actors through the script and
+warns each operator before their cues. Its page can sit in the remote, under GO, as the **Script**
+tab. On the Connections tab, under *Script prompt (Choufleur)*, type the address of your cue list
+as Choufleur's library screen gives it - `http://<number>:8080/list/<list>` - or press *Scan the
+code* and aim at the code it draws. A host alone becomes `http://<host>:8080/`. Use the number:
+Android does not find `.local` names.
+
+The page stays loaded while you use the other tabs, so coming back to it costs nothing. The thin
+bar above it has *Reload* and *Open in Chrome*. The wrist buzzer cannot pair inside the remote;
+open the page in Chrome for it and follow Choufleur's instructions there. Choufleur's warning that
+a plain address cannot keep the screen awake does not apply in the remote, which keeps the
+screen on itself.
+
 ## Quitting
 
 The app stays linked in the background - its notification says so - until it is quit:
@@ -82,7 +100,7 @@ git) names the SDK — `sdk.dir=/path/to/Android/Sdk`; Android Studio writes it 
 With the tablet in developer mode and plugged into the computer that runs Go.dot:
 
 ```
-adb install -r app/build/outputs/apk/debug/godot-remote-0.1.1-debug.apk
+adb install -r app/build/outputs/apk/debug/godot-remote-0.1.2-debug.apk
 adb reverse tcp:5010 tcp:5010
 ```
 
@@ -110,5 +128,5 @@ plain `./gradlew test` leaves them out.
 
 ## Licence
 
-GPL-3.0-or-later; see [LICENSE](LICENSE). OkHttp (Apache-2.0) is the one library outside AndroidX
-and Kotlin.
+GPL-3.0-or-later; see [LICENSE](LICENSE). Outside AndroidX and Kotlin, the app uses OkHttp and,
+for scanning Choufleur's code, ZXing Android Embedded (both Apache-2.0).

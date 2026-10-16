@@ -21,6 +21,7 @@
       "running": "En cours",
       "surface": "Surface",
       "mapping": "Mapping",
+      "script": "Script",
       "machines": "Connexions",
       "cuesLater": "La liste des cues arrive dans une prochaine version.",
       "runningLater": "Les cues en cours arrivent dans une prochaine version.",
@@ -248,6 +249,36 @@
   "waveform": {
     "description": "Forme d'onde",
     "notAnalysed": "Forme d'onde : pas encore analysée"
+  },
+  "prompt": {
+    "title": "Suivi du texte (Choufleur)",
+    "explain": "L'adresse de votre conduite dans Choufleur, telle que l'écran de bibliothèque de Choufleur l'affiche ou que son code la porte : http://<numéro>:8080/list/<conduite>. Un hôte seul est complété du port 8080. Une fois enregistrée, l'onglet Script affiche la page.",
+    "address": "Adresse Choufleur",
+    "save": "Enregistrer",
+    "clear": "Effacer",
+    "scan": "Scanner le code",
+    "scanPrompt": "Visez le code sur l'écran de Choufleur",
+    "notAnAddress": "Ce n'est pas une adresse : tapez http://hôte:port/list/nom, ou l'hôte seul.",
+    "willSave": "Sera enregistrée comme {address}",
+    "localName": "Android ne trouve pas les noms en .local : utilisez le numéro que donne l'écran de Choufleur.",
+    "scanNotAddress": "Le code ne porte pas d'adresse web : {text}",
+    "cameraRefused": "La caméra a été refusée, le code ne peut pas être scanné : tapez l'adresse.",
+    "buzzer": "Le vibreur de poignet ne s'appaire pas dans la télécommande : Ouvrir dans Chrome depuis l'onglet Script, puis suivez les instructions chrome://flags de Choufleur.",
+    "awake": "La télécommande garde elle-même l'écran allumé : l'avertissement de la page sur la mise en veille ne s'applique pas ici.",
+    "reload": "Recharger",
+    "openInChrome": "Ouvrir dans Chrome",
+    "noBrowser": "Aucun navigateur de cette tablette n'ouvre {address}.",
+    "loading": "Chargement de la page de texte depuis {address}...",
+    "failed": "La page de texte ne s'est pas chargée depuis {address}.",
+    "retry": "Réessayer",
+    "problem": {
+      "connect": "Rien ne répond à cette adresse : Choufleur est-il lancé, et cette tablette sur son réseau ?",
+      "hostLookup": "Ce nom est introuvable sur le réseau : utilisez le numéro que donne l'écran de Choufleur.",
+      "timeout": "Pas de réponse à temps.",
+      "http": "Choufleur a répondu par une erreur ({status}) : la conduite est-elle toujours dans le spectacle ?",
+      "stopped": "La page s'est arrêtée (Android l'a fermée).",
+      "other": "{detail}"
+    }
   },
   "folders": {
     "title": "Dossiers des spectacles",

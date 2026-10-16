@@ -16,8 +16,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-val appVersionCode = 3
-val appVersionName = "0.1.1"
+val appVersionCode = 4
+val appVersionName = "0.1.2"
 
 base {
     archivesName.set("godot-remote-$appVersionName")
@@ -97,6 +97,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
+    implementation(libs.zxing.android.embedded)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

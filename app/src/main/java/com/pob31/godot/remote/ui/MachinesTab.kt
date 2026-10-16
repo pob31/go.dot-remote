@@ -79,6 +79,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import com.pob31.godot.remote.localization.LocalLanguage
 import com.pob31.godot.remote.media.ShowFolder
+import com.pob31.godot.remote.prompt.PromptSettings
+import com.pob31.godot.remote.ui.prompt.PromptSection
 import com.pob31.godot.remote.media.TimbreCache
 import com.pob31.godot.remote.ui.waveform.LocalTimbreCache
 import kotlinx.coroutines.Dispatchers
@@ -136,7 +138,7 @@ private val noProblem: StateFlow<String?> = MutableStateFlow(null)
  * Two columns when wide, one when narrow.
  */
 @Composable
-fun MachinesTab(model: MachinesModel, findMe: FindMeAccess) {
+fun MachinesTab(model: MachinesModel, findMe: FindMeAccess, prompt: PromptSettings? = null) {
     val machines by model.machines.collectAsState()
     val links by model.links.collectAsState()
     val onScreen by model.onScreen.collectAsState()
@@ -161,6 +163,7 @@ fun MachinesTab(model: MachinesModel, findMe: FindMeAccess) {
                     )
                 }
                 AddMachine(model)
+                prompt?.let { PromptSection(it) }
                 QuitSection { quitting = true }
             }
         }

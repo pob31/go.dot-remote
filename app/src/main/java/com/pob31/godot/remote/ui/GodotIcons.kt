@@ -322,6 +322,14 @@ private fun build(icon: GodotIcon): Shape {
             l.line(12f, 16f, 12f, 19.5f)
             l.line(8f, 20f, 16f, 20f)
         }
+        GodotIcon.PROMPT -> {
+            // A page of script with the follower's mark at the line being spoken: Choufleur.
+            l.roundBox(7f, 3f, 14f, 18f, 2f)
+            l.line(10f, 7.5f, 18f, 7.5f)
+            l.line(10f, 12f, 18f, 12f)
+            l.line(10f, 16.5f, 15f, 16.5f)
+            f.triangle(2f, 9.5f, 5.5f, 12f, 2f, 14.5f)
+        }
     }
     return s
 }

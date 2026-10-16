@@ -42,6 +42,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,7 +64,10 @@ import com.pob31.godot.remote.link.LinkState
 import com.pob31.godot.remote.link.LinkedMachine
 import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.GodotIcon
+import com.pob31.godot.remote.prompt.PromptPage
+import com.pob31.godot.remote.prompt.PromptStore
 import com.pob31.godot.remote.ui.mapping.MappingTab
+import com.pob31.godot.remote.ui.prompt.ScriptTab
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.cues.CuesTab
 import com.pob31.godot.remote.ui.running.RunningTab
@@ -92,14 +96,24 @@ private fun appInsets(): WindowInsets {
     return insets
 }
 
-/** The five tabs, each a word and a drawn picture (never the picture alone). */
+/**
+ * The tabs, each a word and a drawn picture (never the picture alone). Script is shown only
+ * while a Choufleur address is set ([shownTabs]).
+ */
 enum class RemoteTab(val key: String, val icon: GodotIcon, val laterKey: String?) {
     CUES("remote.tabs.cues", GodotIcon.LIST, "remote.tabs.cuesLater"),
     RUNNING("remote.tabs.running", GodotIcon.START, "remote.tabs.runningLater"),
     SURFACE("remote.tabs.surface", GodotIcon.SURFACE, "remote.tabs.surfaceLater"),
     MAPPING("remote.tabs.mapping", GodotIcon.VIDEO, "remote.tabs.mappingLater"),
+    SCRIPT("remote.tabs.script", GodotIcon.PROMPT, null),
     MACHINES("remote.tabs.machines", GodotIcon.MACHINE, null),
 }
+
+/** The tabs in the row: Script only while there is a Choufleur page to show. */
+fun shownTabs(script: Boolean): List<RemoteTab> = RemoteTab.entries.filter { it != RemoteTab.SCRIPT || script }
+
+/** The tab to show: [picked], unless it is no longer in the row - the Connections tab then, where it was cleared. */
+fun tabToShow(picked: RemoteTab, script: Boolean): RemoteTab = if (picked in shownTabs(script)) picked else RemoteTab.MACHINES
 
 /**
  * THE APP'S SHELL: the transport header always at the top, whatever the tab; the tab row
@@ -120,13 +134,19 @@ fun RemoteApp(service: EngineLinkService?) {
         }
         val onScreen by service.onScreen.collectAsState()
         val machines = remember(service) { ServiceMachines(service) }
+        val context = LocalContext.current
+        val prompt = remember(context) { PromptStore.shared(context) }
+        val promptAddress by prompt.address.collectAsState()
+        // Cleared: the page and its connection go with the tab.
+        LaunchedEffect(promptAddress) { if (promptAddress == null) PromptPage.sharedOrNull()?.drop() }
         Shell(
             onScreen = onScreen,
             header = { TransportHeader(onScreen) },
-            machinesTab = { MachinesTab(machines, rememberSystemFindMe()) },
+            machinesTab = { MachinesTab(machines, rememberSystemFindMe(), prompt) },
             runningTab = { RunningTab(onScreen) },
             cuesTab = { CuesTab(onScreen) },
             surfaceTab = { SurfaceTab(onScreen) },
+            scriptTab = promptAddress?.let { address -> { ScriptTab(address, PromptPage.shared(context)) } },
         )
     }
 }
@@ -140,15 +160,18 @@ fun Shell(
     runningTab: (@Composable () -> Unit)? = null,
     cuesTab: (@Composable () -> Unit)? = null,
     surfaceTab: (@Composable () -> Unit)? = null,
+    /** Choufleur's page; null when no address is set, and the Script tab is then not in the row. */
+    scriptTab: (@Composable () -> Unit)? = null,
 ) {
-    var tab by rememberSaveable { mutableStateOf(initialTab ?: if (onScreen == null) RemoteTab.MACHINES else RemoteTab.CUES) }
+    var picked by rememberSaveable { mutableStateOf(initialTab ?: if (onScreen == null) RemoteTab.MACHINES else RemoteTab.CUES) }
+    val tab = tabToShow(picked, scriptTab != null)
     Column(
         Modifier
             .fillMaxSize()
             .background(GodotColors.ground)
     ) {
         header()
-        TabStrip(tab) { tab = it }
+        TabStrip(tab, shownTabs(scriptTab != null)) { picked = it }
         Box(
             Modifier
                 .fillMaxWidth()
@@ -160,6 +183,7 @@ fun Shell(
                 RemoteTab.RUNNING -> runningTab?.invoke() ?: LaterTab(tab, onScreen)
                 RemoteTab.CUES -> cuesTab?.invoke() ?: LaterTab(tab, onScreen)
                 RemoteTab.SURFACE -> surfaceTab?.invoke() ?: LaterTab(tab, onScreen)
+                RemoteTab.SCRIPT -> scriptTab?.invoke()
             }
         }
     }
@@ -170,16 +194,16 @@ fun Shell(
  * lit in the picked colour AND marked by a bar under it.
  */
 @Composable
-private fun TabStrip(current: RemoteTab, onPick: (RemoteTab) -> Unit) {
+private fun TabStrip(current: RemoteTab, tabs: List<RemoteTab>, onPick: (RemoteTab) -> Unit) {
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .background(GodotColors.titleBar)
     ) {
-        // Side by side when they fit; on a phone, each a fifth of the width, its word under its picture.
-        val stacked = maxWidth < 640.dp
+        // Side by side when they fit; on a phone, each an equal share of the width, its word under its picture.
+        val stacked = maxWidth < 640.dp + 120.dp * (tabs.size - 5)
         Row(Modifier.fillMaxWidth()) {
-            for (each in RemoteTab.entries) {
+            for (each in tabs) {
                 val selected = each == current
                 val ink = if (selected) GodotColors.ink else GodotColors.inkFaint
                 val picture = if (selected) GodotColors.picked else GodotColors.inkFaint

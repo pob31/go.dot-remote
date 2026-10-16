@@ -40,6 +40,7 @@ import com.pob31.godot.remote.link.EngineLinkService
 import com.pob31.godot.remote.link.Quit
 import com.pob31.godot.remote.localization.LocalLanguage
 import com.pob31.godot.remote.localization.LocalizationManager
+import com.pob31.godot.remote.prompt.PromptPage
 import com.pob31.godot.remote.ui.RemoteApp
 import com.pob31.godot.remote.ui.theme.GodotTheme
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -81,7 +82,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         hideSystemBars()
-        lifecycleScope.launch { Quit.asked.collect { finishAndRemoveTask() } }
+        lifecycleScope.launch {
+            Quit.asked.collect {
+                // Choufleur's page and its connection go with the remote.
+                PromptPage.sharedOrNull()?.drop()
+                finishAndRemoveTask()
+            }
+        }
         setContent {
             val language by LocalizationManager.currentLanguage.collectAsState()
             val bound by service.collectAsState()

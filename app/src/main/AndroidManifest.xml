@@ -11,7 +11,8 @@
     (LICENSE, at the repository root) for more details.
     SPDX-License-Identifier: GPL-3.0-or-later
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -36,12 +37,19 @@
     -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!--
+        The Script tab's address scanned off the code Choufleur draws: the camera is asked
+        for when Scan the code is pressed, and a tablet without one types the address.
+    -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
 
     <!--
         No backup: the install id is drawn once per install so that a tablet is the same
         tablet across reconnects (remote protocol §5). Restored onto a second tablet it
         would make two tablets one.
-        Cleartext: Go.dot serves plain HTTP and WebSocket on the local network.
+        Cleartext: Go.dot serves plain HTTP and WebSocket on the local network, and
+        Choufleur's page (the Script tab's WebView) is plain http as well.
     -->
     <application
         android:name=".RemoteApplication"
@@ -77,6 +85,12 @@
             android:turnScreenOn="true"
             android:screenOrientation="unspecified"
             android:theme="@style/Theme.GodotRemote" />
+
+        <!-- The QR scanner turns with the tablet rather than forcing it on its side. -->
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="fullSensor"
+            tools:replace="screenOrientation" />
 
         <service
             android:name=".link.EngineLinkService"
