@@ -64,6 +64,7 @@ import com.pob31.godot.remote.link.LinkState
 import com.pob31.godot.remote.link.LinkedMachine
 import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.GodotIcon
+import com.pob31.godot.remote.buzzer.BuzzerLink
 import com.pob31.godot.remote.prompt.PromptPage
 import com.pob31.godot.remote.prompt.PromptStore
 import com.pob31.godot.remote.ui.mapping.MappingTab
@@ -121,7 +122,7 @@ fun tabToShow(picked: RemoteTab, script: Boolean): RemoteTab = if (picked in sho
  * SCREEN; only the Machines tab reads the others.
  */
 @Composable
-fun RemoteApp(service: EngineLinkService?) {
+fun RemoteApp(service: EngineLinkService?, initialTab: RemoteTab? = null) {
     Box(
         Modifier
             .fillMaxSize()
@@ -141,8 +142,9 @@ fun RemoteApp(service: EngineLinkService?) {
         LaunchedEffect(promptAddress) { if (promptAddress == null) PromptPage.sharedOrNull()?.drop() }
         Shell(
             onScreen = onScreen,
+            initialTab = initialTab,
             header = { TransportHeader(onScreen) },
-            machinesTab = { MachinesTab(machines, rememberSystemFindMe(), prompt) },
+            machinesTab = { MachinesTab(machines, rememberSystemFindMe(), prompt, BuzzerLink.shared(context)) },
             runningTab = { RunningTab(onScreen) },
             cuesTab = { CuesTab(onScreen) },
             surfaceTab = { SurfaceTab(onScreen) },

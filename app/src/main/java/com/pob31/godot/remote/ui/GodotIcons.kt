@@ -330,6 +330,18 @@ private fun build(icon: GodotIcon): Shape {
             l.line(10f, 16.5f, 15f, 16.5f)
             f.triangle(2f, 9.5f, 5.5f, 12f, 2f, 14.5f)
         }
+        GodotIcon.BUZZER -> {
+            // A wearable on its strap, shaking: Choufleur's wrist buzzer.
+            l.roundBox(8f, 7f, 8f, 10f, 2f)
+            l.line(10f, 3f, 10f, 7f)
+            l.line(14f, 3f, 14f, 7f)
+            l.line(10f, 17f, 10f, 21f)
+            l.line(14f, 17f, 14f, 21f)
+            l.line(4.5f, 9f, 4.5f, 15f)
+            l.line(19.5f, 9f, 19.5f, 15f)
+            l.line(2f, 10.5f, 2f, 13.5f)
+            l.line(22f, 10.5f, 22f, 13.5f)
+        }
     }
     return s
 }

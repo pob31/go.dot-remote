@@ -85,11 +85,12 @@ class PromptAddressTest {
     }
 
     @Test
-    fun theOriginIsSchemeHostAndPort() {
-        assertEquals("http://192.168.1.40:8080", PromptAddress.originOf("http://192.168.1.40:8080/list/a"))
-        assertEquals("http://192.168.1.40:80", PromptAddress.originOf("http://192.168.1.40/x"))
-        assertEquals("https://h:443", PromptAddress.originOf("HTTPS://H/"))
-        // Another port is another origin: a show server's page is not the library's.
-        assertFalse(PromptAddress.originOf("http://192.168.1.40:8081/") == PromptAddress.originOf("http://192.168.1.40:8080/"))
+    fun theMachineIsSchemeAndHostWhateverThePort() {
+        assertEquals("http://192.168.1.40", PromptAddress.machineOf("http://192.168.1.40:8080/list/a"))
+        assertEquals("https://h", PromptAddress.machineOf("HTTPS://H/"))
+        // The durable /list/<id> on 8080 redirects to the show server on 8081: the same machine.
+        assertEquals(PromptAddress.machineOf("http://172.22.1.27:8080/list/cues"), PromptAddress.machineOf("http://172.22.1.27:8081/?list=cues"))
+        assertFalse(PromptAddress.machineOf("http://172.22.1.28:8081/") == PromptAddress.machineOf("http://172.22.1.27:8080/"))
+        assertFalse(PromptAddress.machineOf("https://172.22.1.27:8081/") == PromptAddress.machineOf("http://172.22.1.27:8080/"))
     }
 }

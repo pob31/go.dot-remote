@@ -71,8 +71,9 @@ object PromptAddress {
     }
 
     /**
-     * A Bonjour name: Android does not look `.local` names up (Choufleur's join.rs says
-     * so), so the number from Choufleur's screen is the one a tablet reaches it by.
+     * A Bonjour name: Android finds `.local` names since late 2021, but not behind a Private
+     * DNS setting or where multicast is dropped (Choufleur's own finding), so the number from
+     * Choufleur's screen is the address that cannot fail - said beside the field, not refused.
      */
     fun isLocalName(address: String): Boolean =
         try {
@@ -81,14 +82,18 @@ object PromptAddress {
             false
         }
 
-    /** The scheme, host and port: the page's origin, which the bridge is offered to alone. */
-    fun originOf(address: String): String? =
+    /**
+     * The scheme and host, any port: the Choufleur machine the page may stay on and the
+     * bridge is offered to. Not the origin: the durable `/list/<id>` on the library's 8080
+     * answers with a redirect to the show server on another port of the same machine
+     * (8081 and up), where the page itself lives - found on the author's network.
+     */
+    fun machineOf(address: String): String? =
         try {
             val uri = URI(address)
             val scheme = uri.scheme?.lowercase() ?: return null
             val host = uri.host?.lowercase() ?: return null
-            val port = if (uri.port != -1) uri.port else if (scheme == "https") 443 else 80
-            "$scheme://$host:$port"
+            "$scheme://$host"
         } catch (e: URISyntaxException) {
             null
         }

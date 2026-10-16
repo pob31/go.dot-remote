@@ -29,6 +29,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.pob31.godot.remote.buzzer.BuzzerBridge
+import com.pob31.godot.remote.buzzer.BuzzerLink
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -72,11 +74,11 @@ class PromptPage private constructor(private val app: Context) {
     /** The address last asked for: shown again only when it changes, or on Reload. */
     private var asked: String? = null
 
-    /** The origin the page may stay on; any other address opens in the tablet's browser. */
-    private var origin: String? = null
+    /** The Choufleur machine the page may stay on, any port; any other address opens in the tablet's browser. */
+    private var machine: String? = null
 
-    /** Called once per new WebView, before its first page: where a bridge to the page is offered. */
-    var onCreated: ((WebView) -> Unit)? = null
+    /** The wrist buzzer offered to Choufleur's page, made with each WebView. */
+    private var bridge: BuzzerBridge? = null
 
     /** The WebView, made on first use, taken from any old parent and given [host] as its context. */
     fun attach(host: Context): WebView {
@@ -111,9 +113,11 @@ class PromptPage private constructor(private val app: Context) {
     /** No address any more (Clear, Quit): the page and its connection go. */
     fun drop() {
         asked = null
-        origin = null
+        machine = null
         val page = view ?: run { _state.value = PageState.Empty; return }
         view = null
+        bridge?.close()
+        bridge = null
         (page.parent as? ViewGroup)?.removeView(page)
         page.destroy()
         wrapper = null
@@ -128,7 +132,7 @@ class PromptPage private constructor(private val app: Context) {
 
     private fun load(address: String) {
         asked = address
-        origin = PromptAddress.originOf(address)
+        machine = PromptAddress.machineOf(address)
         val page = view ?: create()
         _state.value = PageState.Loading(address)
         page.loadUrl(address)
@@ -138,6 +142,11 @@ class PromptPage private constructor(private val app: Context) {
     private fun create(): WebView {
         val context = MutableContextWrapper(app)
         val page = WebView(context)
+        // MATCH_PARENT, not the wrap-content an AndroidView gives a view by default: a WebView
+        // sized to its content takes its CSS viewport height from that content, and a page
+        // laid out at `html, body { height: 100% }` - Choufleur's - comes out zero tall and
+        // blank (found on the author's tablet against a live Choufleur).
+        page.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         wrapper = context
         view = page
         page.setBackgroundColor(GROUND)
@@ -152,7 +161,8 @@ class PromptPage private constructor(private val app: Context) {
         if (app.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) WebView.setWebContentsDebuggingEnabled(true)
         page.webChromeClient = WebChromeClient() // the page's alert() and confirm() shown, not swallowed
         page.webViewClient = Client()
-        onCreated?.invoke(page)
+        // Before the first page, so the page finds it as it starts.
+        bridge = BuzzerBridge(page, BuzzerLink.shared(app)) { onOrigin }
         return page
     }
 
@@ -163,7 +173,7 @@ class PromptPage private constructor(private val app: Context) {
             "?"
         }
 
-    private fun sameOrigin(url: String): Boolean = origin != null && PromptAddress.originOf(url) == origin
+    private fun onMachine(url: String): Boolean = machine != null && PromptAddress.machineOf(url) == machine
 
     private inner class Client : WebViewClient() {
         /** Set by an error in the main frame, read when the (error) page finishes. */
@@ -171,7 +181,7 @@ class PromptPage private constructor(private val app: Context) {
 
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             failed = false
-            onOrigin = sameOrigin(url)
+            onOrigin = onMachine(url)
             val address = asked ?: return
             if (_state.value !is PageState.Failed) _state.value = PageState.Loading(address)
         }
@@ -179,6 +189,7 @@ class PromptPage private constructor(private val app: Context) {
         override fun onPageFinished(view: WebView, url: String) {
             val address = asked ?: return
             if (!failed && _state.value is PageState.Loading) _state.value = PageState.Shown(address)
+            if (!failed) bridge?.pageLoaded()
         }
 
         override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
@@ -206,7 +217,7 @@ class PromptPage private constructor(private val app: Context) {
         /** Choufleur's own addresses stay here; anything else opens in the tablet's browser. */
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val url = request.url.toString()
-            if (sameOrigin(url)) return false
+            if (onMachine(url)) return false
             openOutside(view.context, url)
             return true
         }
@@ -216,6 +227,8 @@ class PromptPage private constructor(private val app: Context) {
             if (view !== this@PromptPage.view) return true
             val address = asked
             this@PromptPage.view = null
+            bridge?.close()
+            bridge = null
             wrapper = null
             onOrigin = false
             (view.parent as? ViewGroup)?.removeView(view)

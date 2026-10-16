@@ -18,6 +18,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -42,6 +43,7 @@ import com.pob31.godot.remote.localization.LocalLanguage
 import com.pob31.godot.remote.localization.LocalizationManager
 import com.pob31.godot.remote.prompt.PromptPage
 import com.pob31.godot.remote.ui.RemoteApp
+import com.pob31.godot.remote.ui.RemoteTab
 import com.pob31.godot.remote.ui.theme.GodotTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -89,12 +91,17 @@ class MainActivity : ComponentActivity() {
                 finishAndRemoveTask()
             }
         }
+        // A debug build opens on the tab an `am start --es tab script` names: a tab looked at
+        // on the tablet without a finger on it.
+        val firstTab = if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            intent?.getStringExtra("tab")?.let { name -> RemoteTab.entries.firstOrNull { it.name.equals(name, ignoreCase = true) } }
+        } else null
         setContent {
             val language by LocalizationManager.currentLanguage.collectAsState()
             val bound by service.collectAsState()
             CompositionLocalProvider(LocalLanguage provides language) {
                 GodotTheme {
-                    RemoteApp(bound)
+                    RemoteApp(bound, firstTab)
                 }
             }
         }

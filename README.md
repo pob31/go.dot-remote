@@ -15,7 +15,7 @@ Choufleur's script page.
 - **Script** — [Choufleur](https://github.com/pob31/choufleur_prompt)'s script page for this
   operator's cue list, when its address is set on the Connections tab.
 - **Connections** — the Go.dot machines this tablet knows, which one is on screen, the main and
-  backup of a pair, the Choufleur address, and *Quit the remote*.
+  backup of a pair, the Choufleur address and wrist buzzer, and *Quit the remote*.
 
 It is a second surface, not a second screen (Go.dot PRD §3.17). It may change levels, sends, EQ,
 DCA trims, waits, speed, the on/off switches, flags and notes — never the shape of the cue list:
@@ -67,14 +67,22 @@ to the Android setting, and a test that rings for three seconds.
 warns each operator before their cues. Its page can sit in the remote, under GO, as the **Script**
 tab. On the Connections tab, under *Script prompt (Choufleur)*, type the address of your cue list
 as Choufleur's library screen gives it - `http://<number>:8080/list/<list>` - or press *Scan the
-code* and aim at the code it draws. A host alone becomes `http://<host>:8080/`. Use the number:
-Android does not find `.local` names.
+code* and aim at the code it draws. A host alone becomes `http://<host>:8080/`. If a `.local`
+name does not load, use the number: not every network or Android setting finds those names.
 
 The page stays loaded while you use the other tabs, so coming back to it costs nothing. The thin
-bar above it has *Reload* and *Open in Chrome*. The wrist buzzer cannot pair inside the remote;
-open the page in Chrome for it and follow Choufleur's instructions there. Choufleur's warning that
-a plain address cannot keep the screen awake does not apply in the remote, which keeps the
-screen on itself.
+bar above it has *Reload* and *Open in Chrome*. The remote keeps the screen on itself, so
+Choufleur's warning that a plain address cannot does not apply here.
+
+### The wrist buzzer
+
+Choufleur's wrist buzzer pairs with the remote, not with the page: on the Connections tab,
+under *Wrist buzzer*, *Look for buzzers* (Android asks for Bluetooth the first time), then *Link*
+beside its CHF-XXXX name. The remote keeps it linked while it runs, whichever tab is on screen,
+sends it a heartbeat, and links it again when it comes back in range; the section says whether it
+is linked, looking for it or lost, its battery, and has *Test* and *Identify*. Choufleur's page in
+the Script tab sends its warnings through the remote - a Choufleur recent enough to know the
+remote; with an older one, *Open in Chrome* and pair it there as Choufleur explains.
 
 ## Quitting
 
@@ -100,7 +108,7 @@ git) names the SDK — `sdk.dir=/path/to/Android/Sdk`; Android Studio writes it 
 With the tablet in developer mode and plugged into the computer that runs Go.dot:
 
 ```
-adb install -r app/build/outputs/apk/debug/godot-remote-0.1.2-debug.apk
+adb install -r app/build/outputs/apk/debug/godot-remote-0.1.3-debug.apk
 adb reverse tcp:5010 tcp:5010
 ```
 

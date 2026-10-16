@@ -29,6 +29,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import com.pob31.godot.remote.buzzer.BuzzerLink
 import com.pob31.godot.remote.MainActivity
 import com.pob31.godot.remote.R
 import com.pob31.godot.remote.findme.FindMe
@@ -90,7 +91,11 @@ class EngineLinkService : LifecycleService() {
             watchers.clear()
         }
 
-        override fun closeLinks() = closeAllLinks(_links, _onScreen)
+        override fun closeLinks() {
+            closeAllLinks(_links, _onScreen)
+            // The wrist buzzer with them: still remembered, linked again at the next launch.
+            BuzzerLink.shared(this@EngineLinkService).close()
+        }
 
         override fun releaseWifiLock() = this@EngineLinkService.releaseWifiLock()
 
@@ -149,6 +154,8 @@ class EngineLinkService : LifecycleService() {
         val restored = store.machines.filter { it.linked }.map { LinkedMachine(it, newLink(it)) }
         _links.value = restored
         restored.forEach { it.link.start() }
+        // Choufleur's wrist buzzer lives as the links do: linked while the remote runs, whatever the tab.
+        BuzzerLink.shared(this).start()
         reconsiderOnScreen()
         watchLinks()
     }
@@ -181,6 +188,7 @@ class EngineLinkService : LifecycleService() {
 
     override fun onDestroy() {
         _links.value.forEach { it.link.close() }
+        BuzzerLink.shared(this).close()
         releaseWifiLock()
         super.onDestroy()
     }
