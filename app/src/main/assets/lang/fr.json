@@ -29,10 +29,22 @@
       "mappingLater": "Le mapping vidéo arrive dans une prochaine version.",
       "noMachine": "Aucune connexion à l'écran : ajoutez-en une dans l'onglet Connexions."
     },
+    "connections": {
+      "open": "Ouvrir l'onglet Connexions",
+      "mark": "{name} : {state}",
+      "script": "Script",
+      "buzzer": "Vibreur",
+      "page": {
+        "notOpened": "pas encore ouverte",
+        "loading": "chargement",
+        "loaded": "chargée",
+        "failed": "ne s'est pas chargée"
+      }
+    },
     "header": {
-      "noMachine": "Aucune connexion à l'écran",
       "locked": "Verrouillé",
       "notSent": "Pas envoyé : {machine} n'est pas reliée",
+      "notSentNoMachine": "Pas envoyé : aucune connexion n'est reliée",
       "current": "Actuelle",
       "next": "Suivante",
       "nothingFired": "Rien de lancé",

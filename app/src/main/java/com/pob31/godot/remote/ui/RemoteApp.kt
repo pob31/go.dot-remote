@@ -134,15 +134,22 @@ fun RemoteApp(service: EngineLinkService?, initialTab: RemoteTab? = null) {
             return@Box
         }
         val onScreen by service.onScreen.collectAsState()
+        val links by service.links.collectAsState()
         val machines = remember(service) { ServiceMachines(service) }
         val context = LocalContext.current
         val prompt = remember(context) { PromptStore.shared(context) }
         val promptAddress by prompt.address.collectAsState()
         // Cleared: the page and its connection go with the tab.
         LaunchedEffect(promptAddress) { if (promptAddress == null) PromptPage.sharedOrNull()?.drop() }
+        val connections = rememberConnectionMarks(
+            links, onScreen, promptAddress,
+            if (promptAddress != null) PromptPage.shared(context) else null,
+            BuzzerLink.shared(context),
+        )
         Shell(
             onScreen = onScreen,
             initialTab = initialTab,
+            connections = connections,
             header = { TransportHeader(onScreen) },
             machinesTab = { MachinesTab(machines, rememberSystemFindMe(), prompt, BuzzerLink.shared(context)) },
             runningTab = { RunningTab(onScreen) },
@@ -164,6 +171,8 @@ fun Shell(
     surfaceTab: (@Composable () -> Unit)? = null,
     /** Choufleur's page; null when no address is set, and the Script tab is then not in the row. */
     scriptTab: (@Composable () -> Unit)? = null,
+    /** The connections shown at the end of the tab bar ([connectionMarks]); a tap on them opens the Connections tab. */
+    connections: List<ConnectionMark> = emptyList(),
 ) {
     var picked by rememberSaveable { mutableStateOf(initialTab ?: if (onScreen == null) RemoteTab.MACHINES else RemoteTab.CUES) }
     val tab = tabToShow(picked, scriptTab != null)
@@ -173,7 +182,7 @@ fun Shell(
             .background(GodotColors.ground)
     ) {
         header()
-        TabStrip(tab, shownTabs(scriptTab != null)) { picked = it }
+        TabStrip(tab, shownTabs(scriptTab != null), connections) { picked = it }
         Box(
             Modifier
                 .fillMaxWidth()
@@ -193,17 +202,21 @@ fun Shell(
 
 /**
  * The tab row: a word and a picture each, at least a finger's height; the tab shown is
- * lit in the picked colour AND marked by a bar under it.
+ * lit in the picked colour AND marked by a bar under it. At its right end, the connections
+ * ([ConnectionStrip]); a tap there opens the Connections tab.
  */
 @Composable
-private fun TabStrip(current: RemoteTab, tabs: List<RemoteTab>, onPick: (RemoteTab) -> Unit) {
+private fun TabStrip(current: RemoteTab, tabs: List<RemoteTab>, connections: List<ConnectionMark>, onPick: (RemoteTab) -> Unit) {
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .background(GodotColors.titleBar)
     ) {
-        // Side by side when they fit; on a phone, each an equal share of the width, its word under its picture.
-        val stacked = maxWidth < 640.dp + 120.dp * (tabs.size - 5)
+        // Side by side when they fit, the connections keeping a finger's width; on a phone,
+        // each an equal share of the width, its word under its picture.
+        val stacked = maxWidth < 640.dp + 120.dp * (tabs.size - 5) + (if (connections.isEmpty()) 0.dp else 64.dp)
+        // An upright tablet: the tabs closer, so the connections keep room at the end.
+        val tight = maxWidth < 1000.dp
         Row(Modifier.fillMaxWidth()) {
             for (each in tabs) {
                 val selected = each == current
@@ -211,7 +224,7 @@ private fun TabStrip(current: RemoteTab, tabs: List<RemoteTab>, onPick: (RemoteT
                 val picture = if (selected) GodotColors.picked else GodotColors.inkFaint
                 val weight = if (selected) FontWeight.SemiBold else FontWeight.Normal
                 Column(
-                    (if (stacked) Modifier.weight(1f) else Modifier.width(IntrinsicSize.Max).widthIn(min = 132.dp))
+                    (if (stacked) Modifier.weight(1f) else Modifier.width(IntrinsicSize.Max).widthIn(min = if (tight) 108.dp else 132.dp))
                         .clickable(role = Role.Tab) { onPick(each) }
                         .height(if (stacked) 60.dp else GodotMetrics.touch + 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -229,7 +242,7 @@ private fun TabStrip(current: RemoteTab, tabs: List<RemoteTab>, onPick: (RemoteT
                         Row(
                             Modifier
                                 .weight(1f)
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = if (tight) 10.dp else 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             GodotIconMark(each.icon, picture, size = 22.dp)
@@ -244,6 +257,12 @@ private fun TabStrip(current: RemoteTab, tabs: List<RemoteTab>, onPick: (RemoteT
                             .background(if (selected) GodotColors.picked else GodotColors.titleBar)
                     )
                 }
+            }
+            if (connections.isNotEmpty()) {
+                ConnectionStrip(
+                    connections, compact = stacked,
+                    modifier = (if (stacked) Modifier else Modifier.weight(1f)).height(if (stacked) 60.dp else GodotMetrics.touch + 8.dp)
+                ) { onPick(RemoteTab.MACHINES) }
             }
         }
     }

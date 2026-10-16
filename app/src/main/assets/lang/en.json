@@ -29,10 +29,22 @@
       "mappingLater": "The video mapping comes in a later build.",
       "noMachine": "No connection on screen: add one on the Connections tab."
     },
+    "connections": {
+      "open": "Open the Connections tab",
+      "mark": "{name}: {state}",
+      "script": "Script",
+      "buzzer": "Buzzer",
+      "page": {
+        "notOpened": "not opened yet",
+        "loading": "loading",
+        "loaded": "loaded",
+        "failed": "did not load"
+      }
+    },
     "header": {
-      "noMachine": "No connection on screen",
       "locked": "Locked",
       "notSent": "Not sent: {machine} is not linked",
+      "notSentNoMachine": "Not sent: no connection is linked",
       "current": "Current",
       "next": "Next",
       "nothingFired": "Nothing fired yet",

@@ -209,6 +209,75 @@ class ScreenshotTest {
         }
     }
 
+    /** The connections at the end of the tab bar: one machine live, one stale, Choufleur's page loaded, the buzzer lost. */
+    private val mixed = listOf(
+        ConnectionMark(Said.verbatim("Main FOH"), ConnectionHealth.GOOD, Said("remote.link.live")),
+        ConnectionMark(Said.verbatim("Backup FOH"), ConnectionHealth.BETWEEN, Said("remote.link.stale")),
+        ConnectionMark(Said("remote.connections.script"), ConnectionHealth.GOOD, Said("remote.connections.page.loaded")),
+        ConnectionMark(Said("remote.connections.buzzer"), ConnectionHealth.BAD, Said("buzzer.phase.lost")),
+    )
+
+    @Composable
+    private fun barWithConnections(marks: List<ConnectionMark> = mixed) = Shell(
+        null, header = { header() }, machinesTab = {}, initialTab = RemoteTab.CUES, cuesTab = {}, scriptTab = {}, connections = marks,
+    )
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun connectionsInTheTabBarOnTheTablet() = shoot("tabbar-connections-tablet") { barWithConnections() }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun connectionsInTheTabBarInFrench() = shoot("tabbar-connections-tablet-fr", "fr") { barWithConnections() }
+
+    @Test
+    @Config(qualifiers = "w866dp-h1385dp-port-xhdpi")
+    fun connectionsInTheTabBarUpright() = shoot("tabbar-connections-upright") { barWithConnections() }
+
+    @Test
+    @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
+    fun connectionsInTheTabBarOnAPhone() = shoot("tabbar-connections-phone") { barWithConnections() }
+
+    /** Every shape at once: good, in between, bad and off, on the tablet. */
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun everyShapeInTheTabBar() = shoot("tabbar-connections-shapes") {
+        barWithConnections(
+            mixed.take(2) + ConnectionMark(Said.verbatim("Rehearsal room"), ConnectionHealth.BAD, Said("remote.link.gone")) +
+                ConnectionMark(Said("remote.connections.script"), ConnectionHealth.OFF, Said("remote.connections.page.notOpened"))
+        )
+    }
+
+    /** The next cue's notes under it, as many lines as GO's height leaves: a long one, its line breaks kept. */
+    private val longNotes = playing.copy(
+        next = playing.next!!.copy(
+            notes = "Wait for the actor to reach the door and turn to the audience.\n" +
+                "Then the rain starts low under the last line; bring it up with the light change.\n" +
+                "If the door sticks, hold until stage management calls it. Third line of notes, and a fourth after it."
+        )
+    )
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun longNotesOnTheTablet() = shoot("header-notes-long-tablet") { header(longNotes) }
+
+    @Test
+    @Config(qualifiers = "w866dp-h1385dp-port-xhdpi")
+    fun longNotesOnTheTabletUpright() = shoot("header-notes-long-upright") { header(longNotes) }
+
+    @Test
+    @Config(qualifiers = "w866dp-h1385dp-port-xhdpi")
+    fun shortNotesOnTheTabletUpright() = shoot("header-notes-short-upright") { header() }
+
+    @Test
+    @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
+    fun longNotesOnAPhone() = shoot("header-notes-long-phone") { header(longNotes) }
+
+    /** No refusal, not locked: the words column goes and the cues have the row. */
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun longNotesWithNothingToSay() = shoot("header-notes-long-quiet") { header(longNotes.copy(locked = false), refusal = null) }
+
     /** The find-me screen opens, sounds and draws without a crash - it is never tried on the tablet at night. */
     @Test
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")

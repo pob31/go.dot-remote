@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -116,10 +115,12 @@ fun TransportHeader(onScreen: LinkedMachine?) {
  * colour says anything a word does not.
  *
  * THE MACHINE'S WORDS SIT IN THE ROW (the author, 2026-10-16: the line above GO "could be
- * placed between the buttons"): the machine on screen, its seat in a pair, its link when not
- * live, Locked and the last refusal, in a column between the cues and Doh! - no line of
- * their own above the buttons. Where that column would squeeze the next cue onto two lines
- * (an upright tablet, a phone) they are one short line above the cues instead.
+ * placed between the buttons"): its seat in a pair, Locked and this tablet's last refusal,
+ * in a column between the cues and Doh! - no line of their own above the buttons. Where that
+ * column would squeeze the next cue onto two lines (an upright tablet, a phone) they are one
+ * short line above the cues instead; with nothing to say, neither. The machine's name and
+ * its link are the tab bar's to show (ConnectionStrip, the author, 2026-10-16: "To gain a
+ * little space"); [machine] and [state] still name it in "not sent" and grey the cues.
  */
 @Composable
 fun TransportHeaderView(
@@ -157,11 +158,11 @@ fun TransportHeaderView(
     // Read again at each press and when its time is up: no timer runs while nobody pressed.
     val killNext = remember(panicPresses) { panic.nextIsDouble(nowMs()) }
     val sentence = when {
+        notSent > 0 -> if (machine == null) loc("remote.header.notSentNoMachine") else loc("remote.header.notSent", "machine" to machine)
         machine == null -> null
-        notSent > 0 -> loc("remote.header.notSent", "machine" to machine)
         else -> refusalLine(refusal, reading.dohWindowSeconds, reading.audioStatus)?.let { say(it) }
     }
-    val words = MachineWords(machine, seat, twoMains, state, reading.locked == true, sentence)
+    val words = MachineWords(seat, twoMains, reading.locked == true, sentence)
 
     BoxWithConstraints(
         Modifier
@@ -182,10 +183,10 @@ fun TransportHeaderView(
         val rowRoom = if (row != null) maxWidth - 24.dp - row.go - row.doh - row.panic - 32.dp - GodotMetrics.row else maxWidth - 24.dp
         fun fitsOneLine(room: Dp) = room - (row?.label ?: 60.dp) - 110.dp >= 360.dp
         // The machine's words take a column in the row only when the next cue keeps its one line beside it.
-        val wordsBeside = row != null && fitsOneLine(rowRoom - WORDS_WIDTH - 16.dp)
+        val wordsBeside = row != null && words.any && fitsOneLine(rowRoom - WORDS_WIDTH - 16.dp)
         val stacked = !fitsOneLine(if (wordsBeside) rowRoom - WORDS_WIDTH - 16.dp else rowRoom)
         Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            if (!wordsBeside) WordsLine(words)
+            if (!wordsBeside && words.any) WordsLine(words)
             val live = state == LinkState.LIVE
             // GO is never shorter than 96 dp: 128 on the wide row, 120 on the narrower, 104 on a phone's.
             if (row != null) {
@@ -193,7 +194,7 @@ fun TransportHeaderView(
                 Row(Modifier.height(if (stacked) 172.dp else row.height), verticalAlignment = Alignment.CenterVertically) {
                     GoButton(reading, Modifier.width(row.go).fillMaxHeight()) { sendOrSay("go") }
                     Spacer(Modifier.width(16.dp))
-                    CuesBlock(reading, live, Modifier.weight(1f), row.label, stacked, sendOrSay)
+                    CuesBlock(reading, live, Modifier.weight(1f).fillMaxHeight(), row.label, stacked, sendOrSay, fillHeight = true)
                     Spacer(Modifier.width(16.dp))
                     if (wordsBeside) {
                         WordsColumn(words, Modifier.width(WORDS_WIDTH).fillMaxHeight())
@@ -224,17 +225,17 @@ fun TransportHeaderView(
 }
 
 /** The width of the machine's words when they sit in the row, between the cues and Doh!. */
-private val WORDS_WIDTH = 220.dp
+private val WORDS_WIDTH = 200.dp
 
-/** What the header says of the machine on screen: its name, its seat, its link, the lock, and the last refusal. */
+/** What the header says of the machine on screen that is not its link: its seat, the lock, and the last refusal. */
 private class MachineWords(
-    val machine: String?,
     val seat: Said?,
     val twoMains: Boolean,
-    val state: LinkState,
     val locked: Boolean,
     val sentence: String?,
-)
+) {
+    val any: Boolean get() = seat != null || locked || sentence != null
+}
 
 @Composable
 private fun LockedBadge() {
@@ -257,30 +258,21 @@ private fun SeatWords(words: MachineWords) {
 }
 
 /**
- * The machine's words as a column in the header's row: the name (and its seat in a pair),
- * the link when it is not live, Locked, and the refusal on two lines at most, ended with an
- * ellipsis. Short lines, so the column stays narrow.
+ * The machine's words as a column in the header's row: its seat in a pair and Locked, and
+ * the refusal on three lines at most, ended with an ellipsis. Short lines, so the column
+ * stays narrow.
  */
 @Composable
 private fun WordsColumn(words: MachineWords, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically)) {
-        if (words.machine == null) {
-            Text(loc("remote.header.noMachine"), color = GodotColors.inkFaint, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            return@Column
-        }
-        Text(
-            words.machine, color = GodotColors.ink, fontWeight = FontWeight.SemiBold, fontSize = 16.sp,
-            maxLines = 1, overflow = TextOverflow.Ellipsis
-        )
         if (words.seat != null || words.locked) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SeatWords(words)
                 if (words.locked) LockedBadge()
             }
         }
-        if (words.state != LinkState.LIVE) LinkMark(words.state, style = TextStyle(fontSize = 13.sp))
         words.sentence?.let {
-            Text(it, color = GodotColors.failed, fontSize = 13.sp, lineHeight = 16.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(it, color = GodotColors.failed, fontSize = 13.sp, lineHeight = 16.sp, maxLines = 3, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -289,16 +281,7 @@ private fun WordsColumn(words: MachineWords, modifier: Modifier) {
 @Composable
 private fun WordsLine(words: MachineWords) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (words.machine == null) {
-            Text(loc("remote.header.noMachine"), color = GodotColors.inkFaint, fontSize = 13.sp, maxLines = 1)
-            return@Row
-        }
-        Text(
-            words.machine, color = GodotColors.ink, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, maxLines = 1,
-            overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 200.dp)
-        )
         SeatWords(words)
-        if (words.state != LinkState.LIVE) LinkMark(words.state, style = TextStyle(fontSize = 13.sp))
         if (words.locked) LockedBadge()
         words.sentence?.let {
             Text(it, color = GodotColors.failed, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
@@ -317,8 +300,17 @@ private data class RowSizes(val go: Dp, val doh: Dp, val panic: Dp, val height: 
  * the name is never dropped.
  */
 @Composable
-private fun CuesBlock(reading: HeaderReading, live: Boolean, modifier: Modifier, labelWidth: Dp, stacked: Boolean, send: (String) -> Unit) {
-    Column(modifier.alpha(if (live) 1f else 0.45f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+private fun CuesBlock(
+    reading: HeaderReading,
+    live: Boolean,
+    modifier: Modifier,
+    labelWidth: Dp,
+    stacked: Boolean,
+    send: (String) -> Unit,
+    fillHeight: Boolean = false,
+) {
+    // Beside GO, the lines sit at the top of its height so the next cue's notes have the rest.
+    Column(modifier.alpha(if (live) 1f else 0.45f), verticalArrangement = Arrangement.spacedBy(if (fillHeight) 2.dp else 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             RowLabel(loc("remote.header.current"), labelWidth)
             val current = reading.current
@@ -380,11 +372,23 @@ private fun CuesBlock(reading: HeaderReading, live: Boolean, modifier: Modifier,
                 modifier = Modifier.padding(start = labelWidth)
             )
         }
+        /*  THE NEXT CUE'S NOTES UNDER IT (the author, 2026-10-16: "beneath the next cue can you
+            show the notes for this cue? There should be enough room with the current height of
+            the Go button"): beside GO, as many lines as GO's height leaves - its line breaks
+            kept, the last line ended with an ellipsis - and the header never taller for them;
+            on a phone, where the cues sit above the buttons, one line. */
         reading.next?.notes?.takeIf { it.isNotBlank() }?.let { notes ->
-            Text(
-                notes.replace('\n', ' '), color = GodotColors.inkDim, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = labelWidth)
-            )
+            if (fillHeight) {
+                Text(
+                    notes.trim(), color = GodotColors.inkDim, fontSize = 15.sp, lineHeight = 19.sp, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = labelWidth).weight(1f, fill = false)
+                )
+            } else {
+                Text(
+                    notes.trim().replace('\n', ' '), color = GodotColors.inkDim, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = labelWidth)
+                )
+            }
         }
     }
 }
