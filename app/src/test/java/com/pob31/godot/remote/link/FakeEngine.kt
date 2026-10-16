@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * server side the test drives - bundles, PATH_ADDED, PATH_REMOVED, FIND, a close.
  */
 class FakeEngine : Closeable {
-    private var server = MockWebServer()
+    private val server = MockWebServer()
 
     @Volatile var snapshot: String = Fixtures.snapshotSmall()
 
@@ -125,25 +125,18 @@ class FakeEngine : Closeable {
         server.start()
     }
 
-    /** The machine dies - every connection dropped at once, no goodbye - and comes back on its port. */
+    /**
+     * The machine dies - its connection dropped at once, no goodbye - and comes back. The
+     * connection is cut (no close frame) and the server stays where it was: closing it and binding
+     * its port again is refused for longer than a test waits on CI's Linux ("Address already
+     * in use"), and the tablet sees the same thing either way - a socket that fails.
+     */
     fun restart() {
-        val port = server.port
+        val dying = socket as? okhttp3.internal.ws.RealWebSocket
         socket = null
-        server.close()
-        // The port may not be free again at once (seen on CI's Linux): tried for a few seconds.
-        val until = System.nanoTime() + 5_000_000_000L
-        while (true) {
-            val next = MockWebServer().also { it.dispatcher = dispatcher }
-            try {
-                next.start(port)
-                server = next
-                return
-            } catch (e: java.net.BindException) {
-                runCatching { next.close() }
-                if (System.nanoTime() > until) throw e
-                Thread.sleep(50)
-            }
-        }
+        // A server-side socket has no call to cancel(): failing it closes its streams, the TCP
+        // connection with them, and sends nothing.
+        dying?.failWebSocket(java.io.IOException("the machine died"), null)
     }
 
     fun awaitSocket(): WebSocket {
