@@ -64,4 +64,18 @@ object Addresses {
 
     /** What to GET to learn what an address is: its object, or the address itself. */
     fun objectOf(address: String): String = owned(address)?.objectPath ?: address
+
+    /**
+     * Rows the app never reads, kept out of the mirror (Go.dot's namespace draft §88): an
+     * OSC cue's further messages and every curve - a WFS-DIY snapshot of seventy inputs is
+     * thirty-seven thousand of them, added in one tick - and anything outside `/godot`, a
+     * device's own tree, which only a structure frame would bring.
+     */
+    fun unread(address: String): Boolean =
+        !(address == "/godot" || address.startsWith(ROOT)) ||
+            address == MESSAGES || address.startsWith("$MESSAGES/") ||
+            address == CURVES || address.startsWith("$CURVES/")
+
+    private const val MESSAGES = "/godot/message"
+    private const val CURVES = "/godot/curve"
 }

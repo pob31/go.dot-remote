@@ -466,7 +466,27 @@ class Link(
         null
     }
 
+    /**
+     * The address a structure frame is about, read without a parser - `"DATA": "<address>"` -
+     * or null for anything else. An address holds no quote, so the next one ends it.
+     */
+    private fun structureAddress(text: String): String? {
+        val key = text.indexOf("\"DATA\"")
+        if (key < 0) return null
+        val open = text.indexOf('"', text.indexOf(':', key) + 1)
+        if (open < 0) return null
+        val close = text.indexOf('"', open + 1)
+        return if (close < 0) null else text.substring(open + 1, close)
+    }
+
     private fun text(text: String) {
+        // A ROW THE APP NEVER READS, its frame dropped before it is parsed (Go.dot's
+        // namespace draft §88): a big cue captured adds tens of thousands of them in one
+        // tick, and each parse made a buffer of its own.
+        if (text.contains("PATH_")) {
+            val address = structureAddress(text)
+            if (address != null && Addresses.unread(address)) return
+        }
         val (command, data) = commandOf(text) ?: return
         when (command) {
             "PATH_ADDED" -> {
@@ -526,6 +546,7 @@ class Link(
         var remotesChanged = false
         var errorChanged = false
         for (message in messages) {
+            if (Addresses.unread(message.address)) continue // see Addresses.unread
             mirror.putValues(message.address, message.typeTags, message.values)
             when (message.address) {
                 Addresses.REMOTES -> remotesChanged = true

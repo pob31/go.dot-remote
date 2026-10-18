@@ -89,6 +89,7 @@ object SnapshotReader {
         json.endObject()
 
         val path = address ?: throw JsonException("a node without FULL_PATH")
+        if (Addresses.unread(path)) return // never read, never kept (Addresses.unread)
         val meta = known ?: NodeMeta(access, range ?: emptyList(), unit, description).also {
             state.meta[Addresses.metaKey(path)] = it
         }

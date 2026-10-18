@@ -256,6 +256,32 @@ class LinkTest {
         assertNotNull(link.mirror["/godot/cue/${Fixtures.CUE_A}/level"])
     }
 
+    @Test
+    fun aBigCueCapturedAddsRowsTheAppNeitherKeepsNorFetches() {
+        // Go.dot's namespace draft §88: a WFS-DIY snapshot of seventy inputs is thousands of
+        // messages, six rows each, added in one tick. The app reads none of them, nor a
+        // device's own tree: nothing kept, nothing fetched, the bundle's values passed over.
+        val link = live()
+        val getsBefore = engine.gets.size
+        for (n in 1..2000) engine.text("PATH_ADDED", "/godot/message/M${n.toString().padStart(7, '0')}/value")
+        engine.text("PATH_ADDED", "/godot/message")
+        engine.text("PATH_ADDED", "/godot/curve/C0RVE001/points")
+        engine.text("PATH_ADDED", "/wfs/input/1/positionX")
+        engine.bundle(
+            101,
+            OscMessage("/godot/message/M0000001/value", str("f:0.5")),
+            OscMessage("/wfs/input/1/positionX", OscValue.Float32(1.5f)),
+        )
+        await("tick 101") { link.mirror.tick.value == 101L }
+        Thread.sleep(150) // a watchdog beat or more: nothing may be fetched
+        assertNull(link.mirror["/godot/message/M0000001/value"])
+        assertNull(link.mirror["/godot/message"])
+        assertNull(link.mirror["/godot/curve/C0RVE001/points"])
+        assertNull(link.mirror["/wfs/input/1/positionX"])
+        assertEquals(getsBefore, engine.gets.size)
+        assertNotNull(link.mirror["/godot/cue/${Fixtures.CUE_A}/level"])
+    }
+
     // ------------------------------------------------------------------ staleness and coming back
 
     @Test

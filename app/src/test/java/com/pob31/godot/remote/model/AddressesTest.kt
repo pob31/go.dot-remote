@@ -29,6 +29,20 @@ class AddressesTest {
     }
 
     @Test
+    fun messagesCurvesAndADevicesTreeAreUnread() {
+        assertTrue(Addresses.unread("/godot/message"))
+        assertTrue(Addresses.unread("/godot/message/M3SS4G01/value"))
+        assertTrue(Addresses.unread("/godot/curve/C0RVE001/points"))
+        assertTrue(Addresses.unread("/wfs/input/1/positionX"))
+        assertTrue(Addresses.unread("/"))
+        assertFalse(Addresses.unread("/godot"))
+        assertFalse(Addresses.unread("/godot/cue/F7HR8TVD/messages"))
+        assertFalse(Addresses.unread("/godot/cue/F7HR8TVD/curves"))
+        assertFalse(Addresses.unread("/godot/curves/recording"))
+        assertFalse(Addresses.unread("/godot/engine/tick"))
+    }
+
+    @Test
     fun aSingletonIsNoObjectsRow() {
         assertNull(Addresses.owned("/godot/list/focus"))
         assertNull(Addresses.owned("/godot/engine/tick"))
