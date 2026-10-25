@@ -341,7 +341,7 @@ private fun TitleLine(row: RunRow, wide: Boolean) {
 @Composable
 private fun clockOf(row: RunRow): String? = when {
     row.counting -> loc("remote.header.left", "time" to clockText(row.remaining))
-    row.launched -> clockText(row.position)
+    row.launched || row.heldByLoad -> clockText(row.position)
     else -> null
 }
 
@@ -362,6 +362,7 @@ private fun WordsLine(row: RunRow, wide: Boolean) {
     if (row.kind == "media" && row.rate != 1.0) words += "×" + com.pob31.godot.remote.link.WireText.number(row.rate, 3) to GodotColors.inkDim
     if (row.kind == "media" && row.level != null) words += loc("running.level", "level" to com.pob31.godot.remote.model.FieldText.levelText(row.level)) to GodotColors.inkDim
     if (row.held) words += loc("running.held") to GodotColors.inkDim
+    if (row.heldByLoad) words += loc("running.loaded") to GodotColors.standby
     if (row.solo) words += loc("running.soloed") to GodotColors.standby
     if (row.error.isNotEmpty()) words += row.error to GodotColors.failed
     if (words.isEmpty()) return
@@ -429,7 +430,7 @@ private fun RunStrip(row: RunRow, send: (Sent?) -> Unit, link: Link?) {
                                 position = current.position, from = from, to = to,
                                 secondsPerPixel = (to - from) / size.width.coerceAtLeast(1),
                                 unit = unitPx.toDouble(), x = down.position.x.toDouble(),
-                                onRelease = current.kind == "group",
+                                onRelease = current.seeksOnRelease,
                             )
                         )
                         ghost = scrub.target

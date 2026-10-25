@@ -27,17 +27,19 @@ package com.pob31.godot.remote.model
     declares none.
 
     WHICH PAGE IS UP IS THE TABLET'S OWN, as a D700's is its own and no command (engine
-    surface/SurfaceProfile.h): the faders, the aimed cue's EQ, or its sends. The aim is the
-    engine's (`/godot/surface/aim`), shared with every surface and the window. */
+    surface/SurfaceProfile.h): the faders, the aimed cue's EQ, its sends, or where its sends
+    sit in their mixes (the D700's Pan pages, namespace draft §113). The aim is the engine's
+    (`/godot/surface/aim`), shared with every surface and the window. */
 
 /** The surface every show has on this tablet: one strip a DCA. Not an engine identifier. */
 const val THIS_TABLET = "tablet"
 
-/** The tablet's pages: the strips, the aimed cue's EQ, its sends. */
+/** The tablet's pages: the strips, the aimed cue's EQ, its sends, their places. */
 enum class SurfacePage(val key: String) {
     FADERS("surface.page.faders"),
     EQ("surface.page.eq"),
     SENDS("surface.page.sends"),
+    PAN("surface.page.pan"),
 }
 
 /** How a surface stands, in the desktop's order (Surfaces.cpp `stateWord`): off first, then connected. */
@@ -47,7 +49,7 @@ enum class SurfaceState { TABLET, OFF, CONNECTED, PROBLEM, NOT_CONNECTED }
 data class SurfaceLine(
     val id: String,
     val name: String,
-    /** virtual, mcu, d700, midiPads; empty for the tablet's. */
+    /** virtual, mcu, d700, midiPads, streamDeck; empty for the tablet's. */
     val profile: String,
     val enabled: Boolean = true,
     val connected: Boolean = false,
@@ -70,7 +72,7 @@ data class SurfaceLine(
         }
 
     companion object {
-        val PROFILES = setOf("virtual", "mcu", "d700", "midiPads")
+        val PROFILES = setOf("virtual", "mcu", "d700", "midiPads", "streamDeck")
     }
 }
 
@@ -323,4 +325,57 @@ fun sendKnobs(sends: List<SendLine>, fader: FaderCurve): EqReading {
         )
     }
     return EqReading(null, switches, knobs)
+}
+
+/** A send's place as rotaries: the leans (a pan or a balance) and the widths of the stereo sends. */
+data class PlaceKnobs(val leans: EqReading, val widths: EqReading) {
+    val isEmpty: Boolean get() = leans.knobs.isEmpty() && widths.knobs.isEmpty()
+}
+
+/**
+ * THE PAN PAGE'S ROTARIES, as the D700's Pan pages lay them (engine SurfacePages.h, namespace
+ * draft §113): for each send, the row its placement says is heard - a pan where one channel
+ * meets two, a balance where two meet two or one - in -1..1, a press putting it back in the
+ * centre; then, for a send two channels wide into two, its width in 0..1, a press swapping
+ * its sides (`send/swap`). A send with no place has neither. Each knob is named by its mix
+ * channel, or by [byRow]'s word for its row where one send is drawn alone.
+ */
+fun placeKnobs(sends: List<SendLine>, byRow: Map<String, String>? = null): PlaceKnobs {
+    val leans = ArrayList<EqKnob>(sends.size)
+    val widths = ArrayList<EqKnob>()
+    val swaps = ArrayList<EqSwitch>()
+    for (send in sends) {
+        val lean = when (send.placement) {
+            SendLine.PLACE_PAN -> "pan"
+            SendLine.PLACE_STEREO, SendLine.PLACE_FOLD -> "balance"
+            else -> continue
+        }
+        fun named(row: String) = byRow?.get(row) ?: send.busName
+        leans += EqKnob(
+            control = EqControl(
+                row = lean, label = named(lean), short = named(lean), law = EqLaw.PAN,
+                min = -1.0, max = 1.0, colour = -1, switchRow = "", press = EqPress.CENTRE, shelf = "",
+            ),
+            address = send.address(lean),
+            value = if (lean == "pan") send.pan else send.balance,
+            shape = "",
+            bandOn = send.on,
+            live = send.live,
+        )
+        if (send.placement != SendLine.PLACE_STEREO) continue
+        val swapRow = "swap:${send.id}"
+        swaps += EqSwitch(swapRow, send.address("swap"), send.swap, send.live)
+        widths += EqKnob(
+            control = EqControl(
+                row = "width", label = named("width"), short = named("width"), law = EqLaw.STEREO_WIDTH,
+                min = 0.0, max = 1.0, colour = -1, switchRow = swapRow, press = EqPress.TOGGLE_SWITCH, shelf = "",
+            ),
+            address = send.address("width"),
+            value = send.width,
+            shape = "",
+            bandOn = send.on,
+            live = send.live,
+        )
+    }
+    return PlaceKnobs(EqReading(null, emptyList(), leans), EqReading(null, swaps, widths))
 }

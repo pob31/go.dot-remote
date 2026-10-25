@@ -70,6 +70,7 @@ import com.pob31.godot.remote.model.InspectorLine
 import com.pob31.godot.remote.model.SendLine
 import com.pob31.godot.remote.model.SurfaceTables
 import com.pob31.godot.remote.model.TabWrites
+import com.pob31.godot.remote.model.placeKnobs
 import com.pob31.godot.remote.ui.GodotIconMark
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.waveform.Waveform
@@ -83,6 +84,7 @@ import com.pob31.godot.remote.ui.widgets.LockedWord
 import com.pob31.godot.remote.ui.widgets.Mark
 import com.pob31.godot.remote.ui.widgets.MarkIcon
 import com.pob31.godot.remote.ui.widgets.NumberBox
+import com.pob31.godot.remote.ui.widgets.SwapSwitch
 
 /**
  * THE INSPECTOR (A.6): what the tablet may change on the picked cue, and nothing else -
@@ -313,7 +315,11 @@ private fun NotesView(field: FieldLine, writes: TabWrites) {
     }
 }
 
-/** A cue's sends, each its mix channel's name, a switch that says in or out, and its level - ridden live under the lock. */
+/**
+ * A cue's sends, each its mix channel's name, a switch that says in or out, its level and
+ * its place in the mix - a pan or a balance, a stereo send's width and its sides swapped
+ * (namespace draft §113) - all ridden live under the lock.
+ */
 @Composable
 private fun SendsView(sends: List<SendLine>, label: String, writes: TabWrites, tables: SurfaceTables) {
     Heading(label)
@@ -337,7 +343,21 @@ private fun SendsView(sends: List<SendLine>, label: String, writes: TabWrites, t
                 Text(loc(if (send.on) "widgets.in" else "widgets.out"), color = if (send.on) GodotColors.ink else GodotColors.inkFaint, modifier = Modifier.width(48.dp))
             }
             DbFader(send.level, send.levelAddress, writes, tables.fader, colour = if (send.on) GodotColors.fade else GodotColors.inkOff, label = send.busName, thickness = 48.dp)
+            SendPlace(send, writes, tables)
         }
+    }
+}
+
+/** One send's place, when its placement has one: its lean, and a stereo send's width and swap. */
+@Composable
+private fun SendPlace(send: SendLine, writes: TabWrites, tables: SurfaceTables) {
+    val words = mapOf("pan" to loc("cues.place.pan"), "balance" to loc("cues.place.balance"), "width" to loc("cues.place.width"))
+    val place = placeKnobs(listOf(send), words)
+    if (place.isEmpty) return
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (knob in place.leans.knobs) EqKnobView(knob, place.leans, writes, tables, size = 84.dp, colour = GodotColors.fade)
+        for (knob in place.widths.knobs) EqKnobView(knob, place.widths, writes, tables, size = 84.dp, colour = GodotColors.fade)
+        for (swap in place.widths.switches) SwapSwitch(swap, null, writes)
     }
 }
 

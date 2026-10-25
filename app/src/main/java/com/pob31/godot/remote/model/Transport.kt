@@ -107,6 +107,8 @@ data class HeaderReading(
     val next: CueLine? = null,
     /** `/godot/list/<id>/resume`: "<cue> <seconds>" when the next GO carries a paused cue on. */
     val resume: String = "",
+    /** `/godot/list/<id>/loaded`: "<cue> <seconds>" when a load to time holds the standby ready, or empty. */
+    val loaded: String = "",
     /** `/godot/document/locked`: null while the engine has not said. */
     val locked: Boolean? = null,
     /** `/godot/audio/status`: "running", "stopped", "noClock"... */
@@ -174,6 +176,23 @@ data class HeaderReading(
         return Said("remote.header.resumesAt", "time" to String.format(Locale.ROOT, "%d:%02d", whole / 60, whole % 60))
     }
 
+    /**
+     * "loaded at 0:12.3 - GO plays from here" under the standby while a load to time holds
+     * it ready at a second (namespace draft §117, `list/loaded`, split at its last space as
+     * the desktop's LoadToTime.cpp does); null when nothing is held or the hold is another
+     * cue's. Before the cue (-1) GO is an ordinary GO, said as the desktop says it.
+     */
+    fun loadedWords(): Said? {
+        val text = loaded.trim()
+        val space = text.lastIndexOf(' ')
+        if (space <= 0) return null
+        val standby = next?.id ?: return null
+        if (text.substring(0, space) != standby) return null
+        val seconds = text.substring(space + 1).toDoubleOrNull() ?: return null
+        return if (seconds >= 0.0) Said("remote.header.loadedAt", "time" to clockText(seconds))
+               else Said("remote.header.loadedBefore")
+    }
+
     companion object {
         /** The engine's clock: fifty ticks a second. */
         const val TICKS_PER_SECOND = 50L
@@ -205,6 +224,7 @@ fun readHeader(mirror: Mirror): HeaderReading {
         currentRun = current?.let { runOf(mirror, it.id) },
         next = standby.takeIf { it.isNotEmpty() }?.let { cueLine(mirror, it) },
         resume = if (listId.isEmpty()) "" else mirror.text(list + "resume") ?: "",
+        loaded = if (listId.isEmpty()) "" else mirror.text(list + "loaded") ?: "",
         locked = mirror.value("/godot/document/locked")?.asBoolean(),
         audioStatus = mirror.text("/godot/audio/status") ?: "",
         tick = mirror.value("/godot/engine/tick")?.asLong() ?: mirror.tick.value,

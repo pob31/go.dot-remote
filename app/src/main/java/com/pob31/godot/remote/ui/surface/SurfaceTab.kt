@@ -89,6 +89,7 @@ import com.pob31.godot.remote.model.SurfaceState
 import com.pob31.godot.remote.model.SurfaceTables
 import com.pob31.godot.remote.model.TabWrites
 import com.pob31.godot.remote.model.readSurface
+import com.pob31.godot.remote.model.placeKnobs
 import com.pob31.godot.remote.model.sendKnobs
 import com.pob31.godot.remote.ui.GodotIconMark
 import com.pob31.godot.remote.ui.rememberReading
@@ -103,6 +104,7 @@ import com.pob31.godot.remote.ui.widgets.LockedWord
 import com.pob31.godot.remote.ui.widgets.Mark
 import com.pob31.godot.remote.ui.widgets.MarkIcon
 import com.pob31.godot.remote.ui.widgets.MeterBar
+import com.pob31.godot.remote.ui.widgets.SwapSwitch
 import com.pob31.godot.remote.ui.widgets.markFor
 import com.pob31.godot.remote.ui.widgets.rememberSurfaceTables
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -114,8 +116,9 @@ private val offState: StateFlow<LinkState> = MutableStateFlow(LinkState.OFF)
  * THE SURFACE TAB (A.7): the show's surfaces on the tablet - a D700 left in the régie, a
  * Mackie that did not come, or no surface at all - so a hand walking the house has the
  * faders. The strips of the surface picked here, their faders on what each rides now,
- * a pad for a pad's strip, SELECT; and two pages a D700 has, the aimed cue's EQ and its
- * sends. Which surface and which page are this tablet's own; the aim is the engine's.
+ * a pad for a pad's strip, SELECT; and three pages a D700 has, the aimed cue's EQ, its
+ * sends and their places. Which surface and which page are this tablet's own; the aim is
+ * the engine's.
  */
 @Composable
 fun SurfaceTab(onScreen: LinkedMachine?) {
@@ -162,6 +165,7 @@ fun SurfaceView(
                 SurfacePage.FADERS -> StripsPage(reading, writes, tables.fader, send)
                 SurfacePage.EQ -> EqPage(reading, writes, tables, send)
                 SurfacePage.SENDS -> SendsPage(reading, writes, tables, send)
+                SurfacePage.PAN -> PanPage(reading, writes, tables, send)
             }
         }
     }
@@ -667,5 +671,45 @@ private fun SendsPage(reading: SurfaceReading, writes: TabWrites, tables: Surfac
         if (reading.locked) LiveNote("surface.sendsLive")
         KnobRows(sendKnobs(reading.sends, tables.fader), writes, tables, colour = GodotColors.fade)
         Text(loc("surface.sendsHint"), color = GodotColors.inkOff, fontSize = 13.sp)
+    }
+}
+
+/**
+ * THE PAN PAGE (namespace draft §113, the D700's Pan pages on one): where the aimed cue's
+ * sends sit in their mixes - a pan or a balance a send, pressed back to the centre; under
+ * them the widths of the stereo sends, a press swapping the sides, with each one's swap.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PanPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceTables, send: (Sent?) -> Unit) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        AimHeader(reading, send)
+        if (reading.aimCue == null) return@Column
+        if (reading.sends.isEmpty()) {
+            Text(loc("cues.noSends"), color = GodotColors.inkFaint)
+            return@Column
+        }
+        val place = placeKnobs(reading.sends)
+        if (place.isEmpty) {
+            Text(loc("surface.noPlace"), color = GodotColors.inkFaint)
+            return@Column
+        }
+        if (reading.locked) LiveNote("surface.sendsLive")
+        if (place.leans.knobs.isNotEmpty()) {
+            Text(loc("surface.leans"), color = GodotColors.inkDim)
+            KnobRows(place.leans, writes, tables, colour = GodotColors.fade)
+        }
+        if (place.widths.knobs.isNotEmpty()) {
+            Text(loc("surface.widths"), color = GodotColors.inkDim)
+            KnobRows(place.widths, writes, tables, colour = GodotColors.fade)
+            val names = reading.sends.associate { "swap:${it.id}" to it.busName }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (swap in place.widths.switches) SwapSwitch(swap, names[swap.row], writes)
+            }
+        }
+        Text(loc("surface.panHint"), color = GodotColors.inkOff, fontSize = 13.sp)
     }
 }

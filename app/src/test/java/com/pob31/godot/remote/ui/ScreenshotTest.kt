@@ -127,6 +127,15 @@ class ScreenshotTest {
         header(playing.copy(audioStatus = "stopped", tick = 1460, locked = false), LinkState.STALE, null)
     }
 
+    /** A load to time holding the standby at a second (namespace draft §117). */
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun headerWithTheStandbyLoaded() = shoot("header-loaded-tablet") { header(playing.copy(loaded = "F7HR8TVD 72.3"), refusal = null) }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun headerWithTheStandbyLoadedInFrench() = shoot("header-loaded-tablet-fr", "fr") { header(playing.copy(loaded = "F7HR8TVD 72.3"), refusal = null) }
+
     @Test
     @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
     fun headerOnAPhone() = shoot("header-phone") { header() }

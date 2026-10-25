@@ -169,6 +169,65 @@ class SurfacesTest {
     }
 
     @Test
+    fun aSendsPlace_theRowsItsPlacementSaysAreHeard() {
+        val mirror = ShowFixture.mirror()
+        val (reverb, foldback) = readSends(mirror, THUNDER_AND_RAIN)
+        mirror.put(reverb.address("placement"), "stereo")
+        mirror.put(reverb.address("balance"), -0.3)
+        mirror.put(reverb.address("width"), 0.5)
+        mirror.put(reverb.address("swap"), true)
+        mirror.put(foldback.address("placement"), "pan")
+        mirror.put(foldback.address("pan"), 1.0)
+        val place = placeKnobs(readSends(mirror, THUNDER_AND_RAIN))
+
+        // A lean a send: a stereo send's balance, a mono one's pan, pressed back to the centre.
+        assertEquals(listOf(reverb.address("balance"), foldback.address("pan")), place.leans.knobs.map { it.address })
+        for (knob in place.leans.knobs) {
+            assertEquals(EqLaw.PAN, knob.control.law)
+            assertEquals(EqPress.CENTRE, knob.control.press)
+        }
+        assertEquals(listOf("Reverb", "Foldback"), place.leans.knobs.map { it.control.label })
+        assertEquals("L 30", EqLaws.valueText(EqLaw.PAN, place.leans.knobs[0].value))
+        assertEquals("R 100", EqLaws.valueText(EqLaw.PAN, place.leans.knobs[1].value))
+
+        // A width for the stereo send alone, its press the swap.
+        val width = place.widths.knobs.single()
+        assertEquals(reverb.address("width"), width.address)
+        assertEquals(EqLaw.STEREO_WIDTH, width.control.law)
+        assertEquals(EqPress.TOGGLE_SWITCH, width.control.press)
+        val swap = place.widths.switches.single { it.row == width.control.switchRow }
+        assertEquals(reverb.address("swap"), swap.address)
+        assertTrue(swap.on)
+        assertEquals("50 %", EqLaws.valueText(EqLaw.STEREO_WIDTH, width.value))
+
+        // Folded to mono: a balance and no width. No place: nothing.
+        mirror.put(reverb.address("placement"), "fold")
+        mirror.put(foldback.address("placement"), "none")
+        val folded = placeKnobs(readSends(mirror, THUNDER_AND_RAIN))
+        assertEquals(listOf(reverb.address("balance")), folded.leans.knobs.map { it.address })
+        assertTrue(folded.widths.knobs.isEmpty())
+        mirror.put(reverb.address("placement"), "none")
+        assertTrue(placeKnobs(readSends(mirror, THUNDER_AND_RAIN)).isEmpty)
+
+        // One send drawn alone is named by its rows.
+        mirror.put(reverb.address("placement"), "stereo")
+        val alone = placeKnobs(readSends(mirror, THUNDER_AND_RAIN).take(1), mapOf("balance" to "Balance", "width" to "Width"))
+        assertEquals("Balance", alone.leans.knobs.single().control.label)
+        assertEquals("Width", alone.widths.knobs.single().control.label)
+    }
+
+    @Test
+    fun aSendIntoAnAux_isNamedByTheAuxsSlot() {
+        val mirror = ShowFixture.mirror()
+        val reverb = readSends(mirror, THUNDER_AND_RAIN).first()
+        mirror.put(reverb.address("bus"), "AUX00001")
+        mirror.put("/godot/slot/AUX00001/name", "Plate")
+        assertEquals("Plate", readSends(mirror, THUNDER_AND_RAIN).first().busName)
+        mirror.put("/godot/slot/AUX00001/name", "")
+        assertEquals("AUX00001", readSends(mirror, THUNDER_AND_RAIN).first().busName)
+    }
+
+    @Test
     fun whatAHandOnTheTabSends_everyCommandGoDots() {
         val signatures = Fixtures.text("fixtures/commands.txt").lines()
             .filter { it.isNotBlank() && !it.startsWith("#") }

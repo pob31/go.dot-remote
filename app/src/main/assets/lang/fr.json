@@ -61,7 +61,9 @@
       "noClock": "pas d'horloge",
       "audioUnsaid": "audio —",
       "resumes": "reprend",
-      "resumesAt": "reprend à {time}"
+      "resumesAt": "reprend à {time}",
+      "loadedAt": "chargée à {time} · GO joue d'ici",
+      "loadedBefore": "chargée au début · GO la joue depuis son départ"
     },
     "kind": {
       "memo": "mémo",
@@ -362,6 +364,7 @@
     "round": "tour {at}/{of}",
     "level": "niveau {level} dB",
     "held": "pad tenu",
+    "loaded": "chargée ici · GO joue d'ici",
     "soloed": "solo",
     "seekTo": "vers {time}",
     "finer": "plus fin {rate}",
@@ -390,7 +393,9 @@
     "locked": "Verrouillé",
     "live": "en direct",
     "in": "actif",
-    "out": "inactif"
+    "out": "inactif",
+    "swapped": "G/D inversés",
+    "notSwapped": "G/D"
   },
   "cues": {
     "goList": "liste GO",
@@ -425,6 +430,11 @@
     "unflag": "Ôter le drapeau",
     "saveNotes": "Enregistrer les notes",
     "noSends": "Aucun envoi sur cette cue.",
+    "place": {
+      "pan": "Pan",
+      "balance": "Balance",
+      "width": "Largeur"
+    },
     "eqIn": "EQ en service",
     "eqOut": "EQ hors service - toutes les bandes sautées",
     "dcaNone": "aucun DCA",
@@ -461,13 +471,15 @@
     "page": {
       "faders": "Faders",
       "eq": "EQ",
-      "sends": "Envois"
+      "sends": "Envois",
+      "pan": "Pan"
     },
     "profile": {
       "virtual": "Panneau virtuel",
       "mcu": "Mackie Control",
       "d700": "Asparion D700",
-      "midiPads": "Pads"
+      "midiPads": "Pads",
+      "streamDeck": "Stream Deck"
     },
     "state": {
       "tablet": "un fader par DCA",
@@ -496,6 +508,10 @@
     "sendsLive": "Sous le verrou, les envois sont en direct : entendus tout de suite, enregistrés seulement s'ils sont gardés.",
     "eqHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez sur un gain pour activer ou couper sa bande, sur une forme pour passer de cloche à plateau.",
     "sendsHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez dessus pour activer ou couper son envoi : son niveau est gardé.",
+    "leans": "Pan ou balance",
+    "widths": "Largeur",
+    "noPlace": "Aucun envoi de cette cue n'a de place à régler : un pan demande une cue mono vers un mix stéréo, une balance ou une largeur une cue stéréo.",
+    "panHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez sur un pan ou une balance pour le centrer, sur une largeur pour inverser gauche et droite.",
     "word": {
       "free": "libre",
       "dca": "DCA",

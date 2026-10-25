@@ -26,11 +26,15 @@ import java.io.Reader
     whenever both are on the machine - change the headers, Go.dot's file and this copy
     together. Nothing here restates a number: every law reads the file. */
 
-/** How a control moves and reads (SurfacePages.h `Law`). */
-enum class EqLaw { FREQUENCY, GAIN, WIDTH, SHAPE, LEVEL }
+/**
+ * How a control moves and reads (SurfacePages.h `Law`). PAN and STEREO_WIDTH are the Pan
+ * page's (namespace draft §113): a send's lean in -1..1, drawn from the centre, and a stereo
+ * send's width in 0..1 - never among the EQ's sixteen, and not WIDTH, which is the EQ's Q.
+ */
+enum class EqLaw { FREQUENCY, GAIN, WIDTH, SHAPE, LEVEL, PAN, STEREO_WIDTH }
 
-/** What a press on a control does (SurfacePages.h `Press`). */
-enum class EqPress { NONE, TOGGLE_SWITCH, TOGGLE_SHAPE }
+/** What a press on a control does (SurfacePages.h `Press`); CENTRE puts a pan or a balance back at nought. */
+enum class EqPress { NONE, TOGGLE_SWITCH, TOGGLE_SHAPE, CENTRE }
 
 /** One of the EQ page's sixteen controls, in the author's order (SurfacePages.h `eqControls`). */
 data class EqControl(
@@ -56,6 +60,8 @@ data class Detents(
     val gainStepDb: Double,
     val widthDoublingsPerDetent: Double,
     val levelTravelPerDetent: Double,
+    /** A pan's, a balance's and a width's (namespace draft §113, `pagePlacePerDetent`). */
+    val placePerDetent: Double,
 )
 
 /**
@@ -168,6 +174,8 @@ class SurfaceTables(val eqControls: List<EqControl>, val detent: Detents, val fa
                         "width" -> EqLaw.WIDTH
                         "shape" -> EqLaw.SHAPE
                         "level" -> EqLaw.LEVEL
+                        "pan" -> EqLaw.PAN
+                        "stereoWidth" -> EqLaw.STEREO_WIDTH
                         else -> throw JsonException("a law nobody knows: ${text("law")}")
                     },
                     min = number("min"),
@@ -202,7 +210,7 @@ class SurfaceTables(val eqControls: List<EqControl>, val detent: Detents, val fa
             fun number(name: String) = numbers[name] ?: throw JsonException("no detent.$name")
             return Detents(
                 number("octavesPerDetent"), number("gainStepDb"),
-                number("widthDoublingsPerDetent"), number("levelTravelPerDetent"),
+                number("widthDoublingsPerDetent"), number("levelTravelPerDetent"), number("placePerDetent"),
             )
         }
 

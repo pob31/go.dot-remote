@@ -164,6 +164,21 @@ class TransportTest {
         assertNull(readHeader(mirror).resumeWords())
     }
 
+    @Test
+    fun aLoadToTimeSaysTheSecondGoPlaysTheStandbyFrom() {
+        assertNull(readHeader(mirror).loadedWords())
+        put("/godot/list/$LIST/loaded", "$CUE_A 72.34")
+        assertEquals(Said("remote.header.loadedAt", "time" to "1:12.3"), readHeader(mirror).loadedWords())
+        // Before the cue nothing is held: GO plays it from the top.
+        put("/godot/list/$LIST/loaded", "$CUE_A -1")
+        assertEquals(Said("remote.header.loadedBefore"), readHeader(mirror).loadedWords())
+        // Another cue's hold is not the standby's; empty is nothing held.
+        put("/godot/list/$LIST/loaded", "$CUE_B 5")
+        assertNull(readHeader(mirror).loadedWords())
+        put("/godot/list/$LIST/loaded", "")
+        assertNull(readHeader(mirror).loadedWords())
+    }
+
     // ------------------------------------------------------------------ Doh!
 
     private fun doh(goTick: Long, now: Long, window: Double = 10.0): HeaderReading {

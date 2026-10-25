@@ -61,7 +61,9 @@
       "noClock": "no clock",
       "audioUnsaid": "audio —",
       "resumes": "resumes",
-      "resumesAt": "resumes at {time}"
+      "resumesAt": "resumes at {time}",
+      "loadedAt": "loaded at {time} · GO plays from here",
+      "loadedBefore": "loaded from the top · GO plays it from its start"
     },
     "kind": {
       "memo": "memo",
@@ -362,6 +364,7 @@
     "round": "round {at}/{of}",
     "level": "level {level} dB",
     "held": "pad held",
+    "loaded": "loaded here · GO plays from here",
     "soloed": "solo",
     "seekTo": "to {time}",
     "finer": "finer {rate}",
@@ -390,7 +393,9 @@
     "locked": "Locked",
     "live": "live",
     "in": "in",
-    "out": "out"
+    "out": "out",
+    "swapped": "L/R swapped",
+    "notSwapped": "L/R"
   },
   "cues": {
     "goList": "GO list",
@@ -425,6 +430,11 @@
     "unflag": "Unflag",
     "saveNotes": "Save the notes",
     "noSends": "No sends on this cue.",
+    "place": {
+      "pan": "Pan",
+      "balance": "Balance",
+      "width": "Width"
+    },
     "eqIn": "EQ in",
     "eqOut": "EQ out - every band skipped",
     "dcaNone": "no DCA",
@@ -461,13 +471,15 @@
     "page": {
       "faders": "Faders",
       "eq": "EQ",
-      "sends": "Sends"
+      "sends": "Sends",
+      "pan": "Pan"
     },
     "profile": {
       "virtual": "Virtual panel",
       "mcu": "Mackie Control",
       "d700": "Asparion D700",
-      "midiPads": "Pads"
+      "midiPads": "Pads",
+      "streamDeck": "Stream Deck"
     },
     "state": {
       "tablet": "a fader for each DCA",
@@ -496,6 +508,10 @@
     "sendsLive": "Under the lock the sends ride live: heard at once, saved only when kept.",
     "eqHint": "A knob turns from where it stands; the further your finger from it, the finer. Press a gain to switch its band in or out, a shape for peak or shelf.",
     "sendsHint": "A knob turns from where it stands; the further your finger from it, the finer. Press one to switch its send in or out: its level is kept.",
+    "leans": "Pan or balance",
+    "widths": "Width",
+    "noPlace": "None of this cue's sends has a place to set: a pan needs a mono cue into a stereo mix, a balance or a width a stereo cue.",
+    "panHint": "A knob turns from where it stands; the further your finger from it, the finer. Press a pan or a balance to centre it, a width to swap left and right.",
     "word": {
       "free": "free",
       "dca": "DCA",

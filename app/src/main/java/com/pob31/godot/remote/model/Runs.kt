@@ -112,6 +112,13 @@ data class RunRow(
     /** Once a launch was placed, `position` means something (gogo.js `launched`). */
     val launched: Boolean get() = state != "preparing" && state != "waiting" && state != "armed" && state != "failed"
 
+    /**
+     * A run a load to time holds at a second, silent, for the GO that plays it from there
+     * (namespace draft §117; the desktop's RunModel `held`): not launched, and yet the engine
+     * says a seek would move it - for no other reason. Not [held], which is a pad down.
+     */
+    val heldByLoad: Boolean get() = seekable && !launched && state != "failed"
+
     val stateKey: String? get() = if (state in RunLine.STATES) "remote.runState.$state" else null
 
     val kindKey: String? get() = if (kind in CueLine.KINDS) "remote.kind.$kind" else null
@@ -134,8 +141,19 @@ data class RunRow(
         else -> null
     }
 
-    /** Whether a drag on its strip is a seek: the engine says a seek would move it, and the strip has a length. */
-    val scrubbable: Boolean get() = seekable && state == "playing" && span() != null
+    /**
+     * Whether a drag on its strip is a seek: the engine says a seek would move it, and the
+     * strip has a length - a run that plays, or one a load to time holds, whose seek moves
+     * the loaded second and builds the hold again there.
+     */
+    val scrubbable: Boolean get() = seekable && (state == "playing" || heldByLoad) && span() != null
+
+    /**
+     * A drag sends its seek once, where the finger lets go, rather than as it moves: a
+     * scene, whose every seek re-seats its members (the author's RB), and a held run, whose
+     * every seek builds the load again (namespace draft §117, as the console's slider).
+     */
+    val seeksOnRelease: Boolean get() = kind == "group" || heldByLoad
 
     /** Where the head sits on the strip, 0..1; null with no span. */
     fun through(): Double? {

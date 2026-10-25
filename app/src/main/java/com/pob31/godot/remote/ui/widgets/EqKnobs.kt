@@ -51,7 +51,8 @@ import com.pob31.godot.remote.ui.theme.GodotMetrics
 /*  THE EQ'S CONTROLS, AS THE INSPECTOR AND THE SURFACE'S PAGES BOTH DRAW THEM: one of the
     surface tables' sixteen controls on a [Rotary] - its law, its range, its band's colour,
     what a press does - and a band's switch as a button that says in or out. A send's
-    level on the Send page is the same rotary on the fader's law (model `sendKnobs`). */
+    level on the Send page is the same rotary on the fader's law (model `sendKnobs`), and
+    its place on the Pan page a lean or a width (model `placeKnobs`). */
 
 private val BAND_WORDS = mapOf("eqOn" to "EQ", "eqHpf" to "HP", "eqB1On" to "B1", "eqB2On" to "B2", "eqB3On" to "B3", "eqB4On" to "B4", "eqLpf" to "LP")
 private val BAND_COLOURS = mapOf("eqHpf" to 0, "eqB1On" to 1, "eqB2On" to 2, "eqB3On" to 3, "eqB4On" to 4, "eqLpf" to 5)
@@ -72,6 +73,33 @@ fun EqBandSwitch(switch: EqSwitch, writes: TabWrites, enabled: Boolean = true) {
         Text(BAND_WORDS[switch.row] ?: switch.row, color = GodotColors.ink, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(6.dp))
         Text(loc(if (switch.on) "widgets.in" else "widgets.out"), color = if (switch.on) GodotColors.ink else GodotColors.inkFaint)
+        if (switch.live) {
+            Spacer(Modifier.width(6.dp))
+            MarkIcon(Mark.LIVE, GodotColors.waiting, size = 14.dp)
+        }
+    }
+}
+
+/**
+ * A stereo send's sides swapped or not (`send/swap`, namespace draft §113), as a button that
+ * says which - its mix channel's name before it where several are drawn together.
+ */
+@Composable
+fun SwapSwitch(switch: EqSwitch, name: String?, writes: TabWrites, enabled: Boolean = true) {
+    Row(
+        Modifier
+            .heightIn(min = GodotMetrics.touch)
+            .background(if (switch.on) GodotColors.fade.copy(alpha = 0.25f) else GodotColors.panelIn, RoundedCornerShape(6.dp))
+            .border(2.dp, if (switch.on) GodotColors.fade else GodotColors.rule, RoundedCornerShape(6.dp))
+            .clickable(enabled = enabled) { writes.setNow(switch.address, WireText.bool(!switch.on)) }
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (!name.isNullOrEmpty()) {
+            Text(name, color = GodotColors.ink, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            Spacer(Modifier.width(6.dp))
+        }
+        Text(loc(if (switch.on) "widgets.swapped" else "widgets.notSwapped"), color = if (switch.on) GodotColors.ink else GodotColors.inkFaint)
         if (switch.live) {
             Spacer(Modifier.width(6.dp))
             MarkIcon(Mark.LIVE, GodotColors.waiting, size = 14.dp)
@@ -113,7 +141,7 @@ fun EqKnobView(
         label = control.label,
         valueText = text,
         colour = ink,
-        bipolar = control.law == EqLaw.GAIN,
+        bipolar = control.law == EqLaw.GAIN || control.law == EqLaw.PAN,
         dimmed = !knob.bandOn || eq.on?.on == false,
         word = if (!knob.bandOn) loc("widgets.out") else null,
         live = knob.live,
@@ -139,6 +167,11 @@ fun EqKnobView(
             })
             EqPress.TOGGLE_SHAPE -> ({
                 writes.setNow(knob.address, EqLaws.pressedShape(knob.shape, control.shelf))
+                Unit
+            })
+            EqPress.CENTRE -> ({
+                writes.setNow(knob.address, WireText.number(0.0, 2))
+                sent = EqLaws.place(control.law, 0.0, control.min, control.max) to SystemClock.uptimeMillis()
                 Unit
             })
             EqPress.NONE -> null

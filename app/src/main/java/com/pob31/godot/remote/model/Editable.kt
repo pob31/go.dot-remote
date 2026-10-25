@@ -70,8 +70,12 @@ object Editables {
         Editable("notes", EditControl.TEXT, "cues.field.notes", UnderLock.REFUSED),
     )
 
-    /** The send rows a send's strip writes (`/godot/send/<id>/<row>`). */
-    val SEND_ROWS = listOf("level", "on")
+    /**
+     * The send rows a send's strip writes (`/godot/send/<id>/<row>`): its level, in or out,
+     * and its place in the mix (namespace draft §113) - ridden live under the lock, as the
+     * level is.
+     */
+    val SEND_ROWS = listOf("level", "on", "pan", "width", "balance", "swap")
 
     /** The DCA row its fader writes (`/godot/dca/<id>/trim`): tonight's, never stored. */
     const val DCA_TRIM = "trim"
@@ -129,15 +133,34 @@ data class FieldLine(
 
 data class SendLine(
     val id: String,
+    /** The mix it feeds: a bus, or an aux - a shared rack channel (namespace draft §93). */
     val bus: String,
     val busName: String,
     val level: Double,
     val on: Boolean,
     /** A locked show rides it live, unsaved (`send/live`). */
     val live: Boolean,
+    /**
+     * Which of its place's rows are heard (`send/placement`, the engine's word, derived): pan
+     * where a mono cue meets a stereo mix, stereo where two channels meet two (balance, width,
+     * swap), fold where a stereo cue meets a mono mix (balance), none otherwise.
+     */
+    val placement: String = PLACE_NONE,
+    val pan: Double = 0.0,
+    val width: Double = 1.0,
+    val balance: Double = 0.0,
+    val swap: Boolean = false,
 ) {
     val levelAddress: String get() = "/godot/send/$id/level"
     val onAddress: String get() = "/godot/send/$id/on"
+    fun address(row: String): String = "/godot/send/$id/$row"
+
+    companion object {
+        const val PLACE_NONE = "none"
+        const val PLACE_PAN = "pan"
+        const val PLACE_STEREO = "stereo"
+        const val PLACE_FOLD = "fold"
+    }
 }
 
 data class EqKnob(
@@ -293,7 +316,10 @@ fun playheadOf(mirror: Mirror, cue: String): Double? {
     return (position / length).coerceIn(0.0, 1.0)
 }
 
-/** The cue's sends, each with its mix channel's name (`cue/sends` lists them by identifier). */
+/**
+ * The cue's sends, each with its mix channel's name (`cue/sends` lists them by identifier):
+ * a bus's, or an aux's - a slot's, since an aux is a shared rack channel and no bus.
+ */
 fun readSends(mirror: Mirror, cueId: String): List<SendLine> =
     words(mirror.text("/godot/cue/$cueId/sends")).mapNotNull { id ->
         val base = "/godot/send/$id/"
@@ -301,10 +327,16 @@ fun readSends(mirror: Mirror, cueId: String): List<SendLine> =
         SendLine(
             id = id,
             bus = bus,
-            busName = mirror.text("/godot/bus/$bus/name")?.takeIf { it.isNotEmpty() } ?: bus,
+            busName = mirror.text("/godot/bus/$bus/name")?.takeIf { it.isNotEmpty() }
+                ?: mirror.text("/godot/slot/$bus/name")?.takeIf { it.isNotEmpty() } ?: bus,
             level = mirror.value(base + "level")?.asDouble() ?: -120.0,
             on = mirror.value(base + "on")?.asBoolean() != false,
             live = mirror.value(base + "live")?.asBoolean() == true,
+            placement = mirror.text(base + "placement")?.takeIf { it.isNotEmpty() } ?: SendLine.PLACE_NONE,
+            pan = mirror.value(base + "pan")?.asDouble() ?: 0.0,
+            width = mirror.value(base + "width")?.asDouble() ?: 1.0,
+            balance = mirror.value(base + "balance")?.asDouble() ?: 0.0,
+            swap = mirror.value(base + "swap")?.asBoolean() == true,
         )
     }
 

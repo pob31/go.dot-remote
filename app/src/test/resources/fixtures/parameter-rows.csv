@@ -1,4 +1,4 @@
-# owner,address,type,access,persist - from Go.dot docs/parameters/godot-parameters.csv (2026-10-16), the rows the remote reads
+# owner,address,type,access,persist - from Go.dot docs/parameters/godot-parameters.csv (2026-10-25, 0.1.17), the rows the remote reads
 owner,address,type,access,persist
 document,path,s,r,none
 document,name,s,r,none
@@ -20,6 +20,7 @@ document,writeError,s,r,none
 document,live,i,r,none
 document,recording,T,r,none
 list,name,s,rw,show
+list,kind,s,rw,show
 list,order,s,r,none
 list,persistentOrder,s,r,none
 list,persistent,s,r,none
@@ -29,6 +30,7 @@ list,finished,T,rw,state
 list,aim,s,rw,none
 list,solve,s,r,none
 list,statePosition,s,r,none
+list,loaded,s,r,none
 list,history,s,r,none
 list,resume,s,r,none
 cue,kind,s,r,none
@@ -36,6 +38,7 @@ cue,number,s,rw,show
 cue,name,s,rw,show
 cue,shortName,s,rw,show
 cue,autoName,s,r,none
+cue,joinNote,s,r,none
 cue,notes,s,rw,show
 cue,enabled,T,rw,show
 cue,colour,s,rw,show
@@ -54,8 +57,13 @@ sound,level,d,rw,show
 media,startOffset,d,rw,show
 media,rate,d,rw,show
 media,rateMode,s,rw,show
+media,delay,s,rw,show
+media,delayBy,d,rw,show
 media,channels,i,rw,show
 media,levelLane,d*,rw,show
+media,rangeJoin,s,rw,show
+media,rangeJoinLength,d,rw,show
+media,take,s,rw,show
 media,lockedTo,s,rw,show
 media,editSource,s,rw,show
 media,sections,s,r,none
@@ -64,6 +72,7 @@ sound,directOut,s,rw,show
 sound,sharedOut,T,rw,show
 sound,dca,s,rw,show
 sound,eqOn,T,rw,show
+sound,fxHideUnused,T,rw,show
 sound,eqHpf,T,rw,show
 sound,eqHpfFreq,d,rw,show
 sound,eqLpf,T,rw,show
@@ -111,10 +120,12 @@ fade,curve,s,rw,show
 fade,points,d*,rw,show
 fade,stopWhenDone,T,rw,show
 fade,dca,s,rw,show
+fade,aux,s,rw,show
 fade,sends,s,rw,show
 fade,eq,s,rw,show
 fade,fx,s,rw,show
 fade,video,s,rw,show
+fade,places,s,rw,show
 run,cue,s,r,none
 run,kind,s,r,none
 run,parent,s,r,none
@@ -159,6 +170,7 @@ run,said,s,r,none
 run,ports,s,r,none
 run,timecode,s,r,none
 run,chaseError,d,r,none
+run,joinDb,d,r,none
 run,chaseState,s,r,none
 group,order,s,r,none
 group,headerOrder,s,r,none
@@ -171,6 +183,9 @@ group,headerFolded,T,rw,state
 group,footerFolded,T,rw,state
 group,mode,s,rw,show
 group,advance,s,rw,show
+group,join,s,rw,show
+group,joinLength,d,rw,show
+group,joinCurve,d,rw,show
 group,selection,s,rw,show
 group,loops,i,rw,show
 group,play,i,rw,show
@@ -191,6 +206,11 @@ send,bus,s,rw,show
 send,level,d,rw,show
 send,on,T,rw,show
 send,levelLane,d*,rw,show
+send,pan,d,rw,show
+send,width,d,rw,show
+send,balance,d,rw,show
+send,swap,T,rw,show
+send,placement,s,r,none
 send,live,T,r,none
 send,cue,s,r,none
 dca,name,s,rw,show
@@ -217,6 +237,8 @@ video,flipH,T,rw,show
 video,flipV,T,rw,show
 video,rate,d,rw,show
 video,startOffset,d,rw,show
+video,delay,s,rw,show
+video,delayBy,d,rw,show
 video,duration,d,r,none
 video,missing,T,r,none
 video,editSource,s,rw,show

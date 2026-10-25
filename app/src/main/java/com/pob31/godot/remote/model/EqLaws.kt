@@ -32,7 +32,7 @@ object EqLaws {
     fun place(law: EqLaw, value: Double, min: Double, max: Double, fader: FaderCurve? = null): Double = when (law) {
         EqLaw.FREQUENCY, EqLaw.WIDTH ->
             if (min > 0.0 && max > min) (ln(value.coerceIn(min, max) / min) / ln(max / min)).coerceIn(0.0, 1.0) else 0.0
-        EqLaw.GAIN -> if (max > min) ((value - min) / (max - min)).coerceIn(0.0, 1.0) else 0.0
+        EqLaw.GAIN, EqLaw.PAN, EqLaw.STEREO_WIDTH -> if (max > min) ((value - min) / (max - min)).coerceIn(0.0, 1.0) else 0.0
         EqLaw.LEVEL -> fader?.fractionForDb(value) ?: 0.0
         EqLaw.SHAPE -> 0.0
     }
@@ -42,7 +42,7 @@ object EqLaws {
         val at = place.coerceIn(0.0, 1.0)
         return when (law) {
             EqLaw.FREQUENCY, EqLaw.WIDTH -> if (min > 0.0 && max > min) min * (max / min).pow(at) else min
-            EqLaw.GAIN -> min + (max - min) * at
+            EqLaw.GAIN, EqLaw.PAN, EqLaw.STEREO_WIDTH -> min + (max - min) * at
             EqLaw.LEVEL -> fader?.dbForFraction(at) ?: min
             EqLaw.SHAPE -> min
         }
@@ -54,6 +54,8 @@ object EqLaws {
         EqLaw.GAIN -> roundedTo(value, 0.1).coerceIn(min, max)
         EqLaw.WIDTH -> roundedTo(value.coerceIn(min, max), 0.01).coerceIn(min, max)
         EqLaw.LEVEL -> if (value <= silenceDb) silenceDb.coerceIn(min, max) else roundedTo(value, 0.1).coerceIn(min, max)
+        // A hundredth: a per cent, the grain both places are read in.
+        EqLaw.PAN, EqLaw.STEREO_WIDTH -> roundedTo(value.coerceIn(min, max), 0.01).coerceIn(min, max)
         EqLaw.SHAPE -> value
     }
 
@@ -88,7 +90,8 @@ object EqLaws {
 
     /**
      * What a control's screen says its value is (`valueText`): "80 Hz", "82.5 Hz",
-     * "2.00 kHz", "12.5 kHz"; "+3.5 dB"; "Q 0.70"; "-inf dB" at silence.
+     * "2.00 kHz", "12.5 kHz"; "+3.5 dB"; "Q 0.70"; "-inf dB" at silence; a lean "L 30",
+     * "C", "R 100" and a width "100 %" (namespace draft §113).
      */
     fun valueText(law: EqLaw, value: Double, silenceDb: Double = -120.0): String = when (law) {
         EqLaw.FREQUENCY ->
@@ -102,6 +105,11 @@ object EqLaws {
         EqLaw.GAIN -> (if ((value * 10.0).roundToLong() > 0) "+" else "") + fixed(value, 1) + " dB"
         EqLaw.WIDTH -> "Q " + fixed(value, if (value >= 9.995) 1 else 2)
         EqLaw.LEVEL -> if (value <= silenceDb) "-inf dB" else fixed(value, 1) + " dB"
+        EqLaw.PAN -> {
+            val percent = halfAway(abs(value) * 100.0).toLong()
+            if (percent == 0L) "C" else (if (value < 0.0) "L " else "R ") + percent
+        }
+        EqLaw.STEREO_WIDTH -> halfAway(value.coerceIn(0.0, 1.0) * 100.0).toLong().toString() + " %"
         EqLaw.SHAPE -> ""
     }
 

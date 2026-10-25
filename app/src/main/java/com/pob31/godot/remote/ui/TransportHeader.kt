@@ -347,10 +347,7 @@ private fun CuesBlock(
                     Spacer(Modifier.width(10.dp))
                 }
                 Text(next.kindKey?.let { loc(it) } ?: next.kind, color = accent, maxLines = 1, softWrap = false)
-                reading.resumeWords()?.let {
-                    Spacer(Modifier.width(10.dp))
-                    Text(say(it), color = GodotColors.waiting, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
+                StandbyWords(reading, Modifier.weight(1f, fill = false))
             } else {
                 val accent = GodotColors.kindAccent(next.kind, next.mode)
                 GodotIconMark(next.icon, accent, size = 26.dp)
@@ -358,10 +355,7 @@ private fun CuesBlock(
                 CueName(next, GodotColors.standby, 24.sp, Modifier.weight(1f, fill = false))
                 Spacer(Modifier.width(10.dp))
                 Text(next.kindKey?.let { loc(it) } ?: next.kind, color = accent, maxLines = 1, softWrap = false)
-                reading.resumeWords()?.let {
-                    Spacer(Modifier.width(10.dp))
-                    Text(say(it), color = GodotColors.waiting, maxLines = 1)
-                }
+                StandbyWords(reading)
             }
         }
         val next = reading.next
@@ -377,6 +371,14 @@ private fun CuesBlock(
             the Go button"): beside GO, as many lines as GO's height leaves - its line breaks
             kept, the last line ended with an ellipsis - and the header never taller for them;
             on a phone, where the cues sit above the buttons, one line. */
+        /*  A LOAD TO TIME'S SECOND (namespace draft §117) on a line of its own above the notes,
+            so the standby's name keeps the arrows' line whole. */
+        reading.loadedWords()?.let {
+            Text(
+                say(it), color = GodotColors.standby, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = labelWidth)
+            )
+        }
         reading.next?.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             if (fillHeight) {
                 Text(
@@ -408,6 +410,18 @@ private fun CueName(cue: CueLine, colour: Color, size: TextUnit, modifier: Modif
         // The number whole; the name takes what room is left and ends with an ellipsis.
         Text(cue.name, color = colour, fontSize = size, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
     }
+}
+
+/**
+ * "resumes at" beside the standby when the next GO carries a paused cue on - unless a load
+ * to time holds it, which is said on the line under (namespace draft §117).
+ */
+@Composable
+private fun StandbyWords(reading: HeaderReading, modifier: Modifier = Modifier) {
+    if (reading.loadedWords() != null) return
+    val words = reading.resumeWords() ?: return
+    Spacer(Modifier.width(10.dp))
+    Text(say(words), color = GodotColors.waiting, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = modifier)
 }
 
 /** A run's state in a word and its time: how far in, or - in a wait - how long left. */

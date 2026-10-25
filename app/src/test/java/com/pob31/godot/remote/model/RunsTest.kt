@@ -152,6 +152,31 @@ class RunsTest {
     }
 
     @Test
+    fun aRunALoadHolds_isScrubbed_andSeeksOnlyWhereTheFingerLetsGo() {
+        mirror.put("/godot/cue/$THUNDER/duration", 30.0)
+        mirror.put("/godot/run/$RUN_THUNDER/position", 12.0)
+        mirror.put("/godot/run/$RUN_THUNDER/state", "armed")
+        mirror.put("/godot/run/$RUN_THUNDER/seekable", true)
+        val held = row(RUN_THUNDER)
+        assertTrue(held.heldByLoad)
+        assertFalse("a load's hold is not a pad down", held.held)
+        assertTrue(held.scrubbable)
+        assertTrue(held.seeksOnRelease)
+
+        // Armed and not seekable is a run made ready ahead: no strip to drag.
+        mirror.put("/godot/run/$RUN_THUNDER/seekable", false)
+        assertFalse(row(RUN_THUNDER).heldByLoad)
+        assertFalse(row(RUN_THUNDER).scrubbable)
+
+        // A sound that plays seeks as the finger moves.
+        mirror.put("/godot/run/$RUN_THUNDER/seekable", true)
+        mirror.put("/godot/run/$RUN_THUNDER/state", "playing")
+        assertFalse(row(RUN_THUNDER).heldByLoad)
+        assertTrue(row(RUN_THUNDER).scrubbable)
+        assertFalse(row(RUN_THUNDER).seeksOnRelease)
+    }
+
+    @Test
     fun aWaitCountsDown_andATimbreIsThreeNumbers() {
         mirror.put("/godot/run/$RUN_THUNDER/state", "waiting")
         mirror.put("/godot/run/$RUN_THUNDER/remaining", 1.25)

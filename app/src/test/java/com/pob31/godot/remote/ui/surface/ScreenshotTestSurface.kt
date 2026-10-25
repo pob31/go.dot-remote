@@ -187,6 +187,25 @@ class ScreenshotTestSurface {
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
     fun theSendPage() = shoot("surface-sends-tablet") { withHeader(show(), SurfacePage.SENDS) }
 
+    /** The aimed cue's sends given places: the first stereo into stereo, swapped; the second a mono pan. */
+    private fun Mirror.placed(): Mirror = apply {
+        val sends = com.pob31.godot.remote.model.readSends(this, THUNDER_AND_RAIN)
+        put(sends[0].address("placement"), "stereo")
+        put(sends[0].address("balance"), -0.3)
+        put(sends[0].address("width"), 0.6)
+        put(sends[0].address("swap"), true)
+        put(sends[1].address("placement"), "pan")
+        put(sends[1].address("pan"), 0.45)
+    }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun thePanPage() = shoot("surface-pan-tablet") { withHeader(show().placed(), SurfacePage.PAN) }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun thePanPageInFrench() = shoot("surface-pan-tablet-fr", "fr") { withHeader(show().placed(), SurfacePage.PAN) }
+
     @Test
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
     fun thisTablet() = shoot("surface-this-tablet") { withHeader(show(), SurfacePage.FADERS, THIS_TABLET) }

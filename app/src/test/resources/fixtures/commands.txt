@@ -1,4 +1,4 @@
-# wfg commands (Go.dot build of 2026-10-16), signatures only: what the remote's tabs may send is held to these
+# wfg commands (Go.dot build of 2026-10-25, 0.1.17), signatures only: what the remote's tabs may send is held to these
 noop
 audio.configure <enabled:T> <deviceType:s> <outputDevice:s> <inputDevice:s> <bufferSize:i> <inputPatch:s> <outputPatch:s>
 list.create <name:s> [id:s] [attribute:s...]
@@ -9,8 +9,11 @@ fx.create <cue:s> <plugin:s> [id:s]
 fx.capture <fx:s> <stateFile:s> <values:s>
 group.wrap <cues:s> [id:s] [attribute:s...]
 route.default <cue:s> <channels:i> [id:s]
-range.create <cue:s> <in:d> <out:d> [id:s]
-range.split <cue:s> <at:d> [id:s]
+range.create <cue:s> <in:d> <out:d> [id:s] [toEnd:T]
+range.split <cue:s> <at:d> [id:s] [length:d] [whole:s]
+range.span <cue:s> <start:d> <end:d> [id:s]
+range.slices <cue:s> <from:d> <to:d> <count:i> [length:d] [ids:s]
+marker.create <cue:s> <at:d> [name:s] [id:s]
 slot.create <mount:s> <address:s> [id:s]
 bus.create <kind:s> <width:i> <index:i> [id:s]
 bus.delete <bus:s>
@@ -21,9 +24,12 @@ input.delete <input:s>
 input.move <input:s> <index:i>
 input.width <input:s> <width:i>
 channel.create <class:s> [id:s]
+aux.create <class:s> [id:s]
 feed.create <cue:s> <slot:s> [id:s]
 insert.create <cue:s> <channel:s> [id:s]
 trigger.create <cue:s> <kind:s> [id:s] [attribute:s...]
+binding.create <cue:s> [id:s] [attribute:s...]
+binding.learn [binding:s]
 group.role <group:s> <role:s> [id:s]
 list.persistent <list:s> [id:s]
 port.create <name:s> [id:s]
@@ -41,6 +47,7 @@ curve.create <parent:s> <arg:i> [id:s]
 message.promote <id:s>
 plugin.create <name:s> <identifier:s> <format:s> <path:s> [id:s]
 channel.plugin <channel:s> <name:s> <identifier:s> <format:s> <path:s> [id:s]
+cue.plugin <cue:s> <name:s> <identifier:s> <format:s> <path:s> [plugin:s] [id:s]
 mount.create <prefix:s> <namespace:s> [id:s]
 object.delete <id:s>
 document.copy <ids:s>
@@ -52,6 +59,7 @@ cueTemplate.save <template:s> <cue:s>
 cueTemplate.apply <template:s> <cues:s> [ids:s]
 cue.createFrom <parent:s> <index:i> <template:s> <name:s> [id:s] [ids:s] [attribute:s...]
 object.move <id:s> <parent:s> <index:i>
+object.moveMany <ids:s> <parent:s> <index:i>
 node.set <address:s> <value:*> [more:*...]
 node.setMany <address:s> <value:*> [more:*...]
 undo [domain:s] [transaction:s]
@@ -62,6 +70,8 @@ eq.reset <cue:s>
 standby.next
 standby.previous
 list.focus <list:s>
+streamdeck.closeApp
+surface.learnKey <cue:s>
 surface.aim <cue:s>
 surface.dial <address:s>
 live.keep
@@ -88,11 +98,12 @@ take.overdub <channel:s>
 take.undo <channel:s>
 take.clear <channel:s>
 take.keep <channel:s> [asCue:T] [after:s]
+take.pad <channel:s> [after:s] [in:d] [out:d] [cue:s] [range:s] [route:s]
 take.kept <channel:s> <file:s> <error:s> [cue:s] [range:s] [route:s]
 take.closed <channel:s> <seconds:d> <how:s>
 audio.arm <cue:s> [run:s]
 run.prepare <cue:s> [run:s...]
-list.aim <list:s> <cue:s> <offset:d>
+list.aim <list:s> <cue:s> <offset:d> [run:s...]
 list.loadToTime <list:s> [run:s...]
 pair.seat <position:s>
 run.seek <run:s> <seconds:d> [made:s...]
@@ -112,7 +123,7 @@ cue.release <cue:s>
 standby.jump <list:s> <target:s> <andGo:T> <cause:h> [run:s...]
 process.send <run:s> <name:s> [atoms:*...]
 serial.heard <serial:s> <line:s>
-trigger.fire <trigger:s> [run:s]
+trigger.fire <trigger:s> [run:s...]
 trigger.release <trigger:s>
 code.heard <source:s> <what:s> <rate:s> <frame:h> <sample:h> <speed:d> [runs:s...]
 code.seat <run:s> <sample:h> [runs:s...]
@@ -143,6 +154,10 @@ media.convert <file:s> [scope:s] [format:s] [sound:T]
 media.convert.cancel <file:s>
 media.converted <source:s> <target:s> <cut:d> [sound:s] [channels:i] [made:s]
 media.cleanCache
+media.lookAgain
+fonts.add <path:s> [restricted:T]
+fonts.carry <family:s> [restricted:T]
+fonts.remove <family:s>
 section.split <cue:s> <at:d> [id:s] [length:d] [frameRate:d]
 section.join <section:s>
 section.trim <section:s> <in:d> <out:d> [frameRate:d]
@@ -151,6 +166,7 @@ section.remove <section:s> [leaveGap:i]
 section.clear <cue:s>
 section.edge <section:s> <side:s> <seconds:d> [frameRate:d]
 section.place <section:s> <seconds:d> [frameRate:d]
+section.slide <section:s> <seconds:d> [frameRate:d]
 section.fade <section:s> <side:s> <seconds:d> [alone:i]
 section.curve <section:s> <side:s> <curve:d> [alone:i]
 section.splitSpan <cue:s> <from:d> <to:d> [id:s] [id2:s] [length:d] [frameRate:d]
@@ -172,8 +188,8 @@ plugin.scanned <found:i> <skipped:i> <problem:s>
 node.touch <address:s>
 node.release <address:s>
 node.releaseAll
-mount.declare <prefix:s> <port:i> <queryPort:i> <name:s> [id:s] [host:s]
-cue.capture <where:s> <target:s> <id:s> <name:s> <number:s> <notes:s> <messageIds:s> [pair:s...]
+mount.declare <prefix:s> <port:i> <queryPort:i> <name:s> [id:s] [host:s] [bundles:i]
+cue.capture <from:s> <where:s> <target:s> <id:s> <name:s> <number:s> <notes:s> <messageIds:s> [pair:s...]
 cue.fireNumber <number:s> [run:s]
 standby.setNumber <number:s>
 mount.replied <mount:s> <word:s> <line:s>
@@ -181,8 +197,13 @@ mount.readback <mount:s> <address:s> <value:*> [observed:T] [writes:h] [more:*..
 mount.heard <mount:s> <address:s> [values:*...]
 mount.load <id:s>
 mount.described <mount:s> <file:s> <nodeCount:i> <problem:s>
-mount.createFromPreset <slug:s> [id:s] [prefix:s] [namespace:s] [port:i] [transport:s] [version:i] [framing:s] [wire:s] [readback:s]
+preset.rescan
+preset.save <mount:s> [slug:s] [vendor:s] [model:s]
+mount.createFromPreset <slug:s> [id:s] [prefix:s] [namespace:s] [port:i] [transport:s] [version:i] [framing:s] [wire:s] [readback:s] [queryPort:i]
 mount.refreshPreset <id:s> [namespace:s] [prefix:s] [version:i]
+network.browse
+mount.describeAt <host:s> <queryPort:i> [name:s] [id:s]
+mount.discovered <id:s> <file:s> <host:s> <transport:s> <oscPort:i> <queryPort:i> <readback:s> <name:s> <roots:s> <nodeCount:i> <problem:s> [device:s]
 document.save
 document.autosave
 document.recover

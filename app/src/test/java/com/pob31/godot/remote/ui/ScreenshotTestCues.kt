@@ -161,6 +161,22 @@ class ScreenshotTestCues {
         InspectorView(reading(show()).inspection, RecordingWrites(), tables, Modifier.background(GodotColors.panelInspect), scroll = false)
     }
 
+    /** The sends with places (namespace draft §113): a stereo send's balance, width and swap; a mono send's pan. */
+    @Test
+    @Config(qualifiers = "w411dp-h2400dp-port-xhdpi")
+    fun theInspectorWithSendPlacesOnAPhone() = shoot("cues-inspector-places-phone") {
+        val mirror = show().apply {
+            val sends = com.pob31.godot.remote.model.readSends(this, ShowFixture.THUNDER_AND_RAIN)
+            put(sends[0].address("placement"), "stereo")
+            put(sends[0].address("balance"), -0.3)
+            put(sends[0].address("width"), 0.6)
+            put(sends[0].address("swap"), true)
+            put(sends[1].address("placement"), "pan")
+            put(sends[1].address("pan"), 0.45)
+        }
+        InspectorView(reading(mirror).inspection, RecordingWrites(), tables, Modifier.background(GodotColors.panelInspect), scroll = false)
+    }
+
     @Test
     @Config(qualifiers = "w411dp-h2400dp-port-xhdpi")
     fun theInspectorLockedOnAPhoneInFrench() = shoot("cues-inspector-phone-locked-fr", "fr") {
