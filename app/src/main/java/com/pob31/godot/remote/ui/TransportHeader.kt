@@ -160,7 +160,7 @@ fun TransportHeaderView(
     val sentence = when {
         notSent > 0 -> if (machine == null) loc("remote.header.notSentNoMachine") else loc("remote.header.notSent", "machine" to machine)
         machine == null -> null
-        else -> refusalLine(refusal, reading.dohWindowSeconds, reading.audioStatus)?.let { say(it) }
+        else -> refusalLine(refusal, reading.dohWindowSeconds, reading.audioStatus, reading.paused)?.let { say(it) }
     }
     val words = MachineWords(seat, twoMains, reading.locked == true, sentence)
 
@@ -175,12 +175,13 @@ fun TransportHeaderView(
             buttons under them. However narrow, the next cue's name is never dropped: it goes
             to a line of its own (CuesBlock). */
         val row = when {
-            maxWidth >= 1100.dp -> RowSizes(196.dp, 136.dp, 168.dp, 128.dp, 76.dp)
-            maxWidth >= 700.dp -> RowSizes(150.dp, 112.dp, 136.dp, 120.dp, 64.dp)
+            maxWidth >= 1100.dp -> RowSizes(196.dp, 136.dp, 168.dp, 128.dp, 76.dp, 136.dp)
+            maxWidth >= 700.dp -> RowSizes(150.dp, 112.dp, 136.dp, 120.dp, 64.dp, 112.dp)
             else -> null
         }
         // The room the next cue has beside its label and the two arrows: under 360 dp its name gets a line of its own.
-        val rowRoom = if (row != null) maxWidth - 24.dp - row.go - row.doh - row.panic - 32.dp - GodotMetrics.row else maxWidth - 24.dp
+        val rowRoom = if (row != null) maxWidth - 24.dp - row.go - row.pause - 12.dp - row.doh - row.panic - 32.dp - GodotMetrics.row
+                      else maxWidth - 24.dp
         fun fitsOneLine(room: Dp) = room - (row?.label ?: 60.dp) - 110.dp >= 360.dp
         // The machine's words take a column in the row only when the next cue keeps its one line beside it.
         val wordsBeside = row != null && words.any && fitsOneLine(rowRoom - WORDS_WIDTH - 16.dp)
@@ -200,6 +201,8 @@ fun TransportHeaderView(
                         WordsColumn(words, Modifier.width(WORDS_WIDTH).fillMaxHeight())
                         Spacer(Modifier.width(16.dp))
                     }
+                    PauseButton(reading, Modifier.width(row.pause).fillMaxHeight()) { sendOrSay(reading.pauseCommand()) }
+                    Spacer(Modifier.width(12.dp))
                     DohButton(reading, Modifier.width(row.doh).fillMaxHeight()) { sendOrSay("go.doh") }
                     Spacer(Modifier.width(GodotMetrics.row))
                     PanicButton(killNext, Modifier.width(row.panic).fillMaxHeight()) {
@@ -211,6 +214,8 @@ fun TransportHeaderView(
                 CuesBlock(reading, live, Modifier.fillMaxWidth(), 60.dp, stacked, sendOrSay)
                 Row(Modifier.height(104.dp), verticalAlignment = Alignment.CenterVertically) {
                     GoButton(reading, Modifier.weight(1.5f).fillMaxHeight()) { sendOrSay("go") }
+                    Spacer(Modifier.width(12.dp))
+                    PauseButton(reading, Modifier.weight(1f).fillMaxHeight()) { sendOrSay(reading.pauseCommand()) }
                     Spacer(Modifier.width(12.dp))
                     DohButton(reading, Modifier.weight(1f).fillMaxHeight()) { sendOrSay("go.doh") }
                     Spacer(Modifier.width(GodotMetrics.row))
@@ -289,8 +294,8 @@ private fun WordsLine(words: MachineWords) {
     }
 }
 
-/** The widths of the one-row header: GO, Doh!, PANIC, its height, and the cues' row labels. */
-private data class RowSizes(val go: Dp, val doh: Dp, val panic: Dp, val height: Dp, val label: Dp)
+/** The widths of the one-row header: GO, Doh!, PANIC, its height, the cues' row labels, and Pause / Play. */
+private data class RowSizes(val go: Dp, val doh: Dp, val panic: Dp, val height: Dp, val label: Dp, val pause: Dp)
 
 /**
  * Current above, next below - the next one larger and in the standby colour, the arrows
@@ -541,6 +546,24 @@ private fun DohButton(reading: HeaderReading, modifier: Modifier, onClick: () ->
         size = 26.sp,
         modifier = modifier,
         enabled = reading.dohClickable(),
+        onClick = onClick,
+    )
+}
+
+/**
+ * PAUSE / PLAY (Go.dot's PRD §3.34), left of Doh!: "Pause" on the idle ground while the show
+ * runs, "Play" on the held blue while it is held, with "PAUSED" under it - the word carrying
+ * the state, never the colour alone (§4.8) - and a press sends what the word says.
+ */
+@Composable
+private fun PauseButton(reading: HeaderReading, modifier: Modifier, onClick: () -> Unit) {
+    BigButton(
+        label = loc(reading.pauseCaptionKey()),
+        under = if (reading.paused) loc("remote.header.pausedUnder") else null,
+        ground = if (reading.paused) GodotColors.paused else GodotColors.goIdle,
+        ink = if (reading.paused) GodotColors.goInk else GodotColors.ink,
+        size = 26.sp,
+        modifier = modifier,
         onClick = onClick,
     )
 }

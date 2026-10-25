@@ -140,6 +140,19 @@ class ScreenshotTest {
     @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
     fun headerOnAPhone() = shoot("header-phone") { header() }
 
+    /** The show held (Go.dot's PRD §3.34): Play on the held blue, PAUSED under it, the line saying so. */
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun headerPaused() = shoot("header-paused") { header(playing.copy(paused = true), refusal = null) }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun headerPausedInFrench() = shoot("header-paused-fr", "fr") { header(playing.copy(paused = true), refusal = null) }
+
+    @Test
+    @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
+    fun headerPausedOnAPhone() = shoot("header-paused-phone") { header(playing.copy(paused = true), refusal = null) }
+
     /** The machine's words between the cues and Doh!: its seat in a pair, the lost link, Locked and a refusal at once. */
     @Test
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")

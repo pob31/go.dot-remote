@@ -123,6 +123,8 @@ data class HeaderReading(
     val dohWindow: String = "",
     /** `/godot/list/dohForget`: "<list> <cue>" of a resume a press would forget, or empty. */
     val dohForget: String = "",
+    /** `/godot/engine/paused` (Go.dot's PRD §3.34): the show held by Pause until Play. */
+    val paused: Boolean = false,
 ) {
     val audioRunning: Boolean get() = audioStatus == "running"
 
@@ -157,8 +159,16 @@ data class HeaderReading(
     /** Whether a press would do something: take back the GO, or forget the resume the last Doh! left. */
     fun dohClickable(): Boolean = dohLook().phase != DohPhase.OVER || words(dohForget).size == 2
 
-    /** GO's word when it is grey (the author, 2026-09-25): no audio, no clock; null while the audio runs. */
+    /*  PAUSE / PLAY (Go.dot's PRD §3.34; the author, 2026-10-25: "Add it to the Android remote
+        too"): the command a press sends is what the button says - "Pause" while the show runs,
+        "Play" while it is held - two commands, never a toggle, so a press made on a mirror a
+        pass behind cannot undo itself. */
+    fun pauseCommand(): String = if (paused) "run.playAll" else "run.pauseAll"
+    fun pauseCaptionKey(): String = if (paused) "remote.header.play" else "remote.header.pause"
+
+    /** GO's word when it is grey (the author, 2026-09-25): no audio, no clock, paused; null while the audio runs. */
     fun goLine(): Said? = when {
+        paused -> Said("remote.header.paused")
         audioRunning -> null
         audioStatus == "noClock" -> Said("remote.header.noClock")
         audioStatus.isEmpty() -> Said("remote.header.audioUnsaid")
@@ -232,6 +242,7 @@ fun readHeader(mirror: Mirror): HeaderReading {
         dohCue = dohCue,
         dohWindow = mirror.text("/godot/list/dohWindow") ?: "",
         dohForget = mirror.text("/godot/list/dohForget") ?: "",
+        paused = mirror.value("/godot/engine/paused")?.asBoolean() == true,
     )
 }
 
@@ -275,10 +286,17 @@ fun originKey(origin: Char): String? = when (origin) {
  * meets mid-show - a bounced GO, Doh!'s four - said in words, each naming what to do about
  * it. A record that does not parse is shown whole, so a format change is seen rather than
  * swallowed. [audioStatus] "noClock" takes the line first, as on the desktop: the cues it
- * paused are the first thing anybody will ask about.
+ * paused are the first thing anybody will ask about. Then [paused] (Go.dot's PRD §3.34),
+ * said for as long as the show is held - and a press it refused said as that.
  */
-fun refusalLine(refusal: Refusal?, dohWindowSeconds: Double, audioStatus: String = ""): Said? {
+fun refusalLine(refusal: Refusal?, dohWindowSeconds: Double, audioStatus: String = "", paused: Boolean = false): Said? {
     if (audioStatus == "noClock") return Said("remote.refusal.noClock")
+    if (paused) {
+        val command = refusal?.command
+        return if (command != null && refusal.reason == "paused")
+            Said("remote.refusal.ignoredPaused", "command" to if (command == "go") "GO" else command)
+        else Said("remote.refusal.paused")
+    }
     refusal ?: return null
     val command = refusal.command ?: return Said.verbatim(refusal.raw.trim())
     val reason = refusal.reason

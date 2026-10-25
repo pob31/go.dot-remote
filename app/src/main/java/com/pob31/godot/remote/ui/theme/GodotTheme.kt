@@ -67,6 +67,9 @@ object GodotColors {
     val doh = Color(0xFFFF6EB4)
     val dohInk = Color(0xFF000000)
 
+    /** Pause / Play while the show is held (Go.dot's PRD §3.34): the desktop's still blue, black letters. */
+    val paused = Color(0xFF5B9BD5)
+
     val flag = Color(0xFFFF9330)
 
     /** The EQ's handles in field order: high-pass, bands one to four, low-pass (engine audio/EqColours.h). */

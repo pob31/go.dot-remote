@@ -295,4 +295,31 @@ class TransportTest {
         assertEquals(Said("remote.refusal.noClock"), refusalLine(null, 10.0, "noClock"))
         assertNull(refusalLine(null, 10.0, "running"))
     }
+
+    // ------------------------------------------------------------------ Pause / Play (Go.dot's PRD §3.34)
+
+    @Test
+    fun pauseReadsTheEnginesFlagAndSendsWhatItsWordSays() {
+        val running = readHeader(mirror)
+        assertFalse(running.paused)
+        assertEquals("remote.header.pause", running.pauseCaptionKey())
+        assertEquals("run.pauseAll", running.pauseCommand())
+
+        mirror.putValues("/godot/engine/paused", "T", listOf(OscValue.True))
+        val held = readHeader(mirror)
+        assertTrue(held.paused)
+        assertEquals("remote.header.play", held.pauseCaptionKey())
+        assertEquals("run.playAll", held.pauseCommand())
+        assertEquals(Said("remote.header.paused"), held.goLine())
+    }
+
+    @Test
+    fun pausedTakesTheLineAndAPressItRefusedIsSaidAsThat() {
+        assertEquals(Said("remote.refusal.paused"), refusalLine(null, 10.0, "running", paused = true))
+        assertEquals(Said("remote.refusal.ignoredPaused", "command" to "GO"),
+                     refusalLine(Refusal.parse("900 4 ws:t paused go"), 10.0, "running", paused = true))
+        assertEquals(Said("remote.refusal.ignoredPaused", "command" to "cue.fire"),
+                     refusalLine(Refusal.parse("900 4 ws:t paused cue.fire"), 10.0, "running", paused = true))
+        assertEquals(Said("remote.refusal.noClock"), refusalLine(null, 10.0, "noClock", paused = true))
+    }
 }

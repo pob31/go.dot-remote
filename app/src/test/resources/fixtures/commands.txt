@@ -1,4 +1,4 @@
-# wfg commands (Go.dot build of 2026-10-25, 0.1.17), signatures only: what the remote's tabs may send is held to these
+# wfg commands (Go.dot build of 2026-10-25, 0.1.17 with Pause / Play), signatures only: what the remote's tabs may send is held to these
 noop
 audio.configure <enabled:T> <deviceType:s> <outputDevice:s> <inputDevice:s> <bufferSize:i> <inputPatch:s> <outputPatch:s>
 list.create <name:s> [id:s] [attribute:s...]
@@ -114,6 +114,8 @@ run.assert <cue:s> [run:s] [from:d] [range:i]
 go [run:s...]
 go.doh [run:s...]
 go.flag
+run.pauseAll
+run.playAll
 go.dohRelaunch <run:s> [made:s...]
 list.dohReport <list:s> <text:s> [append:T]
 go.dohPlayhead <run:s> <from:d> [range:i]
