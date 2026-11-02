@@ -33,6 +33,7 @@ import com.pob31.godot.remote.buzzer.BuzzerLink
 import com.pob31.godot.remote.MainActivity
 import com.pob31.godot.remote.R
 import com.pob31.godot.remote.findme.FindMe
+import com.pob31.godot.remote.findme.FindMePlan
 import com.pob31.godot.remote.localization.locStatic
 import com.pob31.godot.remote.model.readPair
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -407,7 +408,11 @@ class EngineLinkService : LifecycleService() {
                 if (list.isEmpty()) emptyFlow()
                 else merge(*list.map { linked -> linked.link.finds.map { linked.machine.label to it } }.toTypedArray())
             }.collect { (machine, request) ->
-                FindMe.alert(this@EngineLinkService, machine, request.seconds)
+                // A FIND without this tablet's find password is not answered (Go.dot's §126).
+                if (FindMePlan.answers(FindMe.password(this@EngineLinkService), request.password))
+                    FindMe.alert(this@EngineLinkService, machine, request.seconds)
+                else
+                    Log.i(TAG, "a FIND from $machine without this tablet's find password, not answered")
             }
         }
     }

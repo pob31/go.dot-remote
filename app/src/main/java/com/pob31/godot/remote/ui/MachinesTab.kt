@@ -54,7 +54,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -498,6 +501,10 @@ interface FindMeAccess {
     fun openNotificationSettings()
     fun openOverLockSettings()
     fun test()
+
+    /** This tablet's find password (Go.dot's §126): empty, any linked Go.dot finds it. */
+    fun password(): String = ""
+    fun savePassword(password: String) {}
 }
 
 class SystemFindMe(private val context: Context) : FindMeAccess {
@@ -506,6 +513,8 @@ class SystemFindMe(private val context: Context) : FindMeAccess {
     override fun openNotificationSettings() = open(FindMe.notificationSettings(context))
     override fun openOverLockSettings() = open(FindMe.overLockSettings(context))
     override fun test() = FindMe.test(context, locStatic("remote.find.test"))
+    override fun password() = FindMe.password(context)
+    override fun savePassword(password: String) = FindMe.savePassword(context, password)
 
     private fun open(intent: android.content.Intent) {
         try {
@@ -552,6 +561,41 @@ private fun FindMeSection(findMe: FindMeAccess) {
             colors = ButtonDefaults.buttonColors(containerColor = GodotColors.panelHigh, contentColor = GodotColors.ink),
             modifier = Modifier.heightIn(min = GodotMetrics.touch)
         ) { Text(loc("remote.find.testButton")) }
+        FindPasswordField(findMe)
+    }
+}
+
+/**
+ * THE FIND PASSWORD (Go.dot's §126), WFS-DIY's remote's: typed hidden, kept when Save is
+ * pressed. Empty, any Go.dot this tablet is linked to finds it; set, Go.dot's Find must
+ * be given the same.
+ */
+@Composable
+private fun FindPasswordField(findMe: FindMeAccess) {
+    var saved by remember { mutableStateOf(findMe.password()) }
+    var typed by remember(saved) { mutableStateOf(saved) }
+    var shown by remember { mutableStateOf(false) }
+    Text(loc(if (saved.isEmpty()) "remote.find.passwordNone" else "remote.find.passwordSet"), color = GodotColors.inkDim)
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        OutlinedTextField(
+            value = typed,
+            // No tab or line break: FIND carries the password after a tab, on one line.
+            onValueChange = { typed = it.replace("\t", "").replace("\n", "") },
+            singleLine = true,
+            label = { Text(loc("remote.find.password")) },
+            visualTransformation = if (shown) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            modifier = Modifier.widthIn(max = 320.dp)
+        )
+        TextButton(onClick = { shown = !shown }, modifier = Modifier.heightIn(min = GodotMetrics.touch)) {
+            Text(loc(if (shown) "remote.find.passwordHide" else "remote.find.passwordShow"), color = GodotColors.inkDim)
+        }
+        Button(
+            onClick = { findMe.savePassword(typed); saved = typed },
+            enabled = typed != saved,
+            colors = ButtonDefaults.buttonColors(containerColor = GodotColors.standby, contentColor = Color.Black),
+            modifier = Modifier.heightIn(min = GodotMetrics.touch)
+        ) { Text(loc("remote.find.passwordSave")) }
     }
 }
 

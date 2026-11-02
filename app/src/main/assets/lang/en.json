@@ -163,7 +163,13 @@
       "channelName": "Find this tablet",
       "channelDescription": "The alarm Go.dot sounds to find this tablet.",
       "notificationTitle": "{machine} is looking for this tablet",
-      "notificationText": "Swipe it away to stop the alarm."
+      "notificationText": "Swipe it away to stop the alarm.",
+      "password": "Find password",
+      "passwordNone": "No find password: any Go.dot this tablet is linked to can find it.",
+      "passwordSet": "A find password is set: Go.dot's Find must be given the same, or the tablet stays quiet.",
+      "passwordShow": "Show",
+      "passwordHide": "Hide",
+      "passwordSave": "Save"
     },
     "link": {
       "off": "not linked",

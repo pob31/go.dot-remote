@@ -31,6 +31,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.pob31.godot.remote.R
+import com.pob31.godot.remote.RemotePrefs
 import com.pob31.godot.remote.localization.locStatic
 
 /** Whether the app's window is in front: set by MainActivity, read when a FIND comes. */
@@ -62,6 +63,19 @@ object FindMe {
 
     const val EXTRA_MACHINE = "machine"
     const val EXTRA_UNTIL = "until"
+
+    private const val PASSWORD_KEY = "findPassword"
+
+    /**
+     * THE FIND PASSWORD (Go.dot's §126), kept on the tablet as WFS-DIY's remote keeps its own:
+     * empty, any linked Go.dot finds the tablet; set, only a FIND that carries the same.
+     */
+    fun password(context: Context): String =
+        context.getSharedPreferences(RemotePrefs.NAME, Context.MODE_PRIVATE).getString(PASSWORD_KEY, null).orEmpty()
+
+    fun savePassword(context: Context, password: String) {
+        context.getSharedPreferences(RemotePrefs.NAME, Context.MODE_PRIVATE).edit().putString(PASSWORD_KEY, password).apply()
+    }
 
     /** Long and short, long and short: a phone's alarm, not a message's buzz. */
     val VIBRATION = longArrayOf(0, 600, 200, 600, 200, 1200, 400)

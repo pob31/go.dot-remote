@@ -163,7 +163,13 @@
       "channelName": "Retrouver cette tablette",
       "channelDescription": "L'alarme que Go.dot déclenche pour retrouver cette tablette.",
       "notificationTitle": "{machine} cherche cette tablette",
-      "notificationText": "Balayez-la pour arrêter l'alarme."
+      "notificationText": "Balayez-la pour arrêter l'alarme.",
+      "password": "Mot de passe",
+      "passwordNone": "Pas de mot de passe : tout Go.dot auquel la tablette est reliée peut la retrouver.",
+      "passwordSet": "Un mot de passe est défini : le Find de Go.dot doit recevoir le même, sinon la tablette reste muette.",
+      "passwordShow": "Afficher",
+      "passwordHide": "Masquer",
+      "passwordSave": "Enregistrer"
     },
     "link": {
       "off": "non reliée",

@@ -124,4 +124,12 @@ class MachinesTest {
             assertEquals("FIND \"$data\"", FindRequest(30), FindRequest.parse(data))
         }
     }
+
+    @Test
+    fun aFindCarriesItsPasswordAfterATab() {
+        assertEquals(FindRequest(30, "chou"), FindRequest.parse("30\tchou"))
+        assertEquals("a password is taken as typed", FindRequest(20, " a b\tc"), FindRequest.parse("20\t a b\tc"))
+        assertEquals(FindRequest(30, "chou"), FindRequest.parse("soon\tchou"))
+        assertEquals("none said is none", FindRequest(12, ""), FindRequest.parse("12"))
+    }
 }

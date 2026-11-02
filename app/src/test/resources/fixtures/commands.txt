@@ -151,7 +151,7 @@ curve.ride <curve:s> <value:d> [more:*...]
 videoOutput.identify <output:s> <on:T>
 videoOutput.grid <output:s> <on:T>
 video.hideProjectors <on:T>
-remote.find <remote:s> [seconds:i]
+remote.find <remote:s> [seconds:i] [password:s]
 media.convert <file:s> [scope:s] [format:s] [sound:T]
 media.convert.cancel <file:s>
 media.converted <source:s> <target:s> <cut:d> [sound:s] [channels:i] [made:s]

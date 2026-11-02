@@ -14,6 +14,7 @@
 package com.pob31.godot.remote.findme
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -38,5 +39,19 @@ class FindMePlanTest {
         assertNull(FindMePlan.raisedVolume(1, 7))
         assertNull(FindMePlan.raisedVolume(7, 7))
         assertNull("a stream with no volume to give is left alone", FindMePlan.raisedVolume(0, 0))
+    }
+
+    @Test
+    fun aTabletWithoutAFindPasswordAnswersEveryFind() {
+        assertTrue(FindMePlan.answers("", ""))
+        assertTrue(FindMePlan.answers("", "anything"))
+    }
+
+    @Test
+    fun aTabletWithAFindPasswordAnswersOnlyTheSame() {
+        assertTrue(FindMePlan.answers("chou", "chou"))
+        assertFalse(FindMePlan.answers("chou", ""))
+        assertFalse(FindMePlan.answers("chou", "Chou"))
+        assertFalse(FindMePlan.answers("chou", "chou "))
     }
 }

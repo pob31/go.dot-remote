@@ -61,6 +61,9 @@ tablet's alarm volume is at zero: it is turned up for the alarm and put back aft
 The **Find this tablet** part of the Connections tab says which of the two is missing, with a button
 to the Android setting, and a test that rings for three seconds.
 
+A **find password** can be kept there too, as on WFS-DIY's remote. With none, any Go.dot the tablet is
+linked to can find it; with one, Go.dot's *Find* asks for it, and a wrong one leaves the tablet quiet.
+
 ## The Script tab (Choufleur)
 
 [Choufleur](https://github.com/pob31/choufleur_prompt) follows the actors through the script and

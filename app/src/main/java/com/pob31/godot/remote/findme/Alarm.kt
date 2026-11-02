@@ -41,6 +41,12 @@ object FindMePlan {
      * nothing - a tablet that cannot be heard cannot be found - else null, theirs untouched.
      */
     fun raisedVolume(current: Int, max: Int): Int? = if (current <= 0 && max > 0) max else null
+
+    /**
+     * Whether a FIND carrying [given] is answered, as WFS-DIY's remote answers `/findDevice`:
+     * always when this tablet keeps no find password, else only to the same one.
+     */
+    fun answers(stored: String, given: String): Boolean = stored.isEmpty() || given == stored
 }
 
 /**
