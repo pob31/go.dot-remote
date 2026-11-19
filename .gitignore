@@ -17,3 +17,4 @@ keystore.properties
 # Release outputs go to GitHub Releases, not into git.
 *.apk
 *.aab
+app/release/
