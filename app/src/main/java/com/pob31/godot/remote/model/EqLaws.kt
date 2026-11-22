@@ -25,14 +25,28 @@ import kotlin.math.roundToLong
     rather than by detents, so the travel here is a place from 0 to 1 along the control's
     ring, mapped by the law, and the value kept to the grain a turn keeps it to (a tenth
     of a hertz under a kilohertz and a hertz above, a tenth of a decibel, a hundredth of a
-    width). Everything is written digit by digit: no locale moves a point. */
+    width). Everything is written digit by digit: no locale moves a point.
+
+    THE DYNAMICS PAGE'S (namespace draft §141, BIG): DECIBELS as a gain but drawn from the
+    left and said with no plus sign; RATIO in ratios, a tenth under ten and whole above;
+    TIME in ratios from its range's start - from a millisecond where the range starts at
+    nought (a gate's hold), nought itself at the very start and under a millisecond. */
 object EqLaws {
+
+    /** The least a time is above nought on a ring whose range starts at nought (SurfacePages.cpp `timeFloorMs`). */
+    const val TIME_FLOOR_MS = 1.0
+
+    private fun timeLow(min: Double) = if (min > 0.0) min else TIME_FLOOR_MS
 
     /** Where [value] sits on the ring, 0 at the start of the travel to 1 at its end. */
     fun place(law: EqLaw, value: Double, min: Double, max: Double, fader: FaderCurve? = null): Double = when (law) {
-        EqLaw.FREQUENCY, EqLaw.WIDTH ->
+        EqLaw.FREQUENCY, EqLaw.WIDTH, EqLaw.RATIO ->
             if (min > 0.0 && max > min) (ln(value.coerceIn(min, max) / min) / ln(max / min)).coerceIn(0.0, 1.0) else 0.0
-        EqLaw.GAIN, EqLaw.PAN, EqLaw.STEREO_WIDTH -> if (max > min) ((value - min) / (max - min)).coerceIn(0.0, 1.0) else 0.0
+        EqLaw.TIME -> {
+            val low = timeLow(min)
+            if (max > low && value > 0.0) (ln(value.coerceIn(low, max) / low) / ln(max / low)).coerceIn(0.0, 1.0) else 0.0
+        }
+        EqLaw.GAIN, EqLaw.DECIBELS, EqLaw.PAN, EqLaw.STEREO_WIDTH -> if (max > min) ((value - min) / (max - min)).coerceIn(0.0, 1.0) else 0.0
         EqLaw.LEVEL -> fader?.fractionForDb(value) ?: 0.0
         EqLaw.SHAPE -> 0.0
     }
@@ -41,8 +55,13 @@ object EqLaws {
     fun valueAt(law: EqLaw, place: Double, min: Double, max: Double, fader: FaderCurve? = null): Double {
         val at = place.coerceIn(0.0, 1.0)
         return when (law) {
-            EqLaw.FREQUENCY, EqLaw.WIDTH -> if (min > 0.0 && max > min) min * (max / min).pow(at) else min
-            EqLaw.GAIN, EqLaw.PAN, EqLaw.STEREO_WIDTH -> min + (max - min) * at
+            EqLaw.FREQUENCY, EqLaw.WIDTH, EqLaw.RATIO -> if (min > 0.0 && max > min) min * (max / min).pow(at) else min
+            // Nought at the very start where the range allows it; from the floor after.
+            EqLaw.TIME -> {
+                val low = timeLow(min)
+                if (min <= 0.0 && at <= 0.0) min else if (max > low) low * (max / low).pow(at) else low
+            }
+            EqLaw.GAIN, EqLaw.DECIBELS, EqLaw.PAN, EqLaw.STEREO_WIDTH -> min + (max - min) * at
             EqLaw.LEVEL -> fader?.dbForFraction(at) ?: min
             EqLaw.SHAPE -> min
         }
@@ -51,7 +70,15 @@ object EqLaws {
     /** [value] kept to the grain a hand can tell apart, inside the range (SurfacePages.cpp `turned`). */
     fun grained(law: EqLaw, value: Double, min: Double, max: Double, silenceDb: Double = -120.0): Double = when (law) {
         EqLaw.FREQUENCY -> roundedTo(value.coerceIn(min, max), if (value < 1000.0) 0.1 else 1.0).coerceIn(min, max)
-        EqLaw.GAIN -> roundedTo(value, 0.1).coerceIn(min, max)
+        EqLaw.GAIN, EqLaw.DECIBELS -> roundedTo(value, 0.1).coerceIn(min, max)
+        EqLaw.RATIO -> {
+            val at = value.coerceIn(min, max)
+            roundedTo(at, if (at < 10.0) 0.1 else 1.0).coerceIn(min, max)
+        }
+        // A hundredth of a millisecond under one, a tenth under a hundred, then whole ones; under the floor, nought where allowed.
+        EqLaw.TIME ->
+            if (min <= 0.0 && value < TIME_FLOOR_MS) min
+            else roundedTo(value, if (value < 1.0) 0.01 else if (value < 100.0) 0.1 else 1.0).coerceIn(min, max)
         EqLaw.WIDTH -> roundedTo(value.coerceIn(min, max), 0.01).coerceIn(min, max)
         EqLaw.LEVEL -> if (value <= silenceDb) silenceDb.coerceIn(min, max) else roundedTo(value, 0.1).coerceIn(min, max)
         // A hundredth: a per cent, the grain both places are read in.
@@ -81,10 +108,11 @@ object EqLaws {
         else -> current
     }
 
-    /** A shape as a screen says it: "Peak", "Lo shelf", "Hi shelf" (`shapeText`). */
+    /** A shape as a screen says it: "Peak", "Lo shelf", "Hi shelf" (`shapeText`); the dynamics' detector "RMS". */
     fun shapeText(shape: String): String = when (shape) {
         "lowShelf" -> "Lo shelf"
         "highShelf" -> "Hi shelf"
+        "rms" -> "RMS"
         else -> "Peak"
     }
 
@@ -110,6 +138,12 @@ object EqLaws {
             if (percent == 0L) "C" else (if (value < 0.0) "L " else "R ") + percent
         }
         EqLaw.STEREO_WIDTH -> halfAway(value.coerceIn(0.0, 1.0) * 100.0).toLong().toString() + " %"
+        EqLaw.DECIBELS -> fixed(value, 1) + " dB"
+        // "10.0 ms", "150 ms", "1.20 s".
+        EqLaw.TIME -> if (value >= 999.5) fixed(value / 1000.0, 2) + " s"
+                      else fixed(value, if (value < 1.0) 2 else if (value < 100.0) 1 else 0) + " ms"
+        // "4.0:1", "20:1".
+        EqLaw.RATIO -> fixed(value, if (value < 9.95) 1 else 0) + ":1"
         EqLaw.SHAPE -> ""
     }
 

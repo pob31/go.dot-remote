@@ -73,6 +73,32 @@ fun Mirror.put(address: String, value: Double) = putValues(address, "d", listOf(
 fun Mirror.put(address: String, value: Boolean) = putValues(address, if (value) "T" else "F", listOf(OscValue.of(value)))
 fun Mirror.put(address: String, value: Long) = putValues(address, "h", listOf(OscValue.Int64(value)))
 
+/**
+ * [cue] given its own dynamics stage (Go.dot's namespace draft §141): in, its compressor at
+ * -30 dB and four to one, its gate out, RMS, keyed by a talkback input - and an aux and an
+ * output the Key list offers beside it.
+ */
+fun Mirror.givenDynamics(tables: SurfaceTables, cue: String = ShowFixture.THUNDER_AND_RAIN): Mirror = apply {
+    val base = "/godot/cue/$cue/"
+    put(base + "dynOn", true)
+    put(base + "dynCompOn", true)
+    put(base + "dynGateOn", false)
+    put(base + "dynDetector", "rms")
+    put(base + "dynKey", "KN000001")
+    val values = mapOf("dynThreshold" to -30.0, "dynRatio" to 4.0, "dynAttack" to 10.0, "dynRelease" to 150.0,
+                       "dynKnee" to 6.0, "dynMakeup" to 2.0, "dynGateThreshold" to -50.0, "dynGateRange" to -40.0,
+                       "dynGateAttack" to 1.0, "dynGateHold" to 50.0, "dynGateRelease" to 150.0,
+                       "dynKeyLowCut" to 120.0, "dynKeyHighCut" to 20000.0)
+    for (control in tables.dynControls) values[control.row]?.let { put(base + control.row, it) }
+    put("/godot/input/KN000001/name", "Talkback")
+    put("/godot/input/KN000001/firstChannel", 0L)
+    put("/godot/slot/AX000001/kind", "rackChannel")
+    put("/godot/slot/AX000001/access", "shared")
+    put("/godot/slot/AX000001/name", "Duck bus")
+    put("/godot/bus/BS000001/name", "Main L/R")
+    put("/godot/bus/BS000001/firstChannel", 0L)
+}
+
 /** Every write a screen made, in order, as text a test can compare. */
 class RecordingWrites : TabWrites {
     val log = ArrayList<String>()

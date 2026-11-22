@@ -97,6 +97,7 @@ import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 import com.pob31.godot.remote.ui.theme.GodotType
 import com.pob31.godot.remote.ui.widgets.DbFader
+import com.pob31.godot.remote.ui.widgets.DynKeyMenu
 import com.pob31.godot.remote.ui.widgets.EqBandSwitch
 import com.pob31.godot.remote.ui.widgets.EqKnobView
 import com.pob31.godot.remote.ui.widgets.LiveWord
@@ -164,6 +165,7 @@ fun SurfaceView(
             when (page) {
                 SurfacePage.FADERS -> StripsPage(reading, writes, tables.fader, send)
                 SurfacePage.EQ -> EqPage(reading, writes, tables, send)
+                SurfacePage.DYN -> DynPage(reading, writes, tables, send)
                 SurfacePage.SENDS -> SendsPage(reading, writes, tables, send)
                 SurfacePage.PAN -> PanPage(reading, writes, tables, send)
             }
@@ -649,6 +651,37 @@ private fun EqPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceTa
         }
         KnobRows(eq, writes, tables)
         Text(loc("surface.eqHint"), color = GodotColors.inkOff, fontSize = 13.sp)
+    }
+}
+
+/**
+ * THE DYNAMICS PAGE (namespace draft §141, the D700's Dynamics page): the aimed cue's own
+ * stage - its switches in words, what it listens to, and its fourteen controls, the
+ * compressor's in band one's colour, the gate's in band three's, the key filter's in the
+ * high-pass's. A press on a threshold takes its half in and out, on a key cut the whole
+ * stage, on the detector peak or RMS.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DynPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceTables, send: (Sent?) -> Unit) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        AimHeader(reading, send)
+        if (reading.aimCue == null) return@Column
+        val dyn = reading.dyn
+        if (dyn == null) {
+            Text(loc("surface.noDyn"), color = GodotColors.inkFaint)
+            return@Column
+        }
+        if (reading.locked) LiveNote("surface.dynLive")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (switch in dyn.eq.switches) EqBandSwitch(switch, writes)
+        }
+        DynKeyMenu(dyn, writes)
+        KnobRows(dyn.eq, writes, tables)
+        Text(loc("surface.dynHint"), color = GodotColors.inkOff, fontSize = 13.sp)
     }
 }
 

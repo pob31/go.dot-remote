@@ -27,17 +27,19 @@ package com.pob31.godot.remote.model
     declares none.
 
     WHICH PAGE IS UP IS THE TABLET'S OWN, as a D700's is its own and no command (engine
-    surface/SurfaceProfile.h): the faders, the aimed cue's EQ, its sends, or where its sends
-    sit in their mixes (the D700's Pan pages, namespace draft §113). The aim is the engine's
+    surface/SurfaceProfile.h): the faders, the aimed cue's EQ, its own dynamics (the D700's
+    Dynamics page, namespace draft §141), its sends, or where its sends sit in their mixes
+    (the D700's Pan pages, namespace draft §113). The aim is the engine's
     (`/godot/surface/aim`), shared with every surface and the window. */
 
 /** The surface every show has on this tablet: one strip a DCA. Not an engine identifier. */
 const val THIS_TABLET = "tablet"
 
-/** The tablet's pages: the strips, the aimed cue's EQ, its sends, their places. */
+/** The tablet's pages: the strips, the aimed cue's EQ, its dynamics, its sends, their places. */
 enum class SurfacePage(val key: String) {
     FADERS("surface.page.faders"),
     EQ("surface.page.eq"),
+    DYN("surface.page.dyn"),
     SENDS("surface.page.sends"),
     PAN("surface.page.pan"),
 }
@@ -142,6 +144,8 @@ data class SurfaceReading(
     val aimCue: CueLine? = null,
     /** The aimed cue's EQ; null when it has none. */
     val eq: EqReading? = null,
+    /** The aimed cue's own dynamics (namespace draft §141); null when it has none. */
+    val dyn: DynReading? = null,
     val sends: List<SendLine> = emptyList(),
     /** The sounds playing now, to aim at when nothing is. */
     val aimChoices: List<AimChoice> = emptyList(),
@@ -292,6 +296,7 @@ fun readSurface(mirror: Mirror, asked: String?, tables: SurfaceTables): SurfaceR
         aim = aim,
         aimCue = aimCue,
         eq = if (aimCue != null && mirror["/godot/cue/$aim/eqOn"] != null) readEq(mirror, aim, tables, liveRows) else null,
+        dyn = if (aimCue != null && mirror["/godot/cue/$aim/dynOn"] != null) readDyn(mirror, aim, tables, liveRows) else null,
         sends = if (aimCue != null) readSends(mirror, aim) else emptyList(),
         aimChoices = aimChoices(mirror),
         locked = mirror.value("/godot/document/locked")?.asBoolean() == true,

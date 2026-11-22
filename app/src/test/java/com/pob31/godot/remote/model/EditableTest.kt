@@ -78,6 +78,7 @@ class EditableTest {
                 EditControl.RUN_TRIM -> rowOf("run", "trim")!!.second
                 EditControl.SENDS -> rowOf("send", "level")!!.second
                 EditControl.EQ -> rowOf("cue", "eqOn")!!.second
+                EditControl.DYN -> rowOf("cue", "dynOn")!!.second
                 else -> rowOf("cue", each.row)!!.second
             }
             when (each.underLock) {

@@ -37,6 +37,7 @@ import com.pob31.godot.remote.model.ShowFixture.INTERVAL
 import com.pob31.godot.remote.model.ShowFixture.RAIN
 import com.pob31.godot.remote.model.ShowFixture.RUN_THUNDER_AND_RAIN
 import com.pob31.godot.remote.model.ShowFixture.THUNDER_AND_RAIN
+import com.pob31.godot.remote.model.givenDynamics
 import com.pob31.godot.remote.model.put
 import com.pob31.godot.remote.model.readCues
 import com.pob31.godot.remote.model.readHeader
@@ -174,6 +175,14 @@ class ScreenshotTestCues {
             put(sends[1].address("placement"), "pan")
             put(sends[1].address("pan"), 0.45)
         }
+        InspectorView(reading(mirror).inspection, RecordingWrites(), tables, Modifier.background(GodotColors.panelInspect), scroll = false)
+    }
+
+    /** A sound's own dynamics after its EQ (Go.dot's namespace draft §141). */
+    @Test
+    @Config(qualifiers = "w411dp-h2400dp-port-xhdpi")
+    fun theInspectorWithDynamicsOnAPhone() = shoot("cues-inspector-dyn-phone") {
+        val mirror = show().givenDynamics(tables)
         InspectorView(reading(mirror).inspection, RecordingWrites(), tables, Modifier.background(GodotColors.panelInspect), scroll = false)
     }
 

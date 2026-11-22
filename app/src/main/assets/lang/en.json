@@ -400,6 +400,22 @@
     "killWithMembers": "Kill it and everything under it ({count}) - no footer",
     "close": "Close"
   },
+  "dyn": {
+    "switch": {
+      "stage": "Dynamics",
+      "compressor": "Compressor",
+      "gate": "Gate"
+    },
+    "key": {
+      "label": "Key",
+      "before": "this cue, before its level",
+      "after": "this cue, after its level",
+      "input": "{name} · input",
+      "aux": "{name} · aux",
+      "output": "{name} · output",
+      "gone": "{name} · not in this show: silent"
+    }
+  },
   "widgets": {
     "notANumber": "not a number",
     "locked": "Locked",
@@ -456,6 +472,7 @@
       "runTrim": "Trim of the run playing now - tonight only",
       "sends": "Sends",
       "eq": "EQ",
+      "dyn": "Dynamics",
       "dca": "DCA",
       "preWait": "Pre-wait",
       "postWait": "Post-wait",
@@ -483,6 +500,7 @@
     "page": {
       "faders": "Faders",
       "eq": "EQ",
+      "dyn": "Dynamics",
       "sends": "Sends",
       "pan": "Pan"
     },
@@ -518,6 +536,9 @@
     "noEq": "This cue has no EQ.",
     "eqLive": "Under the lock the EQ rides live: heard at once, saved only when kept.",
     "sendsLive": "Under the lock the sends ride live: heard at once, saved only when kept.",
+    "noDyn": "This cue has no dynamics.",
+    "dynLive": "Under the lock the dynamics ride live: heard at once, saved only when kept.",
+    "dynHint": "A knob turns from where it stands; the further your finger from it, the finer. Press a threshold to switch the compressor or the gate in or out, a key filter for the whole stage, the detector for peak or RMS.",
     "eqHint": "A knob turns from where it stands; the further your finger from it, the finer. Press a gain to switch its band in or out, a shape for peak or shelf.",
     "sendsHint": "A knob turns from where it stands; the further your finger from it, the finer. Press one to switch its send in or out: its level is kept.",
     "leans": "Pan or balance",

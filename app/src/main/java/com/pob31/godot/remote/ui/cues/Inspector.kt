@@ -62,6 +62,7 @@ import com.pob31.godot.remote.link.Link
 import com.pob31.godot.remote.link.WireText
 import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.DcaChoice
+import com.pob31.godot.remote.model.DynReading
 import com.pob31.godot.remote.model.EqReading
 import com.pob31.godot.remote.model.FieldLine
 import com.pob31.godot.remote.model.FieldText
@@ -77,6 +78,7 @@ import com.pob31.godot.remote.ui.waveform.Waveform
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 import com.pob31.godot.remote.ui.theme.GodotType
 import com.pob31.godot.remote.ui.widgets.DbFader
+import com.pob31.godot.remote.ui.widgets.DynKeyMenu
 import com.pob31.godot.remote.ui.widgets.EqBandSwitch
 import com.pob31.godot.remote.ui.widgets.EqKnobView
 import com.pob31.godot.remote.ui.widgets.LiveWord
@@ -171,6 +173,7 @@ private fun InspectorLineView(line: InspectorLine, writes: TabWrites, tables: Su
         }
         is InspectorLine.Sends -> Section { SendsView(line.sends, label, writes, tables) }
         is InspectorLine.Eq -> Section { EqView(line.eq, label, writes, tables) }
+        is InspectorLine.Dyn -> Section { DynView(line.dyn, label, writes, tables) }
         is InspectorLine.Dca -> Section { DcaView(line, label, writes, tables) }
     }
 }
@@ -379,6 +382,28 @@ private fun EqView(eq: EqReading, label: String, writes: TabWrites, tables: Surf
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         for (switch in eq.switches) EqBandSwitch(switch, writes)
     }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        for (knob in eq.knobs) EqKnobView(knob, eq, writes, tables)
+    }
+}
+
+/**
+ * A SOUND'S OWN DYNAMICS (Go.dot's namespace draft §141): the stage, its compressor and its
+ * gate as switches, what it listens to as a list, and its fourteen controls on rotaries - the
+ * detector among them, peak or RMS as a shape is peak or shelf - each dimmed while the stage
+ * or its half is out. Under the lock it rides live, as the EQ does (BIE).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DynView(dyn: DynReading, label: String, writes: TabWrites, tables: SurfaceTables) {
+    val eq = dyn.eq
+    Heading(label) {
+        if (eq.switches.any { it.live } || eq.knobs.any { it.live } || dyn.keyLive) LiveWord()
+    }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (switch in eq.switches) EqBandSwitch(switch, writes)
+    }
+    DynKeyMenu(dyn, writes)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         for (knob in eq.knobs) EqKnobView(knob, eq, writes, tables)
     }

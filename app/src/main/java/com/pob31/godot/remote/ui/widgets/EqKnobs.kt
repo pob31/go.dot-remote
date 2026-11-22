@@ -55,7 +55,11 @@ import com.pob31.godot.remote.ui.theme.GodotMetrics
     its place on the Pan page a lean or a width (model `placeKnobs`). */
 
 private val BAND_WORDS = mapOf("eqOn" to "EQ", "eqHpf" to "HP", "eqB1On" to "B1", "eqB2On" to "B2", "eqB3On" to "B3", "eqB4On" to "B4", "eqLpf" to "LP")
-private val BAND_COLOURS = mapOf("eqHpf" to 0, "eqB1On" to 1, "eqB2On" to 2, "eqB3On" to 3, "eqB4On" to 4, "eqLpf" to 5)
+private val BAND_COLOURS = mapOf("eqHpf" to 0, "eqB1On" to 1, "eqB2On" to 2, "eqB3On" to 3, "eqB4On" to 4, "eqLpf" to 5,
+                                 "dynCompOn" to 1, "dynGateOn" to 3)
+
+/** The dynamics stage's switches (namespace draft §141): words, not band names. */
+private val DYN_WORDS = mapOf("dynOn" to "dyn.switch.stage", "dynCompOn" to "dyn.switch.compressor", "dynGateOn" to "dyn.switch.gate")
 
 /** A band's switch - or the whole EQ's (`eqOn`) - as a button: its name, in or out, the live mark under the lock. */
 @Composable
@@ -70,7 +74,7 @@ fun EqBandSwitch(switch: EqSwitch, writes: TabWrites, enabled: Boolean = true) {
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(BAND_WORDS[switch.row] ?: switch.row, color = GodotColors.ink, fontWeight = FontWeight.SemiBold)
+        Text(BAND_WORDS[switch.row] ?: DYN_WORDS[switch.row]?.let { loc(it) } ?: switch.row, color = GodotColors.ink, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.width(6.dp))
         Text(loc(if (switch.on) "widgets.in" else "widgets.out"), color = if (switch.on) GodotColors.ink else GodotColors.inkFaint)
         if (switch.live) {
@@ -141,7 +145,7 @@ fun EqKnobView(
         label = control.label,
         valueText = text,
         colour = ink,
-        bipolar = control.law == EqLaw.GAIN || control.law == EqLaw.PAN,
+        bipolar = control.law == EqLaw.GAIN || control.law == EqLaw.PAN,   // a threshold (DECIBELS) is drawn from the left
         dimmed = !knob.bandOn || eq.on?.on == false,
         word = if (!knob.bandOn) loc("widgets.out") else null,
         live = knob.live,

@@ -400,6 +400,22 @@
     "killWithMembers": "Couper, avec tout ce qui est en dessous ({count}) - sans pied",
     "close": "Fermer"
   },
+  "dyn": {
+    "switch": {
+      "stage": "Dynamique",
+      "compressor": "Compresseur",
+      "gate": "Gate"
+    },
+    "key": {
+      "label": "Clé",
+      "before": "cette cue, avant son niveau",
+      "after": "cette cue, après son niveau",
+      "input": "{name} · entrée",
+      "aux": "{name} · aux",
+      "output": "{name} · sortie",
+      "gone": "{name} · absent de ce spectacle : silence"
+    }
+  },
   "widgets": {
     "notANumber": "pas un nombre",
     "locked": "Verrouillé",
@@ -456,6 +472,7 @@
       "runTrim": "Trim de l'exécution en cours - ce soir seulement",
       "sends": "Envois",
       "eq": "EQ",
+      "dyn": "Dynamique",
       "dca": "DCA",
       "preWait": "Pre-wait",
       "postWait": "Post-wait",
@@ -483,6 +500,7 @@
     "page": {
       "faders": "Faders",
       "eq": "EQ",
+      "dyn": "Dynamique",
       "sends": "Envois",
       "pan": "Pan"
     },
@@ -518,6 +536,9 @@
     "noEq": "Cette cue n'a pas d'EQ.",
     "eqLive": "Sous le verrou, l'EQ est en direct : entendue tout de suite, enregistrée seulement si elle est gardée.",
     "sendsLive": "Sous le verrou, les envois sont en direct : entendus tout de suite, enregistrés seulement s'ils sont gardés.",
+    "noDyn": "Cette cue n'a pas de dynamique.",
+    "dynLive": "Sous le verrou, la dynamique est en direct : entendue tout de suite, enregistrée seulement si elle est gardée.",
+    "dynHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez sur un seuil pour activer ou couper le compresseur ou le gate, sur un filtre de clé pour toute la dynamique, sur le détecteur pour passer de crête à RMS.",
     "eqHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez sur un gain pour activer ou couper sa bande, sur une forme pour passer de cloche à plateau.",
     "sendsHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez dessus pour activer ou couper son envoi : son niveau est gardé.",
     "leans": "Pan ou balance",

@@ -29,13 +29,14 @@ import com.pob31.godot.remote.osc.OscValue
 
     - REFUSED: a row the show file records; the lock refuses it, so it is shown greyed
       with the word "Locked".
-    - RIDES_LIVE: the EQ and the sends - under the lock they are ridden as a fader is,
-      heard at once and written to nothing until somebody keeps them (the author,
-      2026-09-25; decision AM; engine cue/LiveEdits.h), marked live while they do.
+    - RIDES_LIVE: the EQ, the dynamics and the sends - under the lock they are ridden as a
+      fader is, heard at once and written to nothing until somebody keeps them (the author,
+      2026-09-25; decision AM; the dynamics since namespace draft §141, BIE; engine
+      cue/LiveEdits.h), marked live while they do.
     - NOT_STORED: a run's trim, a DCA's trim, a flag - tonight's, or state beside the
       standby, which the lock lets through. */
 
-enum class EditControl { FADER, RUN_TRIM, SENDS, EQ, DCA, NUMBER, CHOICE, SWITCH, TEXT }
+enum class EditControl { FADER, RUN_TRIM, SENDS, EQ, DYN, DCA, NUMBER, CHOICE, SWITCH, TEXT }
 
 enum class UnderLock { REFUSED, RIDES_LIVE, NOT_STORED }
 
@@ -59,6 +60,8 @@ object Editables {
         Editable("trim", EditControl.RUN_TRIM, "cues.field.runTrim", UnderLock.NOT_STORED),
         Editable("sends", EditControl.SENDS, "cues.field.sends", UnderLock.RIDES_LIVE),
         Editable("eq", EditControl.EQ, "cues.field.eq", UnderLock.RIDES_LIVE),
+        // A sound's own compressor, gate and key filter (namespace draft §141), after its EQ as in the chain.
+        Editable("dyn", EditControl.DYN, "cues.field.dyn", UnderLock.RIDES_LIVE),
         Editable("dca", EditControl.DCA, "cues.field.dca", UnderLock.REFUSED),
         Editable("preWait", EditControl.NUMBER, "cues.field.preWait", UnderLock.REFUSED, decimals = 3),
         Editable("postWait", EditControl.NUMBER, "cues.field.postWait", UnderLock.REFUSED, decimals = 3),
@@ -84,6 +87,15 @@ object Editables {
     val EQ_SWITCHES = listOf("eqOn", "eqHpf", "eqB1On", "eqB2On", "eqB3On", "eqB4On", "eqLpf")
 
     /**
+     * The dynamics stage's switches - the whole stage, its compressor, its gate - besides its
+     * fourteen controls (the detector among them), which come from the surface tables.
+     */
+    val DYN_SWITCHES = listOf("dynOn", "dynCompOn", "dynGateOn")
+
+    /** What the stage listens to (`dynKey`, namespace draft §141): a word, picked from a list. */
+    const val DYN_KEY = "dynKey"
+
+    /**
      * Every row the tablet may write, as (owner word, row): the allow-list, the EQ rows from
      * [tables], the send rows, the run's trim and the DCA's trim. What EditableTest holds
      * to Go.dot's parameter table.
@@ -99,6 +111,11 @@ object Editables {
                 EditControl.EQ -> {
                     EQ_SWITCHES.forEach { out += "cue" to it }
                     tables.eqControls.forEach { out += "cue" to it.row }
+                }
+                EditControl.DYN -> {
+                    DYN_SWITCHES.forEach { out += "cue" to it }
+                    tables.dynControls.forEach { out += "cue" to it.row }
+                    out += "cue" to DYN_KEY
                 }
             }
         }
@@ -178,6 +195,32 @@ data class EqSwitch(val row: String, val address: String, val on: Boolean, val l
 
 data class EqReading(val on: EqSwitch?, val switches: List<EqSwitch>, val knobs: List<EqKnob>)
 
+/**
+ * One thing a dynamics stage may listen to (namespace draft §141, BHL): [kind] says what it is
+ * - BEFORE (the empty word: the cue itself before its level), AFTER (`self`: after it), an
+ * input, an aux, an output (heard a block late, BIB), or GONE for a word naming what the show
+ * has not got (silence, BHV) - and [name] is the show's name for it.
+ */
+data class KeyChoice(val value: String, val name: String, val kind: Kind) {
+    enum class Kind { BEFORE, AFTER, INPUT, AUX, OUTPUT, GONE }
+}
+
+/**
+ * A SOUND'S OWN DYNAMICS (namespace draft §141): its switches and its fourteen controls as
+ * the EQ's are read - [eq] holds them so one rotary draws and writes both, `on` the whole
+ * stage, the compressor's and the gate's switches beside it - and what it listens to.
+ */
+data class DynReading(
+    val eq: EqReading,
+    val keyAddress: String,
+    val key: String,
+    val keyLive: Boolean,
+    val keyChoices: List<KeyChoice>,
+) {
+    /** The choice [key] is, or a GONE one naming it. */
+    val keyChoice: KeyChoice get() = keyChoices.firstOrNull { it.value == key } ?: KeyChoice(key, key, KeyChoice.Kind.GONE)
+}
+
 data class DcaChoice(val id: String, val name: String)
 
 sealed class InspectorLine {
@@ -193,6 +236,8 @@ sealed class InspectorLine {
     data class Sends(override val editable: Editable, val sends: List<SendLine>, val lockedOut: Boolean) : InspectorLine()
 
     data class Eq(override val editable: Editable, val eq: EqReading, val lockedOut: Boolean) : InspectorLine()
+
+    data class Dyn(override val editable: Editable, val dyn: DynReading, val lockedOut: Boolean) : InspectorLine()
 
     /** The DCA mark (a show row) and the trim of the DCA it names (tonight's, beside it). */
     data class Dca(
@@ -269,6 +314,10 @@ fun readInspection(mirror: Mirror, cueId: String, tables: SurfaceTables): Inspec
             EditControl.EQ -> {
                 if (mirror[base + "eqOn"] == null) continue
                 lines += InspectorLine.Eq(each, readEq(mirror, cueId, tables, liveRows), locked && each.underLock == UnderLock.REFUSED)
+            }
+            EditControl.DYN -> {
+                if (mirror[base + "dynOn"] == null) continue
+                lines += InspectorLine.Dyn(each, readDyn(mirror, cueId, tables, liveRows), locked && each.underLock == UnderLock.REFUSED)
             }
             EditControl.DCA -> {
                 val line = field(base + each.row, each) ?: continue
@@ -357,4 +406,68 @@ fun readEq(mirror: Mirror, cueId: String, tables: SurfaceTables, liveRows: Set<S
         )
     }
     return EqReading(switch("eqOn"), switches, knobs)
+}
+
+/**
+ * The cue's own dynamics (namespace draft §141): `dynOn`, the compressor's and the gate's
+ * switches, the fourteen controls of the surface tables' `dynControls` - each switched by the
+ * row its control names, so a compressor's numbers are out while the compressor is - and the
+ * key with what the show offers for it.
+ */
+fun readDyn(mirror: Mirror, cueId: String, tables: SurfaceTables, liveRows: Set<String>): DynReading {
+    val base = "/godot/cue/$cueId/"
+    fun switch(row: String) = mirror[base + row]?.let { EqSwitch(row, base + row, it.value?.asBoolean() == true, row in liveRows) }
+    val switches = Editables.DYN_SWITCHES.mapNotNull { switch(it) }
+    val on = switches.firstOrNull { it.row == "dynOn" }
+    val switchedOn = switches.associate { it.row to it.on }
+    val knobs = tables.dynControls.mapNotNull { control ->
+        val node = mirror[base + control.row] ?: return@mapNotNull null
+        EqKnob(
+            control = control,
+            address = base + control.row,
+            value = node.value?.asDouble() ?: control.min,
+            shape = if (control.law == EqLaw.SHAPE) node.text?.takeIf { it.isNotEmpty() } ?: "peak" else "",
+            bandOn = switchedOn[control.switchRow] ?: true,
+            live = control.row in liveRows,
+        )
+    }
+    return DynReading(
+        eq = EqReading(on, switches, knobs),
+        keyAddress = base + Editables.DYN_KEY,
+        key = mirror.text(base + Editables.DYN_KEY) ?: "",
+        keyLive = Editables.DYN_KEY in liveRows,
+        keyChoices = keyChoices(mirror, cueId),
+    )
+}
+
+/**
+ * WHAT A KEY MAY BE, as Go.dot's own menu lists it (client/model/Dyn.cpp, Fx.cpp
+ * `keySources`): the cue itself before its level, after it, then each named input, each aux
+ * but the cue itself, each output - inputs and outputs in their channels' order, auxes in the
+ * rack's.
+ */
+fun keyChoices(mirror: Mirror, cueId: String): List<KeyChoice> {
+    val out = ArrayList<KeyChoice>()
+    out += KeyChoice("", "", KeyChoice.Kind.BEFORE)
+    out += KeyChoice("self", "", KeyChoice.Kind.AFTER)
+    fun firstChannel(owner: String, id: String) = mirror.value("/godot/$owner/$id/firstChannel")?.asLong() ?: 0L
+    for (id in mirror.ids("input").sortedBy { firstChannel("input", it) }) {
+        if (mirror["/godot/input/$id/name"] == null && mirror["/godot/input/$id/width"] == null) continue
+        val name = mirror.text("/godot/input/$id/name")?.takeIf { it.isNotEmpty() } ?: "Input ${firstChannel("input", id) + 1}"
+        out += KeyChoice(id, name, KeyChoice.Kind.INPUT)
+    }
+    val slots = words(mirror.text("/godot/slot/order")).ifEmpty { mirror.ids("slot") }
+    var channels = 0
+    for (id in slots) {
+        val slot = "/godot/slot/$id/"
+        if (mirror.text(slot + "kind") != "rackChannel") continue
+        channels++
+        if (mirror.text(slot + "access") != "shared" || id == cueId) continue
+        out += KeyChoice(id, mirror.text(slot + "name")?.takeIf { it.isNotEmpty() } ?: "Aux $channels", KeyChoice.Kind.AUX)
+    }
+    for (id in mirror.ids("bus").sortedBy { firstChannel("bus", it) }) {
+        if (mirror["/godot/bus/$id/name"] == null && mirror["/godot/bus/$id/width"] == null) continue
+        out += KeyChoice(id, mirror.text("/godot/bus/$id/name")?.takeIf { it.isNotEmpty() } ?: id, KeyChoice.Kind.OUTPUT)
+    }
+    return out
 }

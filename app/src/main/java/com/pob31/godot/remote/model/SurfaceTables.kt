@@ -19,7 +19,8 @@ import com.pob31.godot.remote.json.JsonPull
 import java.io.Reader
 
 /*  THE SURFACE'S TABLES, AS GO.DOT WRITES THEM (tests/fixtures/remote/surface-tables.json,
-    namespace draft §68, A.7): the EQ page's sixteen controls (engine SurfacePages.h), how
+    namespace draft §68, A.7): the EQ page's sixteen controls and the Dynamics page's
+    fourteen (engine SurfacePages.h, namespace draft §141), how
     far a detent turns each law (SurfaceProfile.h) and the fader the virtual panel draws
     (FaderCurve.h, the generic law). The app carries a copy in its assets,
     app/src/main/assets/surface-tables.json, and a test holds the copy to Go.dot's file
@@ -30,13 +31,16 @@ import java.io.Reader
  * How a control moves and reads (SurfacePages.h `Law`). PAN and STEREO_WIDTH are the Pan
  * page's (namespace draft §113): a send's lean in -1..1, drawn from the centre, and a stereo
  * send's width in 0..1 - never among the EQ's sixteen, and not WIDTH, which is the EQ's Q.
+ * DECIBELS, TIME and RATIO are the Dynamics page's (namespace draft §141, BIG): a threshold,
+ * a knee or a range drawn from the left with no plus sign; milliseconds in ratios, from
+ * nought where the range allows it; so many to one, in ratios.
  */
-enum class EqLaw { FREQUENCY, GAIN, WIDTH, SHAPE, LEVEL, PAN, STEREO_WIDTH }
+enum class EqLaw { FREQUENCY, GAIN, WIDTH, SHAPE, LEVEL, PAN, STEREO_WIDTH, DECIBELS, TIME, RATIO }
 
 /** What a press on a control does (SurfacePages.h `Press`); CENTRE puts a pan or a balance back at nought. */
 enum class EqPress { NONE, TOGGLE_SWITCH, TOGGLE_SHAPE, CENTRE }
 
-/** One of the EQ page's sixteen controls, in the author's order (SurfacePages.h `eqControls`). */
+/** One of the EQ page's sixteen controls, in the author's order (SurfacePages.h `eqControls`) - or of the Dynamics page's fourteen (`dynControls`). */
 data class EqControl(
     /** The cue's row it turns: `eqB2Gain`. */
     val row: String,
@@ -62,6 +66,9 @@ data class Detents(
     val levelTravelPerDetent: Double,
     /** A pan's, a balance's and a width's (namespace draft §113, `pagePlacePerDetent`). */
     val placePerDetent: Double,
+    /** A time's and a ratio's on the Dynamics page (namespace draft §141). */
+    val timeDoublingsPerDetent: Double,
+    val ratioDoublingsPerDetent: Double,
 )
 
 /**
@@ -107,10 +114,16 @@ data class FaderCurve(val silenceDb: Double, val loudestDb: Double, val points: 
     }
 }
 
-class SurfaceTables(val eqControls: List<EqControl>, val detent: Detents, val fader: FaderCurve) {
+class SurfaceTables(
+    val eqControls: List<EqControl>,
+    val detent: Detents,
+    val fader: FaderCurve,
+    /** The Dynamics page's fourteen, in the engine's order (namespace draft §141, BIG). */
+    val dynControls: List<EqControl> = emptyList(),
+) {
 
-    /** The control that turns [row], or null. */
-    fun control(row: String): EqControl? = eqControls.firstOrNull { it.row == row }
+    /** The control that turns [row] - the EQ's or the dynamics' - or null. */
+    fun control(row: String): EqControl? = eqControls.firstOrNull { it.row == row } ?: dynControls.firstOrNull { it.row == row }
 
     companion object {
         const val ASSET = "surface-tables.json"
@@ -126,6 +139,7 @@ class SurfaceTables(val eqControls: List<EqControl>, val detent: Detents, val fa
         /** The file read whole. Throws [JsonException] on a file that is not the tables. */
         fun parse(input: Reader): SurfaceTables {
             var controls: List<EqControl>? = null
+            var dynamics: List<EqControl>? = null
             var detent: Detents? = null
             var fader: FaderCurve? = null
             JsonPull(input).use { json ->
@@ -133,6 +147,7 @@ class SurfaceTables(val eqControls: List<EqControl>, val detent: Detents, val fa
                 while (json.hasNext()) {
                     when (json.nextName()) {
                         "eqControls" -> controls = readControls(json)
+                        "dynControls" -> dynamics = readControls(json)
                         "detent" -> detent = readDetent(json)
                         "fader" -> fader = readFader(json)
                         else -> json.skipValue()
@@ -144,6 +159,7 @@ class SurfaceTables(val eqControls: List<EqControl>, val detent: Detents, val fa
                 controls ?: throw JsonException("no eqControls"),
                 detent ?: throw JsonException("no detent"),
                 fader ?: throw JsonException("no fader"),
+                dynamics ?: throw JsonException("no dynControls"),
             )
         }
 
@@ -176,6 +192,9 @@ class SurfaceTables(val eqControls: List<EqControl>, val detent: Detents, val fa
                         "level" -> EqLaw.LEVEL
                         "pan" -> EqLaw.PAN
                         "stereoWidth" -> EqLaw.STEREO_WIDTH
+                        "decibels" -> EqLaw.DECIBELS
+                        "time" -> EqLaw.TIME
+                        "ratio" -> EqLaw.RATIO
                         else -> throw JsonException("a law nobody knows: ${text("law")}")
                     },
                     min = number("min"),
@@ -211,6 +230,7 @@ class SurfaceTables(val eqControls: List<EqControl>, val detent: Detents, val fa
             return Detents(
                 number("octavesPerDetent"), number("gainStepDb"),
                 number("widthDoublingsPerDetent"), number("levelTravelPerDetent"), number("placePerDetent"),
+                number("timeDoublingsPerDetent"), number("ratioDoublingsPerDetent"),
             )
         }
 

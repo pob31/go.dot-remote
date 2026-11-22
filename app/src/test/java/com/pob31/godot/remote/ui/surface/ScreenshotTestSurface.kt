@@ -39,6 +39,7 @@ import com.pob31.godot.remote.model.ShowFixture.SIREN
 import com.pob31.godot.remote.model.ShowFixture.THUNDER_AND_RAIN
 import com.pob31.godot.remote.model.SurfacePage
 import com.pob31.godot.remote.model.THIS_TABLET
+import com.pob31.godot.remote.model.givenDynamics
 import com.pob31.godot.remote.model.put
 import com.pob31.godot.remote.model.readHeader
 import com.pob31.godot.remote.model.readSurface
@@ -186,6 +187,15 @@ class ScreenshotTestSurface {
     @Test
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
     fun theSendPage() = shoot("surface-sends-tablet") { withHeader(show(), SurfacePage.SENDS) }
+
+    /** The aimed cue's own dynamics (Go.dot's namespace draft §141): its switches, its key, its fourteen controls. */
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun theDynamicsPage() = shoot("surface-dyn-tablet") { withHeader(show().givenDynamics(tables), SurfacePage.DYN) }
+
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun theDynamicsPageInFrench() = shoot("surface-dyn-tablet-fr", "fr") { withHeader(show().givenDynamics(tables), SurfacePage.DYN) }
 
     /** The aimed cue's sends given places: the first stereo into stereo, swapped; the second a mono pan. */
     private fun Mirror.placed(): Mirror = apply {

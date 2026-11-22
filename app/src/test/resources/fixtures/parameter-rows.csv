@@ -1,4 +1,4 @@
-# owner,address,type,access,persist - from Go.dot docs/parameters/godot-parameters.csv (2026-10-25, 0.1.17), the rows the remote reads
+# owner,address,type,access,persist - from Go.dot docs/parameters/godot-parameters.csv (2026-11-23, 0.1.28 + §141 DO.1-DO.7), the rows the remote reads
 owner,address,type,access,persist
 document,path,s,r,none
 document,name,s,r,none
@@ -43,6 +43,7 @@ cue,notes,s,rw,show
 cue,enabled,T,rw,show
 cue,colour,s,rw,show
 cue,preWait,d,rw,show
+cue,quantise,s,rw,show
 cue,postWait,d,rw,show
 cue,parent,s,r,none
 cue,index,i,r,none
@@ -53,9 +54,9 @@ cue,prepareError,s,r,none
 cue,preset,s,rw,show
 cue,flagged,T,rw,state
 media,file,s,rw,show
-sound,level,d,rw,show
 media,startOffset,d,rw,show
 media,rate,d,rw,show
+media,followTempo,T,rw,show
 media,rateMode,s,rw,show
 media,delay,s,rw,show
 media,delayBy,d,rw,show
@@ -67,6 +68,10 @@ media,take,s,rw,show
 media,lockedTo,s,rw,show
 media,editSource,s,rw,show
 media,sections,s,r,none
+media,duration,d,r,none
+media,hash,s,r,none
+media,missing,T,r,none
+sound,level,d,rw,show
 sound,stereoToMono,T,rw,show
 sound,directOut,s,rw,show
 sound,sharedOut,T,rw,show
@@ -95,12 +100,27 @@ sound,eqB4Shape,s,rw,show
 sound,eqB4Freq,d,rw,show
 sound,eqB4Gain,d,rw,show
 sound,eqB4Q,d,rw,show
+sound,dynOn,T,rw,show
+sound,dynDetector,s,rw,show
+sound,dynCompOn,T,rw,show
+sound,dynThreshold,d,rw,show
+sound,dynRatio,d,rw,show
+sound,dynAttack,d,rw,show
+sound,dynRelease,d,rw,show
+sound,dynKnee,d,rw,show
+sound,dynMakeup,d,rw,show
+sound,dynGateOn,T,rw,show
+sound,dynGateThreshold,d,rw,show
+sound,dynGateRange,d,rw,show
+sound,dynGateAttack,d,rw,show
+sound,dynGateHold,d,rw,show
+sound,dynGateRelease,d,rw,show
+sound,dynKeyLowCut,d,rw,show
+sound,dynKeyHighCut,d,rw,show
+sound,dynKey,s,rw,show
 sound,fx,s,r,none
 sound,live,s,r,none
 sound,sends,s,r,none
-media,duration,d,r,none
-media,hash,s,r,none
-media,missing,T,r,none
 sound,outsBusy,s,r,none
 sound,outsMaybe,s,r,none
 sound,chainChannels,i,r,none
@@ -123,6 +143,7 @@ fade,dca,s,rw,show
 fade,aux,s,rw,show
 fade,sends,s,rw,show
 fade,eq,s,rw,show
+fade,dyn,s,rw,show
 fade,fx,s,rw,show
 fade,video,s,rw,show
 fade,places,s,rw,show
@@ -171,6 +192,8 @@ run,ports,s,r,none
 run,timecode,s,r,none
 run,chaseError,d,r,none
 run,joinDb,d,r,none
+run,lineUp,i,r,none
+run,reduction,d,r,none
 run,chaseState,s,r,none
 group,order,s,r,none
 group,headerOrder,s,r,none
@@ -186,6 +209,7 @@ group,advance,s,rw,show
 group,join,s,rw,show
 group,joinLength,d,rw,show
 group,joinCurve,d,rw,show
+group,lineUp,T,rw,show
 group,selection,s,rw,show
 group,loops,i,rw,show
 group,play,i,rw,show
