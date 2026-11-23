@@ -498,8 +498,7 @@
       "faders": "Faders",
       "eq": "EQ",
       "dyn": "Dynamique",
-      "sends": "Envois",
-      "pan": "Pan"
+      "sends": "Envois"
     },
     "profile": {
       "virtual": "Panneau virtuel",
@@ -536,11 +535,7 @@
     "dynLive": "Sous le verrou, la dynamique est en direct : entendue tout de suite, enregistrée seulement si elle est gardée.",
     "eqGraphHint": "Faites glisser une poignée : en travers pour sa fréquence, de haut en bas pour son gain. Pincez à deux doigts pour la largeur de la bande choisie ; touchez deux fois une poignée pour remettre son gain à 0 dB.",
     "dynGraphHint": "Faites glisser une poignée ronde en travers pour son seuil, une carrée de haut en bas pour le taux ou la plage. Écartez deux doigts sur le compresseur pour ouvrir son genou. Une barre part de sa position, plus fine à mesure que le doigt s'en éloigne.",
-    "sendsHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez dessus pour activer ou couper son envoi : son niveau est gardé.",
-    "leans": "Pan ou balance",
-    "widths": "Largeur",
-    "noPlace": "Aucun envoi de cette cue n'a de place à régler : un pan demande une cue mono vers un mix stéréo, une balance ou une largeur une cue stéréo.",
-    "panHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez sur un pan ou une balance pour le centrer, sur une largeur pour inverser gauche et droite.",
+    "sendsHint": "Les boutons et les faders partent de leur position, plus fins à mesure que le doigt s'en éloigne. Appuyez sur un pan ou une balance pour le centrer, sur une largeur pour inverser gauche et droite.",
     "word": {
       "free": "libre",
       "dca": "DCA",

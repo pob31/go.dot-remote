@@ -103,6 +103,8 @@ fun DbFader(
     label: String = "",
     thickness: Dp = 64.dp,
     boxWidth: Dp = 92.dp,
+    /** A vertical fader's [label] said above it; false where a heading over it already says it (it is still the fader's name to a screen reader). */
+    showLabel: Boolean = true,
     /** Drawn beside a vertical fader's track, as a desk's meter: the Surface tab's strips. */
     beside: (@Composable () -> Unit)? = null,
 ) {
@@ -223,7 +225,7 @@ fun DbFader(
 
     if (vertical) {
         Column(modifier.alpha(if (enabled) 1f else 0.6f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (label.isNotEmpty()) Text(label, color = GodotColors.inkDim, maxLines = 1)
+            if (label.isNotEmpty() && showLabel) Text(label, color = GodotColors.inkDim, maxLines = 1)
             box()
             if (beside == null) {
                 track(Modifier.width(thickness).weight(1f).fillMaxHeight())

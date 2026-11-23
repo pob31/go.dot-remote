@@ -78,6 +78,9 @@ import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.AimChoice
 import com.pob31.godot.remote.model.EqReading
 import com.pob31.godot.remote.model.FaderCurve
+import com.pob31.godot.remote.model.PlaceKnobs
+import com.pob31.godot.remote.model.SendLine
+import com.pob31.godot.remote.link.WireText
 import com.pob31.godot.remote.model.LinkWrites
 import com.pob31.godot.remote.model.Sent
 import com.pob31.godot.remote.model.StripActions
@@ -90,7 +93,6 @@ import com.pob31.godot.remote.model.SurfaceTables
 import com.pob31.godot.remote.model.TabWrites
 import com.pob31.godot.remote.model.readSurface
 import com.pob31.godot.remote.model.placeKnobs
-import com.pob31.godot.remote.model.sendKnobs
 import com.pob31.godot.remote.ui.GodotIconMark
 import com.pob31.godot.remote.ui.rememberReading
 import com.pob31.godot.remote.ui.theme.GodotColors
@@ -167,7 +169,6 @@ fun SurfaceView(
                 SurfacePage.EQ -> EqPage(reading, writes, send)
                 SurfacePage.DYN -> DynPage(reading, writes, send)
                 SurfacePage.SENDS -> SendsPage(reading, writes, tables, send)
-                SurfacePage.PAN -> PanPage(reading, writes, tables, send)
             }
         }
     }
@@ -590,31 +591,6 @@ private fun AimChoices(choices: List<AimChoice>, send: (Sent?) -> Unit) {
     }
 }
 
-/** How big a rotary is, and how many stand in a row, for the room there is: eight a row when they fit (a D700's bank). */
-private fun knobLayout(width: Dp, count: Int): Pair<Int, Dp> {
-    val perRow = when {
-        width >= 116.dp * 8 -> 8
-        width >= 100.dp * 4 -> 4
-        else -> 3
-    }.coerceAtMost(count.coerceAtLeast(1))
-    val size = ((width - 12.dp * perRow) / perRow).coerceIn(76.dp, 108.dp)
-    return perRow to size
-}
-
-@Composable
-private fun KnobRows(knobs: EqReading, writes: TabWrites, tables: SurfaceTables, colour: Color? = null) {
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val (perRow, size) = knobLayout(maxWidth, knobs.knobs.size)
-        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            for (row in knobs.knobs.chunked(perRow)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    for (knob in row) EqKnobView(knob, knobs, writes, tables, size = size, colour = colour)
-                }
-            }
-        }
-    }
-}
-
 /** The page's own words under the lock: what it moves rides live, heard and not saved. */
 @Composable
 private fun LiveNote(key: String) {
@@ -674,13 +650,16 @@ private fun DynPage(reading: SurfaceReading, writes: TabWrites, send: (Sent?) ->
 }
 
 /**
- * THE SEND PAGE: the aimed cue's sends, one rotary each on the fader's law, named by
- * its mix channel; a press switches the send in or out, which keeps its level.
+ * THE SEND PAGE (the D700's Send and Pan pages on one): a strip a send, as a desk's - its mix
+ * channel's name, where it sits in that mix on a dial above (a pan or a balance, both ways
+ * from the centre, a press putting it back; a stereo send's width beside it, a press
+ * swapping its sides, with the swap said under them), its level on a fader, and in or out
+ * at the foot. The strips side by side, the rest a swipe sideways away.
  */
 @Composable
 private fun SendsPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceTables, send: (Sent?) -> Unit) {
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         AimHeader(reading, send)
@@ -690,47 +669,90 @@ private fun SendsPage(reading: SurfaceReading, writes: TabWrites, tables: Surfac
             return@Column
         }
         if (reading.locked) LiveNote("surface.sendsLive")
-        KnobRows(sendKnobs(reading.sends, tables.fader), writes, tables, colour = GodotColors.fade)
+        val words = mapOf("pan" to loc("cues.place.pan"), "balance" to loc("cues.place.balance"), "width" to loc("cues.place.width"))
+        val places = reading.sends.associate { it.id to placeKnobs(listOf(it), words) }
+        // Every strip keeps the same room for what any strip has, so the faders line up.
+        val anyLean = places.values.any { it.leans.knobs.isNotEmpty() }
+        val anyStereo = places.values.any { it.widths.knobs.isNotEmpty() }
+        val width = if (anyStereo) 196.dp else 150.dp
+        LazyRow(
+            Modifier.fillMaxWidth().weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(reading.sends, key = { it.id }) { line ->
+                SendStrip(line, places.getValue(line.id), anyLean, anyStereo, writes, tables, width)
+            }
+        }
         Text(loc("surface.sendsHint"), color = GodotColors.inkOff, fontSize = 13.sp)
     }
 }
 
-/**
- * THE PAN PAGE (namespace draft §113, the D700's Pan pages on one): where the aimed cue's
- * sends sit in their mixes - a pan or a balance a send, pressed back to the centre; under
- * them the widths of the stereo sends, a press swapping the sides, with each one's swap.
- */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PanPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceTables, send: (Sent?) -> Unit) {
+private fun SendStrip(
+    line: SendLine,
+    place: PlaceKnobs,
+    leanRoom: Boolean,
+    stereoRoom: Boolean,
+    writes: TabWrites,
+    tables: SurfaceTables,
+    width: Dp,
+) {
+    val curve = tables.fader
+    val inside = width - 16.dp
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        Modifier
+            .width(width)
+            .fillMaxHeight()
+            .background(GodotColors.panel, RoundedCornerShape(8.dp))
+            .border(1.dp, GodotColors.rule, RoundedCornerShape(8.dp))
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AimHeader(reading, send)
-        if (reading.aimCue == null) return@Column
-        if (reading.sends.isEmpty()) {
-            Text(loc("cues.noSends"), color = GodotColors.inkFaint)
-            return@Column
+        Row(Modifier.fillMaxWidth().height(24.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                line.busName, color = GodotColors.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f)
+            )
+            if (line.live) LiveWord()
         }
-        val place = placeKnobs(reading.sends)
-        if (place.isEmpty) {
-            Text(loc("surface.noPlace"), color = GodotColors.inkFaint)
-            return@Column
-        }
-        if (reading.locked) LiveNote("surface.sendsLive")
-        if (place.leans.knobs.isNotEmpty()) {
-            Text(loc("surface.leans"), color = GodotColors.inkDim)
-            KnobRows(place.leans, writes, tables, colour = GodotColors.fade)
-        }
-        if (place.widths.knobs.isNotEmpty()) {
-            Text(loc("surface.widths"), color = GodotColors.inkDim)
-            KnobRows(place.widths, writes, tables, colour = GodotColors.fade)
-            val names = reading.sends.associate { "swap:${it.id}" to it.busName }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (swap in place.widths.switches) SwapSwitch(swap, names[swap.row], writes)
+        if (leanRoom) {
+            Row(Modifier.height(112.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.Top) {
+                for (knob in place.leans.knobs) EqKnobView(knob, place.leans, writes, tables, size = 76.dp, colour = GodotColors.fade, sayOut = false)
+                for (knob in place.widths.knobs) EqKnobView(knob, place.widths, writes, tables, size = 76.dp, colour = GodotColors.fade, sayOut = false)
             }
         }
-        Text(loc("surface.panHint"), color = GodotColors.inkOff, fontSize = 13.sp)
+        if (stereoRoom) {
+            Box(Modifier.height(GodotMetrics.touch), contentAlignment = Alignment.Center) {
+                for (swap in place.widths.switches) SwapSwitch(swap, null, writes)
+            }
+        }
+        DbFader(
+            value = line.level,
+            address = line.levelAddress,
+            writes = writes,
+            curve = curve,
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            vertical = true,
+            colour = if (line.on) GodotColors.fade else GodotColors.inkOff,
+            label = line.busName,
+            showLabel = false,
+            thickness = inside.coerceIn(44.dp, 72.dp),
+            boxWidth = (inside - 36.dp).coerceAtLeast(60.dp),
+        )
+        // In or out: the send keeps its level either way.
+        Surface(
+            onClick = { writes.setNow(line.onAddress, WireText.bool(!line.on)) },
+            color = if (line.on) GodotColors.fade else GodotColors.panelHigh,
+            shape = RoundedCornerShape(6.dp),
+            modifier = Modifier.fillMaxWidth().height(56.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    loc(if (line.on) "widgets.in" else "widgets.out"), fontWeight = FontWeight.Bold, maxLines = 1,
+                    color = if (line.on) Color.Black else GodotColors.inkFaint
+                )
+            }
+        }
     }
 }

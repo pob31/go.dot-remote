@@ -210,11 +210,11 @@ class ScreenshotTestSurface {
 
     @Test
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
-    fun thePanPage() = shoot("surface-pan-tablet") { withHeader(show().placed(), SurfacePage.PAN) }
+    fun theSendPageWithPlaces() = shoot("surface-sends-placed-tablet") { withHeader(show().placed(), SurfacePage.SENDS) }
 
     @Test
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
-    fun thePanPageInFrench() = shoot("surface-pan-tablet-fr", "fr") { withHeader(show().placed(), SurfacePage.PAN) }
+    fun theSendPageWithPlacesInFrench() = shoot("surface-sends-placed-tablet-fr", "fr") { withHeader(show().placed(), SurfacePage.SENDS) }
 
     @Test
     @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")

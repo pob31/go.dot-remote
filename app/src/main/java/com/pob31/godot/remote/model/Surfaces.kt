@@ -35,13 +35,12 @@ package com.pob31.godot.remote.model
 /** The surface every show has on this tablet: one strip a DCA. Not an engine identifier. */
 const val THIS_TABLET = "tablet"
 
-/** The tablet's pages: the strips, the aimed cue's EQ, its dynamics, its sends, their places. */
+/** The tablet's pages: the strips, the aimed cue's EQ, its dynamics, its sends with their places. */
 enum class SurfacePage(val key: String) {
     FADERS("surface.page.faders"),
     EQ("surface.page.eq"),
     DYN("surface.page.dyn"),
     SENDS("surface.page.sends"),
-    PAN("surface.page.pan"),
 }
 
 /** How a surface stands, in the desktop's order (Surfaces.cpp `stateWord`): off first, then connected. */
@@ -304,41 +303,13 @@ fun readSurface(mirror: Mirror, asked: String?, tables: SurfaceTables): SurfaceR
     )
 }
 
-/**
- * THE SEND PAGE'S ROTARIES, as the EQ page's are (engine SurfaceBridge `sendWrite`): a
- * send's level moves along the fader's own law, so its ring is where a fader would be;
- * a press switches the send in and out (`send/on` - off keeps the level). Made as the EQ
- * page's knobs so one rotary draws and writes both.
- */
-fun sendKnobs(sends: List<SendLine>, fader: FaderCurve): EqReading {
-    val switches = ArrayList<EqSwitch>(sends.size)
-    val knobs = ArrayList<EqKnob>(sends.size)
-    for (send in sends) {
-        val switchRow = "send:${send.id}"
-        switches += EqSwitch(switchRow, send.onAddress, send.on, send.live)
-        knobs += EqKnob(
-            control = EqControl(
-                row = "level", label = send.busName, short = send.busName, law = EqLaw.LEVEL,
-                min = fader.silenceDb, max = fader.loudestDb, colour = -1, switchRow = switchRow,
-                press = EqPress.TOGGLE_SWITCH, shelf = "",
-            ),
-            address = send.levelAddress,
-            value = send.level,
-            shape = "",
-            bandOn = send.on,
-            live = send.live,
-        )
-    }
-    return EqReading(null, switches, knobs)
-}
-
 /** A send's place as rotaries: the leans (a pan or a balance) and the widths of the stereo sends. */
 data class PlaceKnobs(val leans: EqReading, val widths: EqReading) {
     val isEmpty: Boolean get() = leans.knobs.isEmpty() && widths.knobs.isEmpty()
 }
 
 /**
- * THE PAN PAGE'S ROTARIES, as the D700's Pan pages lay them (engine SurfacePages.h, namespace
+ * A SEND'S PLACE ON DIALS, as the D700's Pan pages lay them (engine SurfacePages.h, namespace
  * draft §113): for each send, the row its placement says is heard - a pan where one channel
  * meets two, a balance where two meet two or one - in -1..1, a press putting it back in the
  * centre; then, for a send two channels wide into two, its width in 0..1, a press swapping

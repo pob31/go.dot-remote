@@ -151,24 +151,6 @@ class SurfacesTest {
     }
 
     @Test
-    fun theSendPagesKnobs_onTheFadersLaw_aPressSwitchingTheSend() {
-        val sends = readSends(ShowFixture.mirror(), THUNDER_AND_RAIN)
-        val page = sendKnobs(sends, tables.fader)
-        assertNull("a send page has no EQ switch to dim it all", page.on)
-        assertEquals(sends.map { it.levelAddress }, page.knobs.map { it.address })
-        for ((knob, send) in page.knobs.zip(sends)) {
-            assertEquals(EqLaw.LEVEL, knob.control.law)
-            assertEquals(EqPress.TOGGLE_SWITCH, knob.control.press)
-            assertEquals(send.on, knob.bandOn)
-            val switch = page.switches.first { it.row == knob.control.switchRow }
-            assertEquals(send.onAddress, switch.address)
-        }
-        // Foldback is switched off in the fixture: its knob is dimmed and says so.
-        assertFalse(page.knobs[1].bandOn)
-        assertEquals("-12.0 dB", EqLaws.valueText(EqLaw.LEVEL, page.knobs[0].value, tables.fader.silenceDb))
-    }
-
-    @Test
     fun aSendsPlace_theRowsItsPlacementSaysAreHeard() {
         val mirror = ShowFixture.mirror()
         val (reverb, foldback) = readSends(mirror, THUNDER_AND_RAIN)

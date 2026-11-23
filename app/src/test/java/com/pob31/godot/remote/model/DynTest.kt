@@ -213,7 +213,7 @@ class DynTest {
         val dyn = reading.dyn
         assertNotNull(dyn)
         assertEquals(14, dyn!!.eq.knobs.size)
-        assertEquals(listOf(SurfacePage.FADERS, SurfacePage.EQ, SurfacePage.DYN, SurfacePage.SENDS, SurfacePage.PAN), SurfacePage.entries.toList())
+        assertEquals(listOf(SurfacePage.FADERS, SurfacePage.EQ, SurfacePage.DYN, SurfacePage.SENDS), SurfacePage.entries.toList())
         mirror.put("/godot/surface/aim", ShowFixture.INTERVAL)
         assertNull(readSurface(mirror, null, tables).dyn)
     }

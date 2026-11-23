@@ -51,8 +51,8 @@ import com.pob31.godot.remote.ui.theme.GodotMetrics
 /*  A BAND'S SWITCH, as a button that says in or out - the EQ's and the dynamics' editors
     (EqGraph, DynGraphs) put them under their graphs - and A CONTROL ON A [Rotary]: its law,
     its range, its colour, what a press does. The EQ and the dynamics are graphs on a touch
-    screen now; the rotary is a send's level on the Send page (model `sendKnobs`) and its
-    place on the Pan page and in the inspector, a lean or a width (model `placeKnobs`). */
+    screen now; the rotary is a send's place - a lean or a width (model `placeKnobs`) - on
+    the Send page's strips, over each send's fader, and in the inspector. */
 
 private val BAND_WORDS = mapOf("eqOn" to "EQ", "eqHpf" to "HP", "eqB1On" to "B1", "eqB2On" to "B2", "eqB3On" to "B3", "eqB4On" to "B4", "eqLpf" to "LP")
 private val BAND_COLOURS = mapOf("eqHpf" to 0, "eqB1On" to 1, "eqB2On" to 2, "eqB3On" to 3, "eqB4On" to 4, "eqLpf" to 5,
@@ -127,6 +127,8 @@ fun EqKnobView(
     size: Dp = 92.dp,
     colour: Color? = null,
     enabled: Boolean = true,
+    /** Say "out" on it while its band or send is out - not where a button beside it already says so. */
+    sayOut: Boolean = true,
 ) {
     val control = knob.control
     val ink = colour ?: GodotColors.eq[control.colour.coerceIn(0, GodotColors.eq.lastIndex)]
@@ -147,7 +149,7 @@ fun EqKnobView(
         colour = ink,
         bipolar = control.law == EqLaw.GAIN || control.law == EqLaw.PAN,   // a threshold (DECIBELS) is drawn from the left
         dimmed = !knob.bandOn || eq.on?.on == false,
-        word = if (!knob.bandOn) loc("widgets.out") else null,
+        word = if (!knob.bandOn && sayOut) loc("widgets.out") else null,
         live = knob.live,
         enabled = enabled,
         size = size,

@@ -498,8 +498,7 @@
       "faders": "Faders",
       "eq": "EQ",
       "dyn": "Dynamics",
-      "sends": "Sends",
-      "pan": "Pan"
+      "sends": "Sends"
     },
     "profile": {
       "virtual": "Virtual panel",
@@ -536,11 +535,7 @@
     "dynLive": "Under the lock the dynamics ride live: heard at once, saved only when kept.",
     "eqGraphHint": "Drag a handle: across for its frequency, up and down for its gain. Pinch with two fingers for the picked band's width; tap a handle twice to put its gain back to 0 dB.",
     "dynGraphHint": "Drag a round handle across for its threshold, a square one up and down for the ratio or the range. Spread two fingers on the compressor to open its knee. A bar moves from where it stands, finer the further your finger strays from it.",
-    "sendsHint": "A knob turns from where it stands; the further your finger from it, the finer. Press one to switch its send in or out: its level is kept.",
-    "leans": "Pan or balance",
-    "widths": "Width",
-    "noPlace": "None of this cue's sends has a place to set: a pan needs a mono cue into a stereo mix, a balance or a width a stereo cue.",
-    "panHint": "A knob turns from where it stands; the further your finger from it, the finer. Press a pan or a balance to centre it, a width to swap left and right.",
+    "sendsHint": "Dials and faders move from where they stand, finer the further your finger strays. Press a pan or a balance to centre it, a width to swap left and right.",
     "word": {
       "free": "free",
       "dca": "DCA",
