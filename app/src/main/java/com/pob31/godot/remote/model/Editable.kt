@@ -17,7 +17,7 @@ import com.pob31.godot.remote.osc.OscValue
 
 /*  WHAT THE TABLET MAY CHANGE, AS ONE TABLE (namespace draft §68, ANO - the author's):
     a cue's level, its sends, its EQ, the DCAs, the waits, the speed, the on/off switches,
-    flags and notes; a run's trim. NEVER THE SHAPE OF THE CUE LIST: no cue made, deleted,
+    flags and notes; a run's trim (on the Running tab). NEVER THE SHAPE OF THE CUE LIST: no cue made, deleted,
     moved, renamed or renumbered - no row here is a name, a number or an order, and no
     command the tabs send makes or moves anything (EditableTest holds both to Go.dot's
     parameter table and command list).
@@ -36,7 +36,7 @@ import com.pob31.godot.remote.osc.OscValue
     - NOT_STORED: a run's trim, a DCA's trim, a flag - tonight's, or state beside the
       standby, which the lock lets through. */
 
-enum class EditControl { FADER, RUN_TRIM, SENDS, EQ, DYN, DCA, NUMBER, CHOICE, SWITCH, TEXT }
+enum class EditControl { FADER, SENDS, EQ, DYN, DCA, NUMBER, CHOICE, SWITCH, TEXT }
 
 enum class UnderLock { REFUSED, RIDES_LIVE, NOT_STORED }
 
@@ -57,7 +57,6 @@ data class Editable(
 object Editables {
     val ALL: List<Editable> = listOf(
         Editable("level", EditControl.FADER, "cues.field.level", UnderLock.REFUSED),
-        Editable("trim", EditControl.RUN_TRIM, "cues.field.runTrim", UnderLock.NOT_STORED),
         Editable("sends", EditControl.SENDS, "cues.field.sends", UnderLock.RIDES_LIVE),
         Editable("eq", EditControl.EQ, "cues.field.eq", UnderLock.RIDES_LIVE),
         // A sound's own compressor, gate and key filter (namespace draft §141), after its EQ as in the chain.
@@ -79,6 +78,9 @@ object Editables {
      * level is.
      */
     val SEND_ROWS = listOf("level", "on", "pan", "width", "balance", "swap")
+
+    /** The run row the Running tab's trim writes (`/godot/run/<id>/trim`): tonight's, never stored. */
+    const val RUN_TRIM = "trim"
 
     /** The DCA row its fader writes (`/godot/dca/<id>/trim`): tonight's, never stored. */
     const val DCA_TRIM = "trim"
@@ -106,7 +108,6 @@ object Editables {
             when (each.control) {
                 EditControl.FADER, EditControl.NUMBER, EditControl.CHOICE, EditControl.SWITCH, EditControl.TEXT, EditControl.DCA ->
                     out += "cue" to each.row
-                EditControl.RUN_TRIM -> out += "run" to "trim"
                 EditControl.SENDS -> SEND_ROWS.forEach { out += "send" to it }
                 EditControl.EQ -> {
                     EQ_SWITCHES.forEach { out += "cue" to it }
@@ -119,6 +120,8 @@ object Editables {
                 }
             }
         }
+        // A run's trim, ridden on the Running tab: tonight's, never stored.
+        out += "run" to RUN_TRIM
         out += "dca" to DCA_TRIM
         return out
     }
@@ -216,6 +219,11 @@ data class DynReading(
     val key: String,
     val keyLive: Boolean,
     val keyChoices: List<KeyChoice>,
+    /**
+     * How far the stage turns the sound down now, in decibels (nought or below), read off
+     * the run of the cue that plays (`run/reduction`); null while none plays.
+     */
+    val reduction: Double? = null,
 ) {
     /** The choice [key] is, or a GONE one naming it. */
     val keyChoice: KeyChoice get() = keyChoices.firstOrNull { it.value == key } ?: KeyChoice(key, key, KeyChoice.Kind.GONE)
@@ -227,11 +235,6 @@ sealed class InspectorLine {
     abstract val editable: Editable
 
     data class Field(override val editable: Editable, val field: FieldLine) : InspectorLine()
-
-    /** The run of this cue that plays now, and its trim. */
-    data class RunTrim(override val editable: Editable, val runId: String, val state: String, val trim: Double) : InspectorLine() {
-        val address: String get() = "/godot/run/$runId/trim"
-    }
 
     data class Sends(override val editable: Editable, val sends: List<SendLine>, val lockedOut: Boolean) : InspectorLine()
 
@@ -301,10 +304,6 @@ fun readInspection(mirror: Mirror, cueId: String, tables: SurfaceTables): Inspec
                 val line = field(base + each.row, each) ?: continue
                 lines += if (each.row == "enabled") InspectorLine.Enabled(each, line, mirror.text(base + "override") ?: "file")
                          else InspectorLine.Field(each, line)
-            }
-            EditControl.RUN_TRIM -> playingRunOf(mirror, cueId)?.let { (run, state) ->
-                val trim = mirror.value("/godot/run/$run/trim")?.asDouble() ?: return@let
-                lines += InspectorLine.RunTrim(each, run, state, trim)
             }
             EditControl.SENDS -> {
                 if (cue.kind != "media" && cue.kind != "mic") continue
@@ -437,6 +436,7 @@ fun readDyn(mirror: Mirror, cueId: String, tables: SurfaceTables, liveRows: Set<
         key = mirror.text(base + Editables.DYN_KEY) ?: "",
         keyLive = Editables.DYN_KEY in liveRows,
         keyChoices = keyChoices(mirror, cueId),
+        reduction = playingRunOf(mirror, cueId)?.let { (run, _) -> mirror.value("/godot/run/$run/reduction")?.asDouble() },
     )
 }
 

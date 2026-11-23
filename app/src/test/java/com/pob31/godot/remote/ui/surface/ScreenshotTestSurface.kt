@@ -248,6 +248,17 @@ class ScreenshotTestSurface {
 
     @Test
     @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
+    fun theDynamicsPageOnAPhone() = shoot("surface-dyn-phone") { tab(show().givenDynamics(tables), SurfacePage.DYN) }
+
+    /** While the cue plays, how far its stage turns it down now, beside the compressor's graph. */
+    @Test
+    @Config(qualifiers = "w1385dp-h866dp-land-xhdpi")
+    fun theDynamicsPageWhileItPlays() = shoot("surface-dyn-running-tablet") {
+        withHeader(show().givenDynamics(tables).apply { put("/godot/run/$RUN_THUNDER_AND_RAIN/reduction", -6.5) }, SurfacePage.DYN)
+    }
+
+    @Test
+    @Config(qualifiers = "w411dp-h891dp-port-xhdpi")
     fun thePadsOnAPhone() = shoot("surface-pads-phone") { tab(show(), SurfacePage.FADERS, PADS) }
 
     @Test

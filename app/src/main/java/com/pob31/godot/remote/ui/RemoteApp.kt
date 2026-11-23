@@ -294,7 +294,7 @@ private fun LaterTab(tab: RemoteTab, onScreen: LinkedMachine?) {
     ) {
         GodotIconMark(tab.icon, GodotColors.inkOff, size = 48.dp)
         tab.laterKey?.let { Text(loc(it), color = GodotColors.inkFaint, textAlign = TextAlign.Center) }
-        // How the link stands is the header's to say.
+        // How the link stands is the tab bar's to say.
         if (onScreen == null) Text(loc("remote.tabs.noMachine"), color = GodotColors.inkFaint, textAlign = TextAlign.Center)
     }
 }

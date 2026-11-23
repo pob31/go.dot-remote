@@ -105,7 +105,6 @@
       "none": "Pas encore de connexion. Tapez ci-dessous l'adresse de l'ordinateur où tourne Go.dot.",
       "onScreen": "À l'écran",
       "putOnScreen": "Mettre à l'écran",
-      "linked": "Reliée",
       "notLinked": "Non reliée",
       "edit": "Modifier",
       "remove": "Retirer",
@@ -414,7 +413,8 @@
       "aux": "{name} · aux",
       "output": "{name} · sortie",
       "gone": "{name} · absent de ce spectacle : silence"
-    }
+    },
+    "reduction": "Réduction de gain"
   },
   "widgets": {
     "notANumber": "pas un nombre",
@@ -423,7 +423,8 @@
     "in": "actif",
     "out": "inactif",
     "swapped": "G/D inversés",
-    "notSwapped": "G/D"
+    "notSwapped": "G/D",
+    "eqGraph": "Courbe de l'EQ"
   },
   "cues": {
     "goList": "liste GO",
@@ -463,13 +464,10 @@
       "balance": "Balance",
       "width": "Largeur"
     },
-    "eqIn": "EQ en service",
-    "eqOut": "EQ hors service - toutes les bandes sautées",
     "dcaNone": "aucun DCA",
     "dcaTrim": "trim de {dca} - ce soir seulement",
     "field": {
       "level": "Niveau",
-      "runTrim": "Trim de l'exécution en cours - ce soir seulement",
       "sends": "Envois",
       "eq": "EQ",
       "dyn": "Dynamique",
@@ -484,7 +482,6 @@
     },
     "inspector": {
       "none": "Touchez une cue pour voir ce que la tablette peut y changer.",
-      "lockedNote": "Les réglages du spectacle sont grisés. EQ, envois, drapeaux et trims bougent encore.",
       "liveCount": "{count} changements en direct - non enregistrés tant que le spectacle n'est pas déverrouillé et qu'ils ne sont pas gardés"
     }
   },
@@ -515,9 +512,8 @@
       "tablet": "un fader par DCA",
       "connected": "connectée",
       "off": "désactivée",
-      "notConnected": "non connectée"
+      "standsIn": "non connectée · tranches depuis cette tablette"
     },
-    "standsIn": "{surface} n'est pas connectée : ses tranches fonctionnent depuis cette tablette.",
     "lockedNote": "Les faders, l'EQ et les envois bougent encore. L'EQ et les envois sont en direct, non enregistrés tant qu'ils ne sont pas gardés.",
     "noDca": "Ce spectacle n'a pas de DCA : pas encore de fader ici. Chaque DCA du spectacle a son fader sur cette tablette.",
     "noStrips": "Cette surface n'a pas de tranche.",
@@ -538,8 +534,8 @@
     "sendsLive": "Sous le verrou, les envois sont en direct : entendus tout de suite, enregistrés seulement s'ils sont gardés.",
     "noDyn": "Cette cue n'a pas de dynamique.",
     "dynLive": "Sous le verrou, la dynamique est en direct : entendue tout de suite, enregistrée seulement si elle est gardée.",
-    "dynHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez sur un seuil pour activer ou couper le compresseur ou le gate, sur un filtre de clé pour toute la dynamique, sur le détecteur pour passer de crête à RMS.",
-    "eqHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez sur un gain pour activer ou couper sa bande, sur une forme pour passer de cloche à plateau.",
+    "eqGraphHint": "Faites glisser une poignée : en travers pour sa fréquence, de haut en bas pour son gain. Pincez à deux doigts pour la largeur de la bande choisie ; touchez deux fois une poignée pour remettre son gain à 0 dB.",
+    "dynGraphHint": "Faites glisser une poignée ronde en travers pour son seuil, une carrée de haut en bas pour le taux ou la plage. Écartez deux doigts sur le compresseur pour ouvrir son genou. Une barre part de sa position, plus fine à mesure que le doigt s'en éloigne.",
     "sendsHint": "Un bouton tourne depuis sa position ; plus le doigt s'en éloigne, plus c'est fin. Appuyez dessus pour activer ou couper son envoi : son niveau est gardé.",
     "leans": "Pan ou balance",
     "widths": "Largeur",

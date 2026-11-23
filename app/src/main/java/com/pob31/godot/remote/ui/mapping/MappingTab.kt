@@ -321,7 +321,7 @@ private fun layerName(reading: MappingReading, layer: WarpLayer, n: Int): String
 private fun BlockLine(block: MappingBlock, linkState: LinkState) {
     when (block) {
         MappingBlock.NONE -> Unit
-        // The header says how the link stands; here, only what it stops.
+        // The tab bar says how the link stands; here, only what it stops.
         MappingBlock.LINK -> Text(loc("mapping.stale"), color = GodotColors.inkDim)
         MappingBlock.LOCKED -> Surface(
             color = GodotColors.panelIn, shape = RoundedCornerShape(6.dp),

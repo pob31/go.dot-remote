@@ -78,8 +78,8 @@ import com.pob31.godot.remote.ui.waveform.Waveform
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 import com.pob31.godot.remote.ui.theme.GodotType
 import com.pob31.godot.remote.ui.widgets.DbFader
-import com.pob31.godot.remote.ui.widgets.DynKeyMenu
-import com.pob31.godot.remote.ui.widgets.EqBandSwitch
+import com.pob31.godot.remote.ui.widgets.DynEditor
+import com.pob31.godot.remote.ui.widgets.EqEditor
 import com.pob31.godot.remote.ui.widgets.EqKnobView
 import com.pob31.godot.remote.ui.widgets.LiveWord
 import com.pob31.godot.remote.ui.widgets.LockedWord
@@ -135,19 +135,14 @@ fun InspectorView(
         if (link != null && inspection.hash.isNotEmpty()) {
             Waveform(inspection.hash, link, Modifier.fillMaxWidth().height(72.dp), playhead = inspection.playhead?.toFloat())
         }
-        if (inspection.locked) {
+        // The lock is the header's to say; each refused row says it again where it is greyed.
+        if (inspection.locked && inspection.liveCount > 0) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                LockedWord()
-                Text(loc("cues.inspector.lockedNote"), color = GodotColors.inkDim, modifier = Modifier.weight(1f))
-            }
-            if (inspection.liveCount > 0) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LiveWord()
-                    Text(loc("cues.inspector.liveCount", "count" to inspection.liveCount.toString()), color = GodotColors.waiting, modifier = Modifier.weight(1f))
-                }
+                LiveWord()
+                Text(loc("cues.inspector.liveCount", "count" to inspection.liveCount.toString()), color = GodotColors.waiting, modifier = Modifier.weight(1f))
             }
         }
-        for (line in inspection.lines) InspectorLineView(line, writes, tables)
+        for (line in inspection.lines) InspectorLineView(line, writes, tables, cue.id)
         Spacer(Modifier.height(24.dp))
     }
 }
@@ -162,18 +157,14 @@ private fun Heading(text: String, lockedOut: Boolean = false, trailing: @Composa
 }
 
 @Composable
-private fun InspectorLineView(line: InspectorLine, writes: TabWrites, tables: SurfaceTables) {
+private fun InspectorLineView(line: InspectorLine, writes: TabWrites, tables: SurfaceTables, cueId: String) {
     val label = loc(line.editable.labelKey)
     when (line) {
         is InspectorLine.Field -> FieldView(line, label, writes, tables)
         is InspectorLine.Enabled -> EnabledView(line, label, writes)
-        is InspectorLine.RunTrim -> Section {
-            Heading(label)
-            DbFader(line.trim, line.address, writes, tables.fader, label = label, thickness = 56.dp)
-        }
         is InspectorLine.Sends -> Section { SendsView(line.sends, label, writes, tables) }
-        is InspectorLine.Eq -> Section { EqView(line.eq, label, writes, tables) }
-        is InspectorLine.Dyn -> Section { DynView(line.dyn, label, writes, tables) }
+        is InspectorLine.Eq -> Section { EqView(line.eq, label, writes, cueId) }
+        is InspectorLine.Dyn -> Section { DynView(line.dyn, label, writes, cueId) }
         is InspectorLine.Dca -> Section { DcaView(line, label, writes, tables) }
     }
 }
@@ -365,48 +356,29 @@ private fun SendPlace(send: SendLine, writes: TabWrites, tables: SurfaceTables) 
 }
 
 /**
- * THE EQ: in or out, the six switches (high-pass, four bands, low-pass) as words that say
- * in or out, and the sixteen controls of the surface tables as rotaries in the author's
- * order, each in its band's colour, greyed and said "out" when its band is switched out.
- * A turn is relative, finer away from the knob; a press does what the tables say.
+ * THE EQ as the Surface's EQ page draws it (one editor, two places): the graph a finger
+ * moves, the switches in words, the picked band's numbers on bars.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun EqView(eq: EqReading, label: String, writes: TabWrites, tables: SurfaceTables) {
+private fun EqView(eq: EqReading, label: String, writes: TabWrites, cueId: String) {
     Heading(label) {
-        eq.on?.let { if (it.live) LiveWord() }
+        if (eq.on?.live == true || eq.switches.any { it.live } || eq.knobs.any { it.live }) LiveWord()
     }
-    eq.on?.let { on ->
-        SwitchLine(on.on, true, loc(if (on.on) "cues.eqIn" else "cues.eqOut")) { writes.setNow(on.address, WireText.bool(it)) }
-    }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        for (switch in eq.switches) EqBandSwitch(switch, writes)
-    }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        for (knob in eq.knobs) EqKnobView(knob, eq, writes, tables)
-    }
+    EqEditor(eq, writes, graphHeight = 220.dp, key = cueId)
 }
 
 /**
- * A SOUND'S OWN DYNAMICS (Go.dot's namespace draft §141): the stage, its compressor and its
- * gate as switches, what it listens to as a list, and its fourteen controls on rotaries - the
- * detector among them, peak or RMS as a shape is peak or shelf - each dimmed while the stage
- * or its half is out. Under the lock it rides live, as the EQ does (BIE).
+ * A SOUND'S OWN DYNAMICS (Go.dot's namespace draft §141) as the Surface's Dynamics page
+ * draws them: the compressor's and the gate's graphs one over the other, their numbers on
+ * bars, what the stage listens to. Under the lock it rides live, as the EQ does (BIE).
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DynView(dyn: DynReading, label: String, writes: TabWrites, tables: SurfaceTables) {
+private fun DynView(dyn: DynReading, label: String, writes: TabWrites, cueId: String) {
     val eq = dyn.eq
     Heading(label) {
         if (eq.switches.any { it.live } || eq.knobs.any { it.live } || dyn.keyLive) LiveWord()
     }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        for (switch in eq.switches) EqBandSwitch(switch, writes)
-    }
-    DynKeyMenu(dyn, writes)
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        for (knob in eq.knobs) EqKnobView(knob, eq, writes, tables)
-    }
+    DynEditor(dyn, writes, graphHeight = 200.dp, key = cueId)
 }
 
 /** The DCA mark (a show row: locked under the lock) and the trim of the DCA it names (tonight's, never locked). */

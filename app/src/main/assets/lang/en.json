@@ -105,7 +105,6 @@
       "none": "No connection yet. Type the address of the computer running Go.dot below.",
       "onScreen": "On screen",
       "putOnScreen": "Put on screen",
-      "linked": "Linked",
       "notLinked": "Not linked",
       "edit": "Edit",
       "remove": "Remove",
@@ -414,7 +413,8 @@
       "aux": "{name} · aux",
       "output": "{name} · output",
       "gone": "{name} · not in this show: silent"
-    }
+    },
+    "reduction": "Gain reduction"
   },
   "widgets": {
     "notANumber": "not a number",
@@ -423,7 +423,8 @@
     "in": "in",
     "out": "out",
     "swapped": "L/R swapped",
-    "notSwapped": "L/R"
+    "notSwapped": "L/R",
+    "eqGraph": "EQ curve"
   },
   "cues": {
     "goList": "GO list",
@@ -463,13 +464,10 @@
       "balance": "Balance",
       "width": "Width"
     },
-    "eqIn": "EQ in",
-    "eqOut": "EQ out - every band skipped",
     "dcaNone": "no DCA",
     "dcaTrim": "{dca} trim - tonight only",
     "field": {
       "level": "Level",
-      "runTrim": "Trim of the run playing now - tonight only",
       "sends": "Sends",
       "eq": "EQ",
       "dyn": "Dynamics",
@@ -484,7 +482,6 @@
     },
     "inspector": {
       "none": "Tap a cue to see what the tablet can change on it.",
-      "lockedNote": "The show's rows are greyed. EQ, sends, flags and trims still move.",
       "liveCount": "{count} changes ride live - not saved until the show is unlocked and they are kept"
     }
   },
@@ -515,9 +512,8 @@
       "tablet": "a fader for each DCA",
       "connected": "connected",
       "off": "off",
-      "notConnected": "not connected"
+      "standsIn": "not connected · strips work from this tablet"
     },
-    "standsIn": "{surface} is not connected: its strips work from this tablet.",
     "lockedNote": "Faders, EQ and sends still move. EQ and sends ride live, not saved until they are kept.",
     "noDca": "This show has no DCA, so there is no fader here yet. Every DCA the show has gets a fader on this tablet.",
     "noStrips": "This surface has no strips.",
@@ -538,8 +534,8 @@
     "sendsLive": "Under the lock the sends ride live: heard at once, saved only when kept.",
     "noDyn": "This cue has no dynamics.",
     "dynLive": "Under the lock the dynamics ride live: heard at once, saved only when kept.",
-    "dynHint": "A knob turns from where it stands; the further your finger from it, the finer. Press a threshold to switch the compressor or the gate in or out, a key filter for the whole stage, the detector for peak or RMS.",
-    "eqHint": "A knob turns from where it stands; the further your finger from it, the finer. Press a gain to switch its band in or out, a shape for peak or shelf.",
+    "eqGraphHint": "Drag a handle: across for its frequency, up and down for its gain. Pinch with two fingers for the picked band's width; tap a handle twice to put its gain back to 0 dB.",
+    "dynGraphHint": "Drag a round handle across for its threshold, a square one up and down for the ratio or the range. Spread two fingers on the compressor to open its knee. A bar moves from where it stands, finer the further your finger strays from it.",
     "sendsHint": "A knob turns from where it stands; the further your finger from it, the finer. Press one to switch its send in or out: its level is kept.",
     "leans": "Pan or balance",
     "widths": "Width",

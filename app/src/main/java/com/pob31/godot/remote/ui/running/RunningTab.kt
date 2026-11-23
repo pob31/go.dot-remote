@@ -147,7 +147,7 @@ fun RunningView(
     BoxWithConstraints(Modifier.fillMaxSize().background(GodotColors.panelRuns)) {
         val wide = maxWidth >= 760.dp
         Column(Modifier.fillMaxSize()) {
-            // The tab's line: how many (the header says how the link stands; greyed rows are its echo).
+            // The tab's line: how many (the tab bar says how the link stands; greyed rows are its echo).
             Row(
                 Modifier.fillMaxWidth().background(GodotColors.panel).padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,

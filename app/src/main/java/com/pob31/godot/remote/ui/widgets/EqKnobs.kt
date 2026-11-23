@@ -48,11 +48,11 @@ import com.pob31.godot.remote.model.TabWrites
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 
-/*  THE EQ'S CONTROLS, AS THE INSPECTOR AND THE SURFACE'S PAGES BOTH DRAW THEM: one of the
-    surface tables' sixteen controls on a [Rotary] - its law, its range, its band's colour,
-    what a press does - and a band's switch as a button that says in or out. A send's
-    level on the Send page is the same rotary on the fader's law (model `sendKnobs`), and
-    its place on the Pan page a lean or a width (model `placeKnobs`). */
+/*  A BAND'S SWITCH, as a button that says in or out - the EQ's and the dynamics' editors
+    (EqGraph, DynGraphs) put them under their graphs - and A CONTROL ON A [Rotary]: its law,
+    its range, its colour, what a press does. The EQ and the dynamics are graphs on a touch
+    screen now; the rotary is a send's level on the Send page (model `sendKnobs`) and its
+    place on the Pan page and in the inspector, a lean or a width (model `placeKnobs`). */
 
 private val BAND_WORDS = mapOf("eqOn" to "EQ", "eqHpf" to "HP", "eqB1On" to "B1", "eqB2On" to "B2", "eqB3On" to "B3", "eqB4On" to "B4", "eqLpf" to "LP")
 private val BAND_COLOURS = mapOf("eqHpf" to 0, "eqB1On" to 1, "eqB2On" to 2, "eqB3On" to 3, "eqB4On" to 4, "eqLpf" to 5,

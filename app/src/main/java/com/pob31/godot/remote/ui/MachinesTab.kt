@@ -294,7 +294,6 @@ private fun MachineCard(
                 }
             }
 
-            LinkMark(state)
             if (state != LinkState.LIVE && state != LinkState.OFF && state != LinkState.TOO_OLD) {
                 problem?.let { Text(loc("remote.screen.lastProblem", "problem" to it), color = GodotColors.inkFaint) }
             }
@@ -340,7 +339,9 @@ private fun MachineCard(
                     colors = SwitchDefaults.colors(checkedTrackColor = GodotColors.live, checkedThumbColor = Color.Black)
                 )
                 Spacer(Modifier.width(10.dp))
-                Text(loc(if (machine.linked) "remote.machines.linked" else "remote.machines.notLinked"), color = GodotColors.ink)
+                // Linked, the switch's word is how the link stands - said once, here; not linked, that.
+                if (machine.linked) LinkMark(state, Modifier.weight(1f, fill = false))
+                else Text(loc("remote.machines.notLinked"), color = GodotColors.ink)
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = onEdit, modifier = Modifier.heightIn(min = GodotMetrics.touch)) {
                     Text(loc("remote.machines.edit"), color = GodotColors.inkDim)

@@ -97,8 +97,8 @@ import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
 import com.pob31.godot.remote.ui.theme.GodotType
 import com.pob31.godot.remote.ui.widgets.DbFader
-import com.pob31.godot.remote.ui.widgets.DynKeyMenu
-import com.pob31.godot.remote.ui.widgets.EqBandSwitch
+import com.pob31.godot.remote.ui.widgets.DynEditor
+import com.pob31.godot.remote.ui.widgets.EqEditor
 import com.pob31.godot.remote.ui.widgets.EqKnobView
 import com.pob31.godot.remote.ui.widgets.LiveWord
 import com.pob31.godot.remote.ui.widgets.LockedWord
@@ -164,8 +164,8 @@ fun SurfaceView(
         Box(Modifier.fillMaxWidth().weight(1f).alpha(if (live) 1f else 0.45f)) {
             when (page) {
                 SurfacePage.FADERS -> StripsPage(reading, writes, tables.fader, send)
-                SurfacePage.EQ -> EqPage(reading, writes, tables, send)
-                SurfacePage.DYN -> DynPage(reading, writes, tables, send)
+                SurfacePage.EQ -> EqPage(reading, writes, send)
+                SurfacePage.DYN -> DynPage(reading, writes, send)
                 SurfacePage.SENDS -> SendsPage(reading, writes, tables, send)
                 SurfacePage.PAN -> PanPage(reading, writes, tables, send)
             }
@@ -206,9 +206,6 @@ private fun SurfaceBar(
                 for (each in SurfacePage.entries) PageChip(each, each == page) { onPage(each) }
             }
         }
-        if (reading.shown.state == SurfaceState.NOT_CONNECTED) {
-            Text(loc("surface.standsIn", "surface" to surfaceName(reading.shown)), color = GodotColors.inkDim, fontSize = 14.sp)
-        }
         if (reading.locked) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 LockedWord()
@@ -242,7 +239,8 @@ private fun stateWords(surface: SurfaceLine): String = when (surface.state) {
     SurfaceState.CONNECTED -> loc("surface.state.connected")
     SurfaceState.OFF -> loc("surface.state.off")
     SurfaceState.PROBLEM -> surface.problem
-    SurfaceState.NOT_CONNECTED -> loc("surface.state.notConnected")
+    // Its strips work from the tablet meanwhile: said here, once, not again under the bar.
+    SurfaceState.NOT_CONNECTED -> loc("surface.state.standsIn")
 }
 
 /** A surface: its name, then its profile and how it stands, in words with a dot of the state's colour. */
@@ -267,7 +265,9 @@ private fun SurfaceChip(surface: SurfaceLine, on: Boolean, onPick: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(8.dp).background(stateColour(surface.state), CircleShape))
             Spacer(Modifier.width(6.dp))
-            val profile = if (surface.isTablet || surface.name.isEmpty()) null else surface.profileKey?.let { loc(it) }
+            // The profile, unless the name already says it ("D700" is an "Asparion D700").
+            val profile = if (surface.isTablet || surface.name.isEmpty()) null
+                          else surface.profileKey?.let { loc(it) }?.takeUnless { it.contains(surface.name, ignoreCase = true) }
             Text(
                 listOfNotNull(profile, stateWords(surface)).joinToString(" · "),
                 color = GodotColors.inkFaint, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
@@ -625,14 +625,13 @@ private fun LiveNote(key: String) {
 }
 
 /**
- * THE EQ PAGE (namespace draft §17.14): the aimed cue's sixteen controls in the author's
- * order, two rows of eight where they fit - a D700's two banks - each in its band's colour;
- * the switches above them, in words. A gain's press switches its band, a shape's flips
- * peak and shelf.
+ * THE EQ PAGE (namespace draft §17.14): the aimed cue's EQ as a graph - what it does to the
+ * sound, a handle a band, moved by a finger - not the D700's sixteen rotaries: a touch
+ * screen has no detent to feel, so it draws the curve and lets a finger take it. The
+ * switches under it, in words; the picked handle's numbers on bars.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun EqPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceTables, send: (Sent?) -> Unit) {
+private fun EqPage(reading: SurfaceReading, writes: TabWrites, send: (Sent?) -> Unit) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -645,25 +644,18 @@ private fun EqPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceTa
             return@Column
         }
         if (reading.locked) LiveNote("surface.eqLive")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            eq.on?.let { EqBandSwitch(it, writes) }
-            for (switch in eq.switches) EqBandSwitch(switch, writes)
-        }
-        KnobRows(eq, writes, tables)
-        Text(loc("surface.eqHint"), color = GodotColors.inkOff, fontSize = 13.sp)
+        EqEditor(eq, writes, graphHeight = 340.dp, key = reading.aim)
+        Text(loc("surface.eqGraphHint"), color = GodotColors.inkOff, fontSize = 13.sp)
     }
 }
 
 /**
- * THE DYNAMICS PAGE (namespace draft §141, the D700's Dynamics page): the aimed cue's own
- * stage - its switches in words, what it listens to, and its fourteen controls, the
- * compressor's in band one's colour, the gate's in band three's, the key filter's in the
- * high-pass's. A press on a threshold takes its half in and out, on a key cut the whole
- * stage, on the detector peak or RMS.
+ * THE DYNAMICS PAGE (namespace draft §141): the aimed cue's own stage as the desktop draws
+ * it - the compressor's and the gate's laws as graphs, each under its own switch, handles
+ * moved by a finger, every number on a bar beside it - with what the stage listens to.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DynPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceTables, send: (Sent?) -> Unit) {
+private fun DynPage(reading: SurfaceReading, writes: TabWrites, send: (Sent?) -> Unit) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -676,12 +668,8 @@ private fun DynPage(reading: SurfaceReading, writes: TabWrites, tables: SurfaceT
             return@Column
         }
         if (reading.locked) LiveNote("surface.dynLive")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (switch in dyn.eq.switches) EqBandSwitch(switch, writes)
-        }
-        DynKeyMenu(dyn, writes)
-        KnobRows(dyn.eq, writes, tables)
-        Text(loc("surface.dynHint"), color = GodotColors.inkOff, fontSize = 13.sp)
+        DynEditor(dyn, writes, graphHeight = 260.dp, key = reading.aim)
+        Text(loc("surface.dynGraphHint"), color = GodotColors.inkOff, fontSize = 13.sp)
     }
 }
 

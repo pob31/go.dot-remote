@@ -75,7 +75,6 @@ class EditableTest {
     fun theLockRuleIsTheTables_storedRowsRefused_ridesAndTonightsLetThrough() {
         for (each in Editables.ALL) {
             val persist = when (each.control) {
-                EditControl.RUN_TRIM -> rowOf("run", "trim")!!.second
                 EditControl.SENDS -> rowOf("send", "level")!!.second
                 EditControl.EQ -> rowOf("cue", "eqOn")!!.second
                 EditControl.DYN -> rowOf("cue", "dynOn")!!.second
@@ -88,6 +87,7 @@ class EditableTest {
             }
         }
         assertEquals("none", rowOf("dca", Editables.DCA_TRIM)!!.second)
+        assertTrue("a run's trim is tonight's", rowOf("run", Editables.RUN_TRIM)!!.second != "show")
     }
 
     @Test
@@ -134,7 +134,7 @@ class EditableTest {
     fun theInspectorsRowsInTheAllowListsOrder() {
         val inspection = readInspection(mirror, THUNDER_AND_RAIN, tables)!!
         assertEquals(
-            listOf("level", "trim", "sends", "eq", "dca", "preWait", "postWait", "rate", "rateMode", "enabled", "flagged", "notes"),
+            listOf("level", "sends", "eq", "dca", "preWait", "postWait", "rate", "rateMode", "enabled", "flagged", "notes"),
             inspection.lines.map { it.editable.row }
         )
         assertFalse(inspection.locked)
@@ -145,12 +145,12 @@ class EditableTest {
         assertEquals("dB", level.field.unit)
         assertTrue(level.field.editable)
 
-        val sends = (inspection.lines[2] as InspectorLine.Sends).sends
+        val sends = (inspection.lines[1] as InspectorLine.Sends).sends
         assertEquals(listOf("Reverb" to -12.0, "Foldback" to -20.0), sends.map { it.busName to it.level })
         assertEquals(listOf(true, false), sends.map { it.on })
         assertEquals("/godot/send/S1000001/level", sends[0].levelAddress)
 
-        val eq = (inspection.lines[3] as InspectorLine.Eq).eq
+        val eq = (inspection.lines[2] as InspectorLine.Eq).eq
         assertEquals(true, eq.on?.on)
         assertEquals(16, eq.knobs.size)
         val hp = eq.knobs.first { it.control.row == "eqHpfFreq" }
@@ -160,7 +160,7 @@ class EditableTest {
         assertEquals("peak", eq.knobs.first { it.control.row == "eqB1Shape" }.shape)
         assertFalse("the low-pass is out", eq.knobs.first { it.control.row == "eqLpfFreq" }.bandOn)
 
-        val dca = inspection.lines[4] as InspectorLine.Dca
+        val dca = inspection.lines[3] as InspectorLine.Dca
         assertEquals("D1000001", dca.current)
         assertEquals(listOf(DcaChoice("D1000001", "Band"), DcaChoice("D2000001", "Effects")), dca.choices)
         assertEquals(-3.0, dca.trim!!, 0.0)
@@ -168,16 +168,14 @@ class EditableTest {
 
         val notes = inspection.lines.last() as InspectorLine.Field
         assertEquals("Wait for the actor to reach the door", notes.field.text)
-        assertEquals(listOf("varispeed", "timestretch"), (inspection.lines[8] as InspectorLine.Field).field.choices)
+        assertEquals(listOf("varispeed", "timestretch"), (inspection.lines[7] as InspectorLine.Field).field.choices)
     }
 
     @Test
-    fun aPlayingCueHasItsRunsTrim_aMemoHasNoLevel_aFadeNoSpeed() {
-        val thunder = readInspection(mirror, THUNDER, tables)!!
-        val trim = thunder.lines.first { it is InspectorLine.RunTrim } as InspectorLine.RunTrim
-        assertEquals(RUN_THUNDER, trim.runId)
-        assertEquals(-4.5, trim.trim, 0.0)
-        assertEquals("/godot/run/$RUN_THUNDER/trim", trim.address)
+    fun theRunsTrimIsTheRunningTabs_aMemoHasNoLevel_aFadeNoSpeed() {
+        // A run's trim is ridden on the Running tab, not said again in the inspector.
+        assertFalse(readInspection(mirror, THUNDER, tables)!!.lines.any { it.editable.row == "trim" })
+        assertTrue("run" to Editables.RUN_TRIM in Editables.writableRows(tables))
 
         assertEquals(
             listOf("preWait", "postWait", "enabled", "flagged", "notes"),
@@ -188,9 +186,6 @@ class EditableTest {
         assertFalse("a fade's rate is not a speed to ride here", "rate" in fade)
         assertTrue("a group's DCA", "dca" in readInspection(mirror, STORM, tables)!!.lines.map { it.editable.row })
         assertNull(readInspection(mirror, "NOSUCHCU", tables))
-        // A run the horizon only made ready, not let go, has no trim to ride yet.
-        mirror.put("/godot/run/$RUN_THUNDER/started", 0L)
-        assertFalse(readInspection(mirror, THUNDER, tables)!!.lines.any { it is InspectorLine.RunTrim })
     }
 
     @Test
@@ -221,8 +216,6 @@ class EditableTest {
         assertFalse(eq.knobs.first { it.control.row == "eqB3Gain" }.live)
         assertTrue((byRow.getValue("sends") as InspectorLine.Sends).sends[0].live)
         assertNotNull("the DCA's trim is tonight's, beside the greyed mark", (byRow.getValue("dca") as InspectorLine.Dca).trimAddress)
-        // A run's trim is tonight's.
-        assertTrue(readInspection(mirror, THUNDER, tables)!!.lines.any { it is InspectorLine.RunTrim })
         assertEquals(RAIN, readMarks(mirror, ShowFixture.ACT_ONE, buildCueTree(mirror, ShowFixture.ACT_ONE, Folds())).flagged.single())
     }
 
