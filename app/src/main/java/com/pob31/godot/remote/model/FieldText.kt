@@ -50,7 +50,7 @@ object FieldText {
     fun commit(typed: String, decimals: Int, blankZero: Boolean = false, time: Boolean = false): Commit {
         if (typed.isBlank()) return if (blankZero) Commit.Send("0") else Commit.Revert
         //  A time typed as a clock is sent as its seconds (§151).
-        val number = (if (time && typed.contains(':')) typedTime(typed) else TypedNumber.parse(typed)) ?: return Commit.NotANumber
+        val number = (if (time && typedAsClock(typed)) typedTime(typed) else TypedNumber.parse(typed)) ?: return Commit.NotANumber
         return Commit.Send(WireText.number(number, decimals))
     }
 

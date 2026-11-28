@@ -131,8 +131,8 @@ fun NumberBox(
                 ),
                 cursorBrush = SolidColor(GodotColors.picked),
                 keyboardOptions = KeyboardOptions(
-                    //  A clock needs its colon, which the number pad lacks (§151).
-                    keyboardType = if (signed || (time && ShownTime.clock)) KeyboardType.Text else KeyboardType.Decimal,
+                    //  A time takes a colon and its units, which the number pad lacks (§151, BKQ).
+                    keyboardType = if (signed || time) KeyboardType.Text else KeyboardType.Decimal,
                     imeAction = ImeAction.Done,
                     autoCorrectEnabled = false,
                 ),

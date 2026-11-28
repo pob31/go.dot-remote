@@ -56,6 +56,18 @@ class TimeTextTest {
         assertNull(typedTime("1.5:20"))
         assertNull(typedTime("soon"))
 
+        //  With its units (BKQ), the author's own example first.
+        assertEquals("1:34:03.1", clockTime(typedTime("1h34m3s1")!!))
+        assertEquals(150.0, typedTime("2m30")!!, 1e-9)
+        assertEquals(5400.0, typedTime("1h30")!!, 1e-9)
+        assertEquals(90.0, typedTime("90s")!!, 1e-9)
+        assertEquals(3902.5, typedTime("1H 5M 2,5S")!!, 1e-9)
+        assertNull(typedTime("3s1m"))
+        assertNull(typedTime("1m75s"))
+        assertNull(typedTime("3.5s1"))
+        assertEquals(FieldText.Commit.Send("5643.1"), FieldText.commit("1h34m3s1", 3, blankZero = true, time = true))
+        assertEquals("1h34m3s1", TypedNumber.filterTyping("1h34m3s1", allowDecimal = true, allowColon = true))
+
         assertEquals(FieldText.Commit.Send("83.5"), FieldText.commit("1:23.5", 3, blankZero = true, time = true))
         assertEquals(FieldText.Commit.NotANumber, FieldText.commit("1:75", 3, blankZero = true, time = true))
         assertEquals("1:23.5", TypedNumber.filterTyping("1:23,5", allowDecimal = true, allowColon = true))

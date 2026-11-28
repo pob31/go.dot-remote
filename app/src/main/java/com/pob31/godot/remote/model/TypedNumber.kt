@@ -40,6 +40,6 @@ object TypedNumber {
                 '−' -> '-'
                 else -> it
             }
-        }.filter { it.isDigit() || it == '-' || (allowDecimal && it == '.') || (allowColon && it == ':') }
+        }.filter { it.isDigit() || it == '-' || (allowDecimal && it == '.') || (allowColon && (it == ':' || it.lowercaseChar() in "hms")) }
             .joinToString("")
 }

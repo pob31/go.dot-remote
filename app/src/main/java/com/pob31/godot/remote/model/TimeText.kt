@@ -63,8 +63,48 @@ fun clockTime(seconds: Double, decimals: Int = 1, trim: Boolean = false): String
 /** A reading to a tenth in the show's format: `12.3`, or `0:12.3`. */
 fun readingTime(seconds: Double): String = if (ShownTime.clock) clockTime(seconds, 1) else oneDecimal(seconds)
 
-/** A time as typed: `83.5`, `83,5`, `1:23.5`, `1:02:03.5`; null for what is not one. */
+/** Whether a box holds a clock or a time with its units, rather than a plain number. */
+fun typedAsClock(text: String): Boolean = text.any { it == ':' || it.lowercaseChar() in "hms" }
+
+/*  A TIME WITH ITS UNITS (§151, BKQ; the author: "Could we also type in 1h34m3s1 and
+    convert to 1:34:03.1?"): numbers each followed by h, m or s, in that order; the
+    digits after the s are its fraction (`3s1` is 3.1); a number after the last unit
+    with none of its own is the next place down (`2m30`, `1h30`). As the window reads it. */
+private fun unitTime(typed: String): Double? {
+    val text = typed.filterNot { it.isWhitespace() }.replace(',', '.').lowercase()
+    var total = 0.0
+    var place = 0
+    var at = 0
+
+    while (at < text.length) {
+        val from = at
+        while (at < text.length && (text[at].isDigit() || text[at] == '.')) at++
+        if (at == from) return null
+        val value = text.substring(from, at).toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 } ?: return null
+
+        val unit = if (at < text.length) {
+            when (text[at++]) { 'h' -> 3; 'm' -> 2; 's' -> 1; else -> return null }
+        } else place - 1
+
+        if (unit <= 0 || (place != 0 && unit >= place)) return null
+        if (place != 0 && value >= 60) return null
+
+        total += value * when (unit) { 3 -> 3600.0; 2 -> 60.0; else -> 1.0 }
+        place = unit
+
+        if (unit == 1 && at < text.length) {
+            val tail = text.substring(at)
+            if (floor(value) != value || !tail.all { it.isDigit() }) return null
+            total += "0.$tail".toDouble()
+            at = text.length
+        }
+    }
+    return if (place != 0) total else null
+}
+
+/** A time as typed: `83.5`, `83,5`, `1:23.5`, `1:02:03.5`, `1h34m3s1`; null for what is not one. */
 fun typedTime(text: String): Double? {
+    if (text.any { it.lowercaseChar() in "hms" }) return unitTime(text)
     val parts = text.trim().split(':')
     if (parts.size > 3 || parts.any { it.isBlank() }) return null
 
