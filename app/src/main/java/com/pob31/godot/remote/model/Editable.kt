@@ -52,6 +52,8 @@ data class Editable(
     val blankZero: Boolean = false,
     /** The kinds of cue it is offered for, or null for every cue that has the row. */
     val kinds: Set<String>? = null,
+    /** A time in seconds: shown in the show's format and typed either way (§151). */
+    val time: Boolean = false,
 )
 
 object Editables {
@@ -62,8 +64,8 @@ object Editables {
         // A sound's own compressor, gate and key filter (namespace draft §141), after its EQ as in the chain.
         Editable("dyn", EditControl.DYN, "cues.field.dyn", UnderLock.RIDES_LIVE),
         Editable("dca", EditControl.DCA, "cues.field.dca", UnderLock.REFUSED),
-        Editable("preWait", EditControl.NUMBER, "cues.field.preWait", UnderLock.REFUSED, decimals = 3),
-        Editable("postWait", EditControl.NUMBER, "cues.field.postWait", UnderLock.REFUSED, decimals = 3),
+        Editable("preWait", EditControl.NUMBER, "cues.field.preWait", UnderLock.REFUSED, decimals = 3, time = true),
+        Editable("postWait", EditControl.NUMBER, "cues.field.postWait", UnderLock.REFUSED, decimals = 3, time = true),
         // A media cue's speed; a fade's `rate` is where it takes its target, another question.
         Editable("rate", EditControl.NUMBER, "cues.field.rate", UnderLock.REFUSED, decimals = 4, kinds = setOf("media")),
         Editable("rateMode", EditControl.CHOICE, "cues.field.rateMode", UnderLock.REFUSED, kinds = setOf("media")),

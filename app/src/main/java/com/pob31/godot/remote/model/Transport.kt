@@ -265,6 +265,8 @@ private fun runOf(mirror: Mirror, cue: String): RunLine? {
 
 /** Seconds as the header writes them: "0:12.3", "12:04.0" - a decimal point in every language. */
 fun clockText(seconds: Double): String {
+    //  The show's clock (§151): the hours past an hour. Otherwise as it always was.
+    if (ShownTime.clock) return clockTime(maxOf(0.0, seconds), 1)
     val tenths = (maxOf(0.0, seconds) * 10.0).roundToLong()
     val minutes = tenths / 600
     val rest = tenths % 600

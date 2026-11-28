@@ -115,6 +115,7 @@ class Mirror {
 
     internal fun install(state: MirrorState, tick: Long) {
         current = state
+        ShownTime.follow(state.nodes[ShownTime.ADDRESS]?.text)   // the show's time format (§151)
         _tick.value = tick
         _structure.value = _structure.value + 1
     }
@@ -129,6 +130,7 @@ class Mirror {
      */
     internal fun putValues(address: String, typeTags: String, values: List<OscValue>) {
         val state = current
+        if (address == ShownTime.ADDRESS) ShownTime.follow(values.firstOrNull()?.text())
         val existing = state.nodes[address]
         if (existing != null) {
             state.nodes[address] = existing.copy(typeTags = typeTags, values = values)

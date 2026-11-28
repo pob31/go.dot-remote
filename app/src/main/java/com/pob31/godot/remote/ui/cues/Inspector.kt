@@ -193,7 +193,7 @@ private fun FieldView(line: InspectorLine.Field, label: String, writes: TabWrite
                     DbFader(field.number ?: tables.fader.silenceDb, field.address, writes, tables.fader, enabled = field.editable, label = label, thickness = 56.dp)
                 com.pob31.godot.remote.model.EditControl.NUMBER ->
                     NumberBox(
-                        shown = FieldText.shown(field.number, each.decimals, each.blankZero),
+                        shown = FieldText.shown(field.number, each.decimals, each.blankZero, each.time),
                         onSend = { writes.setNow(field.address, it) },
                         decimals = each.decimals,
                         blankZero = each.blankZero,
@@ -201,6 +201,7 @@ private fun FieldView(line: InspectorLine.Field, label: String, writes: TabWrite
                         unit = unitWord(field.unit),
                         enabled = field.editable,
                         width = 120.dp,
+                        time = each.time,
                     )
                 com.pob31.godot.remote.model.EditControl.CHOICE -> ChoiceView(field, writes)
                 com.pob31.godot.remote.model.EditControl.SWITCH -> SwitchLine(

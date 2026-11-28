@@ -33,13 +33,13 @@ object TypedNumber {
     }
 
     /** What a number box may hold while it is typed: a comma becomes a point instead of vanishing. */
-    fun filterTyping(text: String, allowDecimal: Boolean): String =
+    fun filterTyping(text: String, allowDecimal: Boolean, allowColon: Boolean = false): String =
         text.map {
             when (it) {
                 ',' -> '.'
                 '−' -> '-'
                 else -> it
             }
-        }.filter { it.isDigit() || it == '-' || (allowDecimal && it == '.') }
+        }.filter { it.isDigit() || it == '-' || (allowDecimal && it == '.') || (allowColon && it == ':') }
             .joinToString("")
 }

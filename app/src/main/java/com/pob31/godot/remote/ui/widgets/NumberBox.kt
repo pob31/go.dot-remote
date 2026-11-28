@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pob31.godot.remote.localization.loc
 import com.pob31.godot.remote.model.FieldText
+import com.pob31.godot.remote.model.ShownTime
 import com.pob31.godot.remote.model.TypedNumber
 import com.pob31.godot.remote.ui.theme.GodotColors
 import com.pob31.godot.remote.ui.theme.GodotMetrics
@@ -70,6 +71,7 @@ fun NumberBox(
     enabled: Boolean = true,
     width: Dp = 96.dp,
     placeholder: String = "",
+    time: Boolean = false,
 ) {
     var text by remember { mutableStateOf(shown) }
     var focused by remember { mutableStateOf(false) }
@@ -86,7 +88,7 @@ fun NumberBox(
     }
 
     fun commit() {
-        when (val outcome = FieldText.commit(text, decimals, blankZero)) {
+        when (val outcome = FieldText.commit(text, decimals, blankZero, time)) {
             // Nothing changed is nothing to send: a box left as it stood writes nothing.
             is FieldText.Commit.Send -> if (outcome.text != (if (blankZero && shown.isEmpty()) "0" else shown)) onSend(outcome.text)
             FieldText.Commit.Revert -> text = shown
@@ -120,7 +122,7 @@ fun NumberBox(
             }
             BasicTextField(
                 value = text,
-                onValueChange = { text = TypedNumber.filterTyping(it, allowDecimal = decimals > 0) },
+                onValueChange = { text = TypedNumber.filterTyping(it, allowDecimal = decimals > 0, allowColon = time) },
                 enabled = enabled,
                 singleLine = true,
                 textStyle = GodotType.number.copy(
@@ -129,7 +131,8 @@ fun NumberBox(
                 ),
                 cursorBrush = SolidColor(GodotColors.picked),
                 keyboardOptions = KeyboardOptions(
-                    keyboardType = if (signed) KeyboardType.Text else KeyboardType.Decimal,
+                    //  A clock needs its colon, which the number pad lacks (§151).
+                    keyboardType = if (signed || (time && ShownTime.clock)) KeyboardType.Text else KeyboardType.Decimal,
                     imeAction = ImeAction.Done,
                     autoCorrectEnabled = false,
                 ),

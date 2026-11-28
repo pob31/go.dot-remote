@@ -212,8 +212,8 @@ fun timeText(mirror: Mirror, address: String, per: Double = 1.0): String {
     val node = mirror[address] ?: return ""
     val seconds = (node.value?.asDouble() ?: return "") / per
     if (!seconds.isFinite()) return ""
-    val written = oneDecimal(seconds)
-    if (!node.writable && (written == "0.0" || written == "-0.0")) return ""
+    val written = readingTime(seconds)     // in the show's format (§151)
+    if (!node.writable && (written == "0.0" || written == "-0.0" || written == "0:00.0")) return ""
     return written
 }
 

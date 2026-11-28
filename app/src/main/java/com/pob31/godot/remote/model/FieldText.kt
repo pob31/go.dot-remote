@@ -30,8 +30,9 @@ import com.pob31.godot.remote.link.WireText
 object FieldText {
 
     /** A number as its box shows it: at most [decimals] places, no trailing zeros; blank for nought in a blank-nought box. */
-    fun shown(value: Double?, decimals: Int, blankZero: Boolean = false): String {
+    fun shown(value: Double?, decimals: Int, blankZero: Boolean = false, time: Boolean = false): String {
         if (value == null || !value.isFinite()) return ""
+        if (time && ShownTime.clock) return if (blankZero && value == 0.0) "" else clockTime(value, decimals, trim = true)
         val text = WireText.number(value, decimals)
         return if (blankZero && text == "0") "" else text
     }
@@ -46,9 +47,10 @@ object FieldText {
     }
 
     /** What a box committed with [typed] sends (the page's `commitText`). */
-    fun commit(typed: String, decimals: Int, blankZero: Boolean = false): Commit {
+    fun commit(typed: String, decimals: Int, blankZero: Boolean = false, time: Boolean = false): Commit {
         if (typed.isBlank()) return if (blankZero) Commit.Send("0") else Commit.Revert
-        val number = TypedNumber.parse(typed) ?: return Commit.NotANumber
+        //  A time typed as a clock is sent as its seconds (§151).
+        val number = (if (time && typed.contains(':')) typedTime(typed) else TypedNumber.parse(typed)) ?: return Commit.NotANumber
         return Commit.Send(WireText.number(number, decimals))
     }
 
